@@ -135,7 +135,20 @@
   .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
   .loading{text-align:center;color:var(--muted);padding:60px 20px}
-  @media (min-width:560px){ .grid{grid-template-columns:1fr 1fr} }
+  @media (min-width:520px){ .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))} }
+  @media (min-width:768px){
+    .wrap{max-width:1160px}
+    .hero{display:flex;align-items:center;text-align:left;gap:48px;padding:56px 44px 50px;min-height:440px}
+    .heroText{flex:1;min-width:0}
+    .hero .tag{margin-bottom:16px}
+    .hero h1{font-size:clamp(62px,6.4vw,100px)}
+    .hero p{max-width:480px;font-size:16px;margin:16px 0 24px}
+    .hero-img{width:min(480px,45%);margin:0;flex:none}
+    .steps{padding:22px 44px} .searchbar{padding:10px 44px 0} .nav .scroll{padding:0 44px}
+    .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px} footer{padding-left:44px;padding-right:44px}
+    .topbar{padding-left:24px;padding-right:24px}
+  }
+  @media (min-width:1040px){ .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))} }
 </style>
 </head>
 <body>
@@ -146,11 +159,13 @@
   </div>
 
   <header class="hero">
-    <span class="tag reveal">Carnicería · Desde 1970</span>
-    <h1 class="slab reveal">Del toro<br>a tu <span class="b">mesa</span></h1>
+    <div class="heroText">
+      <span class="tag reveal">Carnicería · Desde 1970</span>
+      <h1 class="slab reveal">Del toro<br>a tu <span class="b">mesa</span></h1>
+      <p class="reveal">Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. 55 años de oficio, ahora a un clic.</p>
+      <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
+    </div>
     <img class="hero-img reveal" src="img/products/ribeye.webp" alt="Corte premium El Torito" />
-    <p class="reveal">Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. 55 años de oficio, ahora a un clic.</p>
-    <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
   </header>
 
   <div class="steps">
