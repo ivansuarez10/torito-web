@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#000000" />
 <link rel="icon" href="img/logo.png" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
     --bg:#000000; --bg2:#0d0d0d; --card:#161616; --card2:#232323;
@@ -18,7 +19,7 @@
   html{scroll-behavior:auto}
   body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--cream);line-height:1.45;-webkit-font-smoothing:antialiased}
-  .slab{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:800;letter-spacing:-.015em}
+  .slab{font-family:"Poppins","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:-.01em}
   .wrap{max-width:680px;margin:0 auto;position:relative;min-height:100vh}
   img{max-width:100%}
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
@@ -80,6 +81,10 @@
   .prod .nm{font-size:18px;line-height:1.05}
   .prod .sb{color:var(--muted);font-size:12px;margin-top:3px;min-height:15px}
   .prod .rate{color:var(--gold);font-weight:700;font-size:12.5px;margin-top:8px}
+  .cutsel{margin-top:10px}
+  .cutsel label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+  .cutsel select{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--cream);font-size:14px;font-family:inherit;outline:none}
+  .cutsel select:focus{border-color:var(--red)}
   .stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
   .stepper button{width:40px;height:40px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
   .stepper button:hover{background:#2c2c2c} .stepper button:active{transform:scale(.94)}
@@ -176,9 +181,11 @@
   "use strict";
   var WA_PHONE="50493785051", SUPA_URL="https://dnyzokgmjuvbrcxxdatr.supabase.co", SUPA_KEY="sb_publishable_jO4pGdkTBporf_cndos9OA_K_8tVn3A";
   var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.0985,lng:-87.2075}, SHIP_PER_2KM=35;
-  var cart=load(), draft={};
+  var cart=load(), draft={}, cutSel=loadCuts();
   function load(){try{return JSON.parse(localStorage.getItem("torito_cart_v2")||"{}")}catch(e){return {}}}
   function save(){localStorage.setItem("torito_cart_v2",JSON.stringify(cart))}
+  function loadCuts(){try{return JSON.parse(localStorage.getItem("torito_cuts_v2")||"{}")}catch(e){return {}}}
+  function saveCuts(){localStorage.setItem("torito_cuts_v2",JSON.stringify(cutSel))}
   function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
   var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"},pieza:{step:1,min:1,def:1,each:"/ libra aprox"}};
   function unitWord(t,q){var w={libra:["libra","libras"],paquete:["paquete","paquetes"],pieza:["pieza","piezas"]}[t]||["",""];return q===1?w[0]:w[1]}
@@ -213,7 +220,8 @@
       catEl.appendChild(sec);
       var grid=sec.querySelector(".grid");
       items.forEach(function(p){
-        draft[p.id]=UNIT[p.type].def;
+        draft[p.id]=UNIT[p.type].def; if(p.cuts&&p.cuts.length&&!cutSel[p.id])cutSel[p.id]=p.cuts[0];
+        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos?</label><select data-cut>'+p.cuts.map(function(c){return '<option'+(cutSel[p.id]===c?" selected":"")+'>'+c+'</option>'}).join("")+'</select></div>':"";
         var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
         var badge=p.type==="pieza"?'<span class="badge">Pieza · según peso</span>':(p.type==="paquete"?'<span class="badge">Paquete</span>':'');
         var sub=p.type==="libra"?"Cortado al peso que pidás":p.type==="paquete"?"Precio por paquete":"Se pesa · precio según pieza";
@@ -221,7 +229,7 @@
           '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
           '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
           '<div class="bd"><div class="nm slab">'+p.name+'</div><div class="sb">'+sub+'</div>'+
-          '<div class="rate">'+money(p.price)+' '+UNIT[p.type].each+'</div>'+
+          '<div class="rate">'+money(p.price)+' '+UNIT[p.type].each+'</div>'+cutHtml+
           '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.type,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
           '<div class="btm"><div class="price slab"><span data-lp>'+money(linePrice(p,draft[p.id]))+'</span>'+
           (p.type==="pieza"?'<span class="est">estimado · según peso</span>':p.type==="libra"?'<span class="est">precio exacto</span>':'<span class="est">precio fijo</span>')+'</div>'+
@@ -231,6 +239,7 @@
     });
     setupNav(); showCat(activeCat||firstCat()); observeReveal();
   }
+  catEl.addEventListener("change",function(e){ if(e.target.matches&&e.target.matches("[data-cut]")){var card=e.target.closest(".prod"); if(card){cutSel[card.dataset.pid]=e.target.value; saveCuts();}} });
   function prodById(id){return PROD.find(function(p){return p.id===id})}
   function linePrice(p,q){ if(p.type==="pieza"){return p.price*(p.approx_lb||1)*q} return p.price*q }
 
@@ -263,7 +272,7 @@
   function norm(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()}
 
   // cart
-  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k])}:null}).filter(Boolean)}
+  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k]),cut:(p.cuts&&p.cuts.length)?cutSel[k]:null}:null}).filter(Boolean)}
   function cartCount(){return cartLines().length}
   function cartTotal(){return cartLines().reduce(function(s,l){return s+l.total},0)}
   function hasEst(){return cartLines().some(function(l){return l.p.type==="pieza"})}
@@ -286,7 +295,7 @@
     if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
     var html="";
     lines.forEach(function(l){
-      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+'</div><div class="ci-meta">'+money(l.p.price)+' '+UNIT[l.p.type].each+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+money(l.total)+'</div>'+(l.p.type==="pieza"?'<div class="ci-meta">estimado</div>':'')+'</div></div>';
+      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+money(l.p.price)+' '+UNIT[l.p.type].each+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+money(l.total)+'</div>'+(l.p.type==="pieza"?'<div class="ci-meta">estimado</div>':'')+'</div></div>';
     });
     sBody.innerHTML=html;
     sFoot.innerHTML=(hasEst()?'<div class="estnote">Los productos marcados <b>según peso</b> (piezas enteras) se pesan al momento y el total final se confirma. El resto es precio exacto.</div>':'')+
@@ -372,11 +381,11 @@
     if(!f.name||!f.phone){document.getElementById("f_err").style.display="block";return}
     var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0;
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr.trim(),shipping:envio,note:f.note.trim(),status:"cotizar",paid:false,created_at:Date.now(),source:"web",
-      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.type,price:l.p.price,total:l.total}}),
+      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.type,price:l.p.price,total:l.total,corte:l.cut||null}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
     var s="*Nuevo pedido — Carnicería El Torito*\n\n";
-    lines.forEach(function(l){s+="• "+l.p.name+" — "+unitQty(l.p,l.qty)+" · "+money(l.total)+(l.p.type==="pieza"?" (est.)":"")+"\n"});
+    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+money(l.total)+(l.p.type==="pieza"?" (est.)":"")+"\n"});
     s+="\nProductos: "+money(prod);
     if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
     s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";

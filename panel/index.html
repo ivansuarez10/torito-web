@@ -51,9 +51,9 @@
   .cat{margin-bottom:22px}
   .cat h2{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--gold);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
   .cat .addbtn{background:var(--card2);border:1px solid var(--line);color:var(--cream);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:700;cursor:pointer}
-  .row{display:grid;grid-template-columns:1fr 104px 42px 38px;grid-template-areas:"nm nm nm nm" "pr ty tg del";gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px}
+  .row{display:grid;grid-template-columns:1fr 104px 42px 38px;grid-template-areas:"nm nm nm nm" "pr ty tg del" "cuts cuts cuts cuts";gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px}
   .row.off{opacity:.5}
-  .row .nm{grid-area:nm} .row .pr{grid-area:pr} .row .ty{grid-area:ty} .row .tg{grid-area:tg} .row .del{grid-area:del}
+  .row .nm{grid-area:nm} .row .pr{grid-area:pr} .row .ty{grid-area:ty} .row .tg{grid-area:tg} .row .del{grid-area:del} .row .cuts{grid-area:cuts;font-size:13px}
   .row input,.row select{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--cream);font-size:15px;outline:none;width:100%}
   .row input:focus,.row select:focus{border-color:var(--red)}
   .row .nm{font-weight:600} .row .pr{text-align:right;font-weight:700}
@@ -61,7 +61,7 @@
   .row .tg.on{background:rgba(37,211,102,.15);border-color:var(--ok);color:var(--ok)}
   .row .del{height:42px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer;font-size:15px}
   .row .del:hover{color:#ff8a8a;border-color:#ff8a8a}
-  @media(min-width:560px){.row{grid-template-columns:1fr 104px 130px 42px 38px;grid-template-areas:"nm pr ty tg del"}}
+  @media(min-width:560px){.row{grid-template-columns:1fr 104px 130px 42px 38px;grid-template-areas:"nm pr ty tg del" "cuts cuts cuts cuts cuts"}}
   .loading{text-align:center;color:var(--muted);padding:50px}
 </style>
 </head>
@@ -157,7 +157,8 @@
       '<input class="pr" type="number" inputmode="decimal" value="'+(p.price||0)+'">'+
       '<select class="ty"><option value="libra"'+(p.type==="libra"?" selected":"")+'>Libra</option><option value="paquete"'+(p.type==="paquete"?" selected":"")+'>Paquete</option><option value="pieza"'+(p.type==="pieza"?" selected":"")+'>Pieza entera</option></select>'+
       '<button class="tg'+(p.active!==false?" on":"")+'" title="Mostrar/ocultar">'+(p.active!==false?"✓":"—")+'</button>'+
-      '<button class="del" title="Eliminar">✕</button></div>';
+      '<button class="del" title="Eliminar">✕</button>'+
+      '<input class="cuts" placeholder="Cortes (separados por coma, ej: En bistec, En cubitos)" value="'+((p.cuts||[]).join(", ")).replace(/"/g,"&quot;")+'"></div>';
   }
   function bind(){
     app.addEventListener("input",function(e){ if(e.target.closest(".row")||e.target.dataset.meta) setDirty(true); });
@@ -193,7 +194,8 @@
       var cid=cat.dataset.cat;
       cat.querySelectorAll(".row").forEach(function(r){
         var name=r.querySelector(".nm").value.trim(); if(!name) return;
-        prods.push({id:r.dataset.id,cat:cid,name:name,price:Number(r.querySelector(".pr").value)||0,type:r.querySelector(".ty").value,active:r.querySelector(".tg").classList.contains("on")});
+        var cr=(r.querySelector(".cuts").value||"").trim(); var cuts=cr?cr.split(",").map(function(x){return x.trim()}).filter(Boolean):null;
+        var prod={id:r.dataset.id,cat:cid,name:name,price:Number(r.querySelector(".pr").value)||0,type:r.querySelector(".ty").value,active:r.querySelector(".tg").classList.contains("on")}; if(cuts&&cuts.length)prod.cuts=cuts; prods.push(prod);
       });
     });
     var d={meta:meta,categories:DATA.categories,products:prods};

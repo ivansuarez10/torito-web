@@ -3,77 +3,669 @@
     "updated": "2026-07-20",
     "currency": "L",
     "whatsapp": "50493785051",
-    "shipping": { "base_per_2km": 35, "free_over": null, "city": "Tegucigalpa" },
-    "origin": { "label": "Carnicería El Torito · Mercado San Pablo, El Manchén", "lat": 14.1091381, "lng": -87.1916749, "confirmed": true },
+    "shipping": {
+      "base_per_2km": 35,
+      "free_over": null,
+      "city": "Tegucigalpa"
+    },
+    "origin": {
+      "label": "Carnicería El Torito · Mercado San Pablo, El Manchén",
+      "lat": 14.1091381,
+      "lng": -87.1916749,
+      "confirmed": true
+    },
     "note_weight": "Los cortes por libra se cortan al peso pedido. El precio es exacto."
   },
   "categories": [
-    { "id": "res", "label": "Res", "tagline": "Cortada al peso que pidás" },
-    { "id": "cerdo", "label": "Cerdo", "tagline": "Fresco del día" },
-    { "id": "pollo", "label": "Pollo", "tagline": "Fresco del día" },
-    { "id": "embutidos", "label": "Embutidos", "tagline": "Chorizo artesanal Torito" },
-    { "id": "visceras", "label": "Vísceras", "tagline": "Fresco del día" },
-    { "id": "extras", "label": "Extras", "tagline": "Complementos" }
+    {
+      "id": "res",
+      "label": "Res",
+      "tagline": "Cortada al peso que pidás"
+    },
+    {
+      "id": "cerdo",
+      "label": "Cerdo",
+      "tagline": "Fresco del día"
+    },
+    {
+      "id": "pollo",
+      "label": "Pollo",
+      "tagline": "Fresco del día"
+    },
+    {
+      "id": "embutidos",
+      "label": "Embutidos",
+      "tagline": "Chorizo artesanal Torito"
+    },
+    {
+      "id": "visceras",
+      "label": "Vísceras",
+      "tagline": "Fresco del día"
+    },
+    {
+      "id": "extras",
+      "label": "Extras",
+      "tagline": "Complementos"
+    }
   ],
   "products": [
-    { "id": "res-costilla", "cat": "res", "name": "Costilla de res", "price": 90, "type": "libra", "img": "costilla-res", "active": true },
-    { "id": "res-molida", "cat": "res", "name": "Molida", "price": 110, "type": "libra", "img": "molida", "active": true },
-    { "id": "res-bistec", "cat": "res", "name": "Bistec", "price": 110, "type": "libra", "img": "slices", "active": true },
-    { "id": "res-asar", "cat": "res", "name": "Asar", "price": 110, "type": "libra", "img": "newyork", "active": true, "needsImage": true },
-    { "id": "res-falda", "cat": "res", "name": "Falda", "price": 110, "type": "libra", "img": "slices", "active": true, "needsImage": true },
-    { "id": "res-estofado", "cat": "res", "name": "Estofado", "price": 110, "type": "libra", "img": "cubos", "active": true },
-    { "id": "res-fajitas", "cat": "res", "name": "Fajitas", "price": 115, "type": "libra", "img": "fajitas", "active": true },
-    { "id": "res-mano-piedra", "cat": "res", "name": "Mano de piedra", "price": 120, "type": "libra", "img": "cubos", "active": true, "needsImage": true },
-    { "id": "res-milanesa", "cat": "res", "name": "Milanesa", "price": 110, "type": "libra", "img": "slices", "active": true },
-    { "id": "res-bolita", "cat": "res", "name": "Bolita", "price": 120, "type": "libra", "img": "cubos", "active": true, "needsImage": true },
-    { "id": "res-cabeza-lomo", "cat": "res", "name": "Cabeza de lomo", "price": 120, "type": "libra", "img": "newyork", "active": true, "needsImage": true },
-    { "id": "res-tajo-negro", "cat": "res", "name": "Tajo negro", "price": 120, "type": "libra", "img": "cubos", "active": true, "needsImage": true },
-    { "id": "res-carne-salada", "cat": "res", "name": "Carne salada", "price": 125, "type": "libra", "img": "slices", "active": true, "needsImage": true },
-    { "id": "res-lomo-limpio", "cat": "res", "name": "Lomo limpio", "price": 150, "type": "libra", "img": "filete", "active": true, "needsImage": true },
-    { "id": "res-newyork", "cat": "res", "name": "New York", "price": 175, "type": "libra", "img": "newyork", "active": true },
-    { "id": "res-entrana", "cat": "res", "name": "Entraña", "price": 185, "type": "libra", "img": "entrana", "active": true },
-    { "id": "res-puyazo", "cat": "res", "name": "Puyazo", "price": 195, "type": "libra", "img": "ribeye", "active": true, "needsImage": true },
-    { "id": "res-ribeye", "cat": "res", "name": "Rib eye", "price": 195, "type": "libra", "img": "ribeye", "active": true },
-    { "id": "res-filete", "cat": "res", "name": "Filete", "price": 210, "type": "libra", "img": "filete", "active": true },
-
-    { "id": "cerdo-lonja", "cat": "cerdo", "name": "Lonja carnuda", "price": 60, "type": "libra", "img": "tocino", "active": true, "needsImage": true },
-    { "id": "cerdo-patas", "cat": "cerdo", "name": "Patas", "price": 45, "type": "libra", "img": "lomo-cerdo", "active": true, "needsImage": true },
-    { "id": "cerdo-tocino", "cat": "cerdo", "name": "Tocino", "price": 120, "type": "libra", "img": "tocino", "active": true },
-    { "id": "cerdo-chuleta", "cat": "cerdo", "name": "Chuleta", "price": 80, "type": "libra", "img": "chuleta-cerdo", "active": true },
-    { "id": "cerdo-lomo", "cat": "cerdo", "name": "Lomo", "price": 85, "type": "libra", "img": "lomo-cerdo", "active": true },
-    { "id": "cerdo-asar", "cat": "cerdo", "name": "Asar", "price": 80, "type": "libra", "img": "lomo-cerdo", "active": true, "needsImage": true },
-    { "id": "cerdo-molida", "cat": "cerdo", "name": "Molida", "price": 80, "type": "libra", "img": "molida", "active": true, "needsImage": true },
-    { "id": "cerdo-costilla", "cat": "cerdo", "name": "Costilla", "price": 80, "type": "libra", "img": "costilla-cerdo", "active": true },
-    { "id": "cerdo-estofado", "cat": "cerdo", "name": "Estofado", "price": 80, "type": "libra", "img": "cubos", "active": true, "needsImage": true },
-    { "id": "cerdo-tajo", "cat": "cerdo", "name": "Tajo", "price": 80, "type": "libra", "img": "cubos", "active": true, "needsImage": true },
-
-    { "id": "pollo-menudo", "cat": "pollo", "name": "Menudo", "price": 25, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
-    { "id": "pollo-patas", "cat": "pollo", "name": "Patas", "price": 25, "type": "libra", "img": "pollo-entero", "active": true, "needsImage": true },
-    { "id": "pollo-entero", "cat": "pollo", "name": "Entero", "price": 40, "type": "pieza", "img": "pollo-entero", "active": true, "approx_lb": 4 },
-    { "id": "pollo-pierna", "cat": "pollo", "name": "Pierna / muslo", "price": 40, "type": "libra", "img": "pollo-entero", "active": true },
-    { "id": "pollo-pieza", "cat": "pollo", "name": "Pollo en pieza", "price": 40, "type": "libra", "img": "pollo-entero", "active": true },
-    { "id": "pollo-mollejas", "cat": "pollo", "name": "Mollejas", "price": 40, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
-    { "id": "pollo-pechuga-ala", "cat": "pollo", "name": "Pechuga / ala", "price": 45, "type": "libra", "img": "pechuga", "active": true },
-    { "id": "pollo-hotdog", "cat": "pollo", "name": "Hot dog de pollo", "price": 66, "type": "paquete", "img": "pechuga", "active": true, "needsImage": true },
-    { "id": "pollo-medallones", "cat": "pollo", "name": "Medallones", "price": 80, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
-    { "id": "pollo-pechuga-sin-hueso", "cat": "pollo", "name": "Pechugas sin hueso", "price": 82, "type": "libra", "img": "pechuga", "active": true },
-    { "id": "pollo-pechuguitas", "cat": "pollo", "name": "Pechuguitas", "price": 98, "type": "libra", "img": "pechuga", "active": true },
-    { "id": "pollo-trocitos", "cat": "pollo", "name": "Trocitos de pollo en caja", "price": 98, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
-    { "id": "pollo-chicken-finger", "cat": "pollo", "name": "Chicken finger", "price": 100, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
-
-    { "id": "emb-indio", "cat": "embutidos", "name": "Chorizo indio", "price": 50, "type": "libra", "img": "chorizo", "active": true, "needsImage": true },
-    { "id": "emb-barbacoa-paq", "cat": "embutidos", "name": "Chorizo barbacoa", "price": 60, "type": "paquete", "img": "chorizo-barbacoa", "active": true },
-    { "id": "emb-parrillero-paq", "cat": "embutidos", "name": "Chorizo parrillero", "price": 60, "type": "paquete", "img": "chorizo-parrillero", "active": true },
-    { "id": "emb-criollo-paq", "cat": "embutidos", "name": "Chorizo criollo", "price": 60, "type": "paquete", "img": "chorizo", "active": true, "needsImage": true },
-
-    { "id": "visc-mondongo", "cat": "visceras", "name": "Mondongo", "price": 38, "type": "libra", "img": "mondongo", "active": true },
-    { "id": "visc-higado", "cat": "visceras", "name": "Hígado", "price": 45, "type": "libra", "img": "higado", "active": true },
-    { "id": "visc-lengua", "cat": "visceras", "name": "Lengua", "price": 82, "type": "libra", "img": "mondongo", "active": true, "needsImage": true },
-
-    { "id": "extra-papas", "cat": "extras", "name": "Papas", "price": 33, "type": "libra", "img": "papas", "active": true, "needsImage": true },
-    { "id": "extra-manteca", "cat": "extras", "name": "Manteca de cerdo", "price": 40, "type": "libra", "img": "papas", "active": true, "needsImage": true },
-    { "id": "extra-papas-tornillo", "cat": "extras", "name": "Papas tornillo", "price": 40, "type": "libra", "img": "papas", "active": true, "needsImage": true },
-    { "id": "extra-papas-sazonadas", "cat": "extras", "name": "Papas sazonadas", "price": 45, "type": "libra", "img": "papas", "active": true, "needsImage": true },
-    { "id": "extra-camaron", "cat": "extras", "name": "Camarón (caja 5 lb)", "price": 625, "type": "paquete", "img": "camaron", "active": true }
+    {
+      "id": "res-costilla",
+      "cat": "res",
+      "name": "Costilla de res",
+      "price": 90,
+      "type": "libra",
+      "img": "costilla-res",
+      "active": true
+    },
+    {
+      "id": "res-molida",
+      "cat": "res",
+      "name": "Molida",
+      "price": 110,
+      "type": "libra",
+      "img": "molida",
+      "active": true
+    },
+    {
+      "id": "res-bistec",
+      "cat": "res",
+      "name": "Bistec",
+      "price": 110,
+      "type": "libra",
+      "img": "slices",
+      "active": true
+    },
+    {
+      "id": "res-asar",
+      "cat": "res",
+      "name": "Asar",
+      "price": 110,
+      "type": "libra",
+      "img": "newyork",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-falda",
+      "cat": "res",
+      "name": "Falda",
+      "price": 110,
+      "type": "libra",
+      "img": "slices",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-estofado",
+      "cat": "res",
+      "name": "Estofado",
+      "price": 110,
+      "type": "libra",
+      "img": "cubos",
+      "active": true
+    },
+    {
+      "id": "res-fajitas",
+      "cat": "res",
+      "name": "Fajitas",
+      "price": 115,
+      "type": "libra",
+      "img": "fajitas",
+      "active": true
+    },
+    {
+      "id": "res-mano-piedra",
+      "cat": "res",
+      "name": "Mano de piedra",
+      "price": 120,
+      "type": "libra",
+      "img": "cubos",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-milanesa",
+      "cat": "res",
+      "name": "Milanesa",
+      "price": 110,
+      "type": "libra",
+      "img": "slices",
+      "active": true
+    },
+    {
+      "id": "res-bolita",
+      "cat": "res",
+      "name": "Bolita",
+      "price": 120,
+      "type": "libra",
+      "img": "cubos",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-cabeza-lomo",
+      "cat": "res",
+      "name": "Cabeza de lomo",
+      "price": 120,
+      "type": "libra",
+      "img": "newyork",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-tajo-negro",
+      "cat": "res",
+      "name": "Tajo negro",
+      "price": 120,
+      "type": "libra",
+      "img": "cubos",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-carne-salada",
+      "cat": "res",
+      "name": "Carne salada",
+      "price": 125,
+      "type": "libra",
+      "img": "slices",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "res-lomo-limpio",
+      "cat": "res",
+      "name": "Lomo limpio",
+      "price": 150,
+      "type": "libra",
+      "img": "filete",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-newyork",
+      "cat": "res",
+      "name": "New York",
+      "price": 175,
+      "type": "libra",
+      "img": "newyork",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-entrana",
+      "cat": "res",
+      "name": "Entraña",
+      "price": 185,
+      "type": "libra",
+      "img": "entrana",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-puyazo",
+      "cat": "res",
+      "name": "Puyazo",
+      "price": 195,
+      "type": "libra",
+      "img": "ribeye",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-ribeye",
+      "cat": "res",
+      "name": "Rib eye",
+      "price": 195,
+      "type": "libra",
+      "img": "ribeye",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "res-filete",
+      "cat": "res",
+      "name": "Filete",
+      "price": 210,
+      "type": "libra",
+      "img": "filete",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "cerdo-lonja",
+      "cat": "cerdo",
+      "name": "Lonja carnuda",
+      "price": 60,
+      "type": "libra",
+      "img": "tocino",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "cerdo-patas",
+      "cat": "cerdo",
+      "name": "Patas",
+      "price": 45,
+      "type": "libra",
+      "img": "lomo-cerdo",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "cerdo-tocino",
+      "cat": "cerdo",
+      "name": "Tocino",
+      "price": 120,
+      "type": "libra",
+      "img": "tocino",
+      "active": true
+    },
+    {
+      "id": "cerdo-chuleta",
+      "cat": "cerdo",
+      "name": "Chuleta",
+      "price": 80,
+      "type": "libra",
+      "img": "chuleta-cerdo",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "cerdo-lomo",
+      "cat": "cerdo",
+      "name": "Lomo",
+      "price": 85,
+      "type": "libra",
+      "img": "lomo-cerdo",
+      "active": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "cerdo-asar",
+      "cat": "cerdo",
+      "name": "Asar",
+      "price": 80,
+      "type": "libra",
+      "img": "lomo-cerdo",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "cerdo-molida",
+      "cat": "cerdo",
+      "name": "Molida",
+      "price": 80,
+      "type": "libra",
+      "img": "molida",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "cerdo-costilla",
+      "cat": "cerdo",
+      "name": "Costilla",
+      "price": 80,
+      "type": "libra",
+      "img": "costilla-cerdo",
+      "active": true
+    },
+    {
+      "id": "cerdo-estofado",
+      "cat": "cerdo",
+      "name": "Estofado",
+      "price": 80,
+      "type": "libra",
+      "img": "cubos",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "cerdo-tajo",
+      "cat": "cerdo",
+      "name": "Tajo",
+      "price": 80,
+      "type": "libra",
+      "img": "cubos",
+      "active": true,
+      "needsImage": true,
+      "cuts": [
+        "En bistec",
+        "En cubitos",
+        "Molido",
+        "En una pieza"
+      ]
+    },
+    {
+      "id": "pollo-menudo",
+      "cat": "pollo",
+      "name": "Menudo",
+      "price": 25,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-patas",
+      "cat": "pollo",
+      "name": "Patas",
+      "price": 25,
+      "type": "libra",
+      "img": "pollo-entero",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-entero",
+      "cat": "pollo",
+      "name": "Entero",
+      "price": 40,
+      "type": "pieza",
+      "img": "pollo-entero",
+      "active": true,
+      "approx_lb": 4
+    },
+    {
+      "id": "pollo-pierna",
+      "cat": "pollo",
+      "name": "Pierna / muslo",
+      "price": 40,
+      "type": "libra",
+      "img": "pollo-entero",
+      "active": true
+    },
+    {
+      "id": "pollo-pieza",
+      "cat": "pollo",
+      "name": "Pollo en pieza",
+      "price": 40,
+      "type": "libra",
+      "img": "pollo-entero",
+      "active": true
+    },
+    {
+      "id": "pollo-mollejas",
+      "cat": "pollo",
+      "name": "Mollejas",
+      "price": 40,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-pechuga-ala",
+      "cat": "pollo",
+      "name": "Pechuga / ala",
+      "price": 45,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true
+    },
+    {
+      "id": "pollo-hotdog",
+      "cat": "pollo",
+      "name": "Hot dog de pollo",
+      "price": 66,
+      "type": "paquete",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-medallones",
+      "cat": "pollo",
+      "name": "Medallones",
+      "price": 80,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-pechuga-sin-hueso",
+      "cat": "pollo",
+      "name": "Pechugas sin hueso",
+      "price": 82,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true
+    },
+    {
+      "id": "pollo-pechuguitas",
+      "cat": "pollo",
+      "name": "Pechuguitas",
+      "price": 98,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true
+    },
+    {
+      "id": "pollo-trocitos",
+      "cat": "pollo",
+      "name": "Trocitos de pollo en caja",
+      "price": 98,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "pollo-chicken-finger",
+      "cat": "pollo",
+      "name": "Chicken finger",
+      "price": 100,
+      "type": "libra",
+      "img": "pechuga",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "emb-indio",
+      "cat": "embutidos",
+      "name": "Chorizo indio",
+      "price": 50,
+      "type": "libra",
+      "img": "chorizo",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "emb-barbacoa-paq",
+      "cat": "embutidos",
+      "name": "Chorizo barbacoa",
+      "price": 60,
+      "type": "paquete",
+      "img": "chorizo-barbacoa",
+      "active": true
+    },
+    {
+      "id": "emb-parrillero-paq",
+      "cat": "embutidos",
+      "name": "Chorizo parrillero",
+      "price": 60,
+      "type": "paquete",
+      "img": "chorizo-parrillero",
+      "active": true
+    },
+    {
+      "id": "emb-criollo-paq",
+      "cat": "embutidos",
+      "name": "Chorizo criollo",
+      "price": 60,
+      "type": "paquete",
+      "img": "chorizo",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "visc-mondongo",
+      "cat": "visceras",
+      "name": "Mondongo",
+      "price": 38,
+      "type": "libra",
+      "img": "mondongo",
+      "active": true
+    },
+    {
+      "id": "visc-higado",
+      "cat": "visceras",
+      "name": "Hígado",
+      "price": 45,
+      "type": "libra",
+      "img": "higado",
+      "active": true
+    },
+    {
+      "id": "visc-lengua",
+      "cat": "visceras",
+      "name": "Lengua",
+      "price": 82,
+      "type": "libra",
+      "img": "mondongo",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "extra-papas",
+      "cat": "extras",
+      "name": "Papas",
+      "price": 33,
+      "type": "libra",
+      "img": "papas",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "extra-manteca",
+      "cat": "extras",
+      "name": "Manteca de cerdo",
+      "price": 40,
+      "type": "libra",
+      "img": "papas",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "extra-papas-tornillo",
+      "cat": "extras",
+      "name": "Papas tornillo",
+      "price": 40,
+      "type": "libra",
+      "img": "papas",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "extra-papas-sazonadas",
+      "cat": "extras",
+      "name": "Papas sazonadas",
+      "price": 45,
+      "type": "libra",
+      "img": "papas",
+      "active": true,
+      "needsImage": true
+    },
+    {
+      "id": "extra-camaron",
+      "cat": "extras",
+      "name": "Camarón (caja 5 lb)",
+      "price": 625,
+      "type": "paquete",
+      "img": "camaron",
+      "active": true
+    }
   ]
 }
