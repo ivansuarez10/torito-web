@@ -4,7 +4,7 @@
     "currency": "L",
     "whatsapp": "50493785051",
     "shipping": { "base_per_2km": 35, "free_over": null, "city": "Tegucigalpa" },
-    "origin": { "label": "Carnicería El Torito · Barrio El Manchén, Mercado San Pablo", "lat": 14.0985, "lng": -87.2075, "confirmed": false },
+    "origin": { "label": "Carnicería El Torito · Mercado San Pablo, El Manchén", "lat": 14.1091381, "lng": -87.1916749, "confirmed": true },
     "note_weight": "Los cortes por libra se cortan al peso pedido. El precio es exacto."
   },
   "categories": [
@@ -61,14 +61,10 @@
     { "id": "pollo-trocitos", "cat": "pollo", "name": "Trocitos de pollo en caja", "price": 98, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
     { "id": "pollo-chicken-finger", "cat": "pollo", "name": "Chicken finger", "price": 100, "type": "libra", "img": "pechuga", "active": true, "needsImage": true },
 
-    { "id": "emb-cervecero", "cat": "embutidos", "name": "Chorizo cervecero", "price": 40, "type": "libra", "img": "chorizo-cervecero", "active": true },
     { "id": "emb-indio", "cat": "embutidos", "name": "Chorizo indio", "price": 50, "type": "libra", "img": "chorizo", "active": true, "needsImage": true },
-    { "id": "emb-suelto", "cat": "embutidos", "name": "Chorizo suelto", "price": 60, "type": "libra", "img": "chorizo", "active": true, "needsImage": true },
-    { "id": "emb-criollo", "cat": "embutidos", "name": "Chorizo criollo", "price": 55, "type": "libra", "img": "chorizo", "active": true, "needsImage": true },
-    { "id": "emb-barbacoa", "cat": "embutidos", "name": "Chorizo barbacoa", "price": 65, "type": "libra", "img": "chorizo-barbacoa", "active": true },
-    { "id": "emb-barbacoa-paq", "cat": "embutidos", "name": "Chorizo barbacoa (paquete)", "price": 60, "type": "paquete", "img": "chorizo-barbacoa", "active": true },
-    { "id": "emb-parrillero-paq", "cat": "embutidos", "name": "Chorizo parrillero (paquete)", "price": 60, "type": "paquete", "img": "chorizo-parrillero", "active": true },
-    { "id": "emb-criollo-paq", "cat": "embutidos", "name": "Chorizo criollo (paquete)", "price": 60, "type": "paquete", "img": "chorizo", "active": true, "needsImage": true },
+    { "id": "emb-barbacoa-paq", "cat": "embutidos", "name": "Chorizo barbacoa", "price": 60, "type": "paquete", "img": "chorizo-barbacoa", "active": true },
+    { "id": "emb-parrillero-paq", "cat": "embutidos", "name": "Chorizo parrillero", "price": 60, "type": "paquete", "img": "chorizo-parrillero", "active": true },
+    { "id": "emb-criollo-paq", "cat": "embutidos", "name": "Chorizo criollo", "price": 60, "type": "paquete", "img": "chorizo", "active": true, "needsImage": true },
 
     { "id": "visc-mondongo", "cat": "visceras", "name": "Mondongo", "price": 38, "type": "libra", "img": "mondongo", "active": true },
     { "id": "visc-higado", "cat": "visceras", "name": "Hígado", "price": 45, "type": "libra", "img": "higado", "active": true },
