@@ -186,7 +186,14 @@
   function unitQty(p,q){return q+" "+unitWord(p.type,q)}
 
   // ---- load catalog ----
-  fetch("catalog.json?_="+Date.now()).then(function(r){return r.json()}).then(function(d){
+  // Lee el catálogo de la nube (editable desde /panel); si no existe, usa el JSON del repo.
+  function loadCatalog(){
+    return fetch(SUPA_URL+"/rest/v1/app_config?select=value&key=eq.store_catalog",{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}})
+      .then(function(r){return r.ok?r.json():[]})
+      .then(function(a){ if(a&&a[0]&&a[0].value&&a[0].value.products) return a[0].value; throw 0; })
+      .catch(function(){ return fetch("catalog.json?_="+Date.now()).then(function(r){return r.json()}); });
+  }
+  loadCatalog().then(function(d){
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_PER_2KM=d.meta.shipping.base_per_2km||35}
