@@ -4,16 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Carnicería El Torito · Tienda en línea</title>
-<meta name="description" content="Carne fresca cortada al peso que pedís, entregada en tu puerta. Armá tu pedido en línea — Res, Cerdo, Pollo, Embutidos y más. Desde 1970." />
+<meta name="description" content="Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. Armá tu pedido en línea. Desde 1970." />
 <meta name="theme-color" content="#141210" />
 <link rel="icon" href="img/logo.png" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   @font-face{font-family:'Slab';src:url('img/slab.woff2') format('woff2');font-weight:400 900;font-display:swap}
   :root{
     --bg:#141210; --bg2:#1c1915; --card:#221e19; --card2:#2a2620;
     --cream:#F4EEE3; --muted:#a99f8f; --line:#332e27;
-    --red:#E4232A; --red-d:#c11c22; --wa:#25D366; --wa-d:#1da851;
-    --gold:#E8B04B;
+    --red:#E4232A; --red-d:#c11c22; --wa:#25D366; --wa-d:#1da851; --gold:#E8B04B;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{scroll-behavior:smooth}
@@ -22,511 +22,378 @@
   .slab{font-family:'Slab',Georgia,serif;font-weight:900;letter-spacing:.01em}
   .wrap{max-width:680px;margin:0 auto;position:relative;min-height:100vh}
   img{max-width:100%}
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 
-  /* ===== Top bar ===== */
+  /* Top bar */
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));
-    background:rgba(20,18,16,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    border-bottom:1px solid var(--line)}
+    background:rgba(20,18,16,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
   .topbar .brand{display:flex;align-items:center;gap:9px}
   .topbar .brand img{height:30px;filter:brightness(0) invert(1)}
   .topbar .brand span{font-size:15px;letter-spacing:.14em;font-weight:700}
-  .cartbtn{display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;
-    font-weight:700;font-size:14px;padding:9px 14px;border-radius:100px;cursor:pointer;transition:background .2s}
-  .cartbtn:hover{background:var(--red-d)}
-  .cartbtn svg{width:17px;height:17px;fill:#fff}
-  .cartbtn .count{background:#fff;color:var(--red);min-width:20px;height:20px;border-radius:100px;
-    font-size:12px;font-weight:800;display:inline-grid;place-items:center;padding:0 5px}
+  .cartbtn{display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;font-weight:700;font-size:14px;padding:9px 14px;border-radius:100px;cursor:pointer;transition:background .2s}
+  .cartbtn:hover{background:var(--red-d)} .cartbtn svg{width:17px;height:17px;fill:#fff}
+  .cartbtn .count{background:#fff;color:var(--red);min-width:20px;height:20px;border-radius:100px;font-size:12px;font-weight:800;display:inline-grid;place-items:center;padding:0 5px}
 
-  /* ===== Hero ===== */
-  .hero{position:relative;padding:26px 22px 30px;text-align:center;overflow:hidden;
-    background:radial-gradient(120% 90% at 50% 0%,#2a231b 0%,var(--bg) 62%)}
-  .hero .tag{display:inline-block;border:1px solid #4a4034;color:var(--gold);font-size:12px;font-weight:700;
-    letter-spacing:.16em;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:14px}
+  /* Hero */
+  .hero{position:relative;padding:26px 22px 30px;text-align:center;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#2a231b 0%,var(--bg) 62%)}
+  .hero .tag{display:inline-block;border:1px solid #4a4034;color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:14px}
   .hero h1{font-size:clamp(46px,15vw,74px);line-height:.92;text-transform:uppercase}
   .hero h1 .b{color:var(--red)}
-  .hero-img{width:min(340px,86%);margin:14px auto 4px;filter:drop-shadow(0 24px 34px rgba(0,0,0,.55))}
+  .hero-img{width:min(330px,84%);margin:14px auto 4px;filter:drop-shadow(0 24px 34px rgba(0,0,0,.55));border-radius:20px}
   .hero p{color:var(--muted);font-size:15px;max-width:400px;margin:2px auto 20px}
-  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;
-    font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s;
-    box-shadow:0 12px 26px rgba(228,35,42,.32)}
+  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s;box-shadow:0 12px 26px rgba(228,35,42,.32)}
   .hero .cta:hover{background:var(--red-d)}
 
-  /* ===== Steps strip ===== */
+  /* Steps */
   .steps{display:flex;gap:8px;padding:16px;justify-content:center;flex-wrap:wrap}
   .step{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
   .step .n{font-family:'Slab',serif;color:var(--red);font-size:20px}
   .step .t{font-weight:700;font-size:14px;margin-top:2px}
   .step .d{color:var(--muted);font-size:12.5px;margin-top:2px}
 
-  /* ===== Category nav ===== */
-  .nav{position:sticky;top:52px;z-index:30;padding:10px 0;
-    background:rgba(20,18,16,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--line)}
+  /* Search + nav */
+  .searchbar{padding:6px 16px 0}
+  .searchbar .f{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+  .searchbar svg{width:17px;height:17px;fill:var(--muted);flex:none}
+  .searchbar input{border:0;background:transparent;font-size:16px;width:100%;outline:none;color:var(--cream)}
+  .nav{position:sticky;top:52px;z-index:30;padding:10px 0;background:rgba(20,18,16,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
   .nav .scroll{display:flex;gap:8px;overflow-x:auto;padding:0 16px;scrollbar-width:none}
   .nav .scroll::-webkit-scrollbar{display:none}
-  .nav a{flex:none;text-decoration:none;font-size:13.5px;font-weight:700;color:var(--cream);
-    background:var(--card);border:1px solid var(--line);padding:8px 15px;border-radius:100px;white-space:nowrap;
-    cursor:pointer;transition:.2s}
-  .nav a:hover{border-color:#5a4f40}
+  .nav a{flex:none;text-decoration:none;font-size:13.5px;font-weight:700;color:var(--cream);background:var(--card);border:1px solid var(--line);padding:8px 15px;border-radius:100px;white-space:nowrap;cursor:pointer;transition:.2s}
   .nav a.active{background:var(--red);color:#fff;border-color:var(--red)}
 
-  /* ===== Category banner ===== */
+  /* Category + cards */
   .cat{padding:26px 16px 6px;scroll-margin-top:108px}
-  .cat-banner{position:relative;display:flex;align-items:center;gap:12px;overflow:hidden;
-    border-radius:22px;padding:20px;min-height:150px;
-    background:linear-gradient(135deg,#241d15,#1a1712)}
-  .cat-banner::before{content:"";position:absolute;right:-30px;top:50%;transform:translateY(-50%);
-    width:230px;height:230px;border-radius:50%;pointer-events:none;
-    background:radial-gradient(circle,rgba(228,35,42,.28),rgba(228,35,42,.05) 60%,transparent 72%)}
-  .cat-banner .txt{position:relative;z-index:1}
-  .cat-banner h2{font-size:clamp(32px,9vw,44px);text-transform:uppercase;line-height:.9}
-  .cat-banner .m{color:var(--muted);font-size:12.5px;font-weight:600;margin-top:6px}
-  .cat-banner .m b{color:var(--gold)}
-  .cat-banner .ph{position:relative;z-index:1;flex:none;width:150px;height:126px;margin-left:auto}
-  .cat-banner .ph img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.5))}
+  .cat h2{font-size:clamp(30px,8vw,42px);text-transform:uppercase;line-height:.9;display:flex;align-items:center;gap:12px}
+  .cat h2::after{content:"";flex:1;height:3px;background:var(--red);border-radius:2px;opacity:.5}
+  .cat .m{color:var(--muted);font-size:12.5px;margin-top:6px}
+  .grid{padding:12px 16px 0;display:grid;gap:14px}
+  .prod{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+  .prod .ph{position:relative;aspect-ratio:16/10;background:#0f0d0b;overflow:hidden}
+  .prod .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .prod .ph .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:linear-gradient(135deg,#241d15,#1a1712);color:var(--muted)}
+  .prod .ph .fallback img{width:44px;height:auto;filter:brightness(0) invert(1);opacity:.5}
+  .prod .ph .badge{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:100px;background:rgba(20,18,16,.75);backdrop-filter:blur(4px);color:var(--gold);border:1px solid #4a4034}
+  .prod .bd{padding:14px 15px 15px}
+  .prod .nm{font-size:18px;line-height:1.05}
+  .prod .sb{color:var(--muted);font-size:12px;margin-top:3px;min-height:15px}
+  .prod .rate{color:var(--gold);font-weight:700;font-size:12.5px;margin-top:8px}
+  .stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
+  .stepper button{width:40px;height:40px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
+  .stepper button:hover{background:#39332a} .stepper button:active{transform:scale(.94)}
+  .stepper .qty{font-weight:700;font-size:15px} .stepper .qty .u{color:var(--muted);font-size:12px;font-weight:600;margin-left:2px}
+  .btm{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+  .price{font-family:'Slab',serif;font-size:23px;line-height:1}
+  .price .est{display:block;font-family:-apple-system,sans-serif;font-size:10px;color:var(--muted);font-weight:600;margin-top:3px}
+  .add{display:inline-flex;align-items:center;gap:6px;background:var(--cream);color:#17140f;border:none;font-weight:800;font-size:14px;padding:11px 16px;border-radius:11px;cursor:pointer;transition:.15s}
+  .add:hover{background:#fff} .add.added{background:var(--red);color:#fff} .add svg{width:15px;height:15px;fill:currentColor}
 
-  /* ===== Product cards ===== */
-  .grid{padding:12px 16px 0;display:grid;gap:12px}
-  .prod{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
-  .prod .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-  .prod .nm{font-size:19px;line-height:1.05}
-  .prod .sb{color:var(--muted);font-size:12.5px;margin-top:3px}
-  .prod .unitpill{flex:none;font-size:11px;font-weight:700;color:var(--gold);border:1px solid #4a4034;
-    padding:3px 9px;border-radius:100px;white-space:nowrap}
-  .stepper{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;
-    background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:6px}
-  .stepper button{width:42px;height:42px;flex:none;border:none;border-radius:9px;background:var(--card2);
-    color:var(--cream);font-size:22px;cursor:pointer;transition:background .15s;display:grid;place-items:center}
-  .stepper button:hover{background:#39332a}
-  .stepper button:active{transform:scale(.94)}
-  .stepper .qty{font-weight:700;font-size:16px}
-  .stepper .qty .u{color:var(--muted);font-size:13px;font-weight:600;margin-left:3px}
-  .prod .btm{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
-  .prod .price{font-family:'Slab',serif;font-size:26px;line-height:1}
-  .prod .price .est{display:block;font-family:-apple-system,sans-serif;font-size:10.5px;color:var(--muted);
-    font-weight:600;letter-spacing:.02em;margin-top:3px}
-  .add{display:inline-flex;align-items:center;gap:7px;background:var(--cream);color:#17140f;border:none;
-    font-weight:800;font-size:15px;padding:12px 18px;border-radius:12px;cursor:pointer;transition:.15s}
-  .add:hover{background:#fff}
-  .add.added{background:var(--red);color:#fff}
-  .add svg{width:16px;height:16px;fill:currentColor}
-
-  /* ===== Footer ===== */
   footer{padding:34px 22px calc(120px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:13px}
   footer img{height:36px;filter:brightness(0) invert(1);opacity:.85;margin-bottom:12px}
   footer .since{font-weight:700;letter-spacing:.2em;font-size:11px;color:var(--cream);margin-top:6px}
   footer .disc{font-size:11.5px;margin-top:14px;max-width:430px;margin-inline:auto;line-height:1.5}
 
-  /* ===== Floating cart bar ===== */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));
-    z-index:45;width:min(648px,calc(100% - 24px));display:none}
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:45;width:min(648px,calc(100% - 24px));display:none}
   .fab.show{display:block}
-  .fab button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
-    background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px 20px;border-radius:100px;
-    cursor:pointer;box-shadow:0 14px 30px rgba(228,35,42,.4),0 2px 8px rgba(0,0,0,.4);transition:background .2s}
-  .fab button:hover{background:var(--red-d)}
-  .fab .left{display:flex;align-items:center;gap:10px}
-  .fab .badge{background:#fff;color:var(--red);min-width:24px;height:24px;border-radius:100px;font-size:13px;
-    font-weight:800;display:grid;place-items:center;padding:0 6px}
-  .fab .tot{font-family:'Slab',serif}
+  .fab button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px 20px;border-radius:100px;cursor:pointer;box-shadow:0 14px 30px rgba(228,35,42,.4),0 2px 8px rgba(0,0,0,.4)}
+  .fab .left{display:flex;align-items:center;gap:10px} .fab .badge{background:#fff;color:var(--red);min-width:24px;height:24px;border-radius:100px;font-size:13px;font-weight:800;display:grid;place-items:center;padding:0 6px} .fab .tot{font-family:'Slab',serif}
 
-  /* ===== Cart / checkout drawer ===== */
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
   .scrim.open{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:680px;margin:0 auto;
-    background:var(--bg2);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-    max-height:92vh;display:flex;flex-direction:column}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:680px;margin:0 auto;background:var(--bg2);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:94vh;display:flex;flex-direction:column}
   .sheet.open{transform:none}
   .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
-  .sheet .head h3{font-size:21px}
-  .sheet .close{background:var(--card);border:none;color:var(--cream);width:34px;height:34px;border-radius:100px;
-    font-size:18px;cursor:pointer;flex:none}
-  .sheet .body{overflow-y:auto;padding:8px 20px 20px}
-  .sheet .foot{padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);
-    background:var(--bg2)}
-
+  .sheet .head h3{font-size:21px} .sheet .close{background:var(--card);border:none;color:var(--cream);width:34px;height:34px;border-radius:100px;font-size:18px;cursor:pointer;flex:none}
+  .sheet .body{overflow-y:auto;padding:8px 20px 20px} .sheet .foot{padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg2)}
   .citem{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
-  .citem .ci-nm{font-weight:700;font-size:15px}
-  .citem .ci-meta{color:var(--muted);font-size:12.5px;margin-top:2px}
-  .citem .ci-right{margin-left:auto;text-align:right;flex:none}
-  .citem .ci-price{font-family:'Slab',serif;font-size:17px}
-  .mini{display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:var(--card);border:1px solid var(--line);
-    border-radius:9px;padding:3px}
-  .mini button{width:28px;height:28px;border:none;border-radius:6px;background:var(--card2);color:var(--cream);
-    font-size:16px;cursor:pointer}
-  .mini .q{font-size:13px;font-weight:700;min-width:44px;text-align:center}
-  .ci-rm{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;margin-top:6px}
+  .citem img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:none;background:#0f0d0b}
+  .citem .ci-nm{font-weight:700;font-size:15px} .citem .ci-meta{color:var(--muted);font-size:12px;margin-top:1px}
+  .citem .ci-right{margin-left:auto;text-align:right;flex:none} .citem .ci-price{font-family:'Slab',serif;font-size:16px}
+  .mini{display:inline-flex;align-items:center;gap:6px;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .mini button{width:26px;height:26px;border:none;border-radius:6px;background:var(--card2);color:var(--cream);font-size:15px;cursor:pointer} .mini .q{font-size:12.5px;font-weight:700;min-width:46px;text-align:center}
+  .ci-rm{background:none;border:none;color:var(--muted);font-size:11.5px;cursor:pointer;text-decoration:underline;margin-top:5px}
   .cart-empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:15px}
-
-  .sumline{display:flex;justify-content:space-between;align-items:baseline;margin:2px 0}
-  .sumline .lbl{color:var(--muted);font-size:14px}
-  .sumline.total .lbl{color:var(--cream);font-weight:700;font-size:16px}
-  .sumline .val{font-family:'Slab',serif;font-size:18px}
-  .sumline.total .val{font-size:26px}
-  .estnote{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
-    color:var(--muted);font-size:12.5px;margin:12px 0}
-  .estnote b{color:var(--gold)}
-
-  /* form */
-  .field{margin-top:12px}
-  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--cream)}
-  .field input,.field textarea,.field select{width:100%;background:var(--card);border:1px solid var(--line);
-    border-radius:11px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
-  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--red)}
-  .field textarea{resize:vertical;min-height:62px}
-  .seg{display:flex;gap:8px;margin-top:6px}
-  .seg label{flex:1;cursor:pointer}
-  .seg input{position:absolute;opacity:0;pointer-events:none}
-  .seg .opt{display:block;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:11px;
-    padding:12px;font-weight:700;font-size:14px;transition:.15s}
-  .seg input:checked + .opt{background:var(--red);border-color:var(--red);color:#fff}
-
-  .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;
-    border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s}
-  .pay-wa:hover{background:var(--wa-d)}
-  .pay-wa svg{width:20px;height:20px;fill:#fff}
-  .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);
-    color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;
-    cursor:not-allowed;margin-top:10px;opacity:.85}
-  .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
+  .sumline{display:flex;justify-content:space-between;align-items:baseline;margin:4px 0} .sumline .lbl{color:var(--muted);font-size:14px} .sumline.total .lbl{color:var(--cream);font-weight:700;font-size:16px} .sumline .val{font-family:'Slab',serif;font-size:17px} .sumline.total .val{font-size:25px}
+  .estnote{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--muted);font-size:12.5px;margin:12px 0} .estnote b{color:var(--gold)}
+  .field{margin-top:12px} .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .field input,.field textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
+  .field input:focus,.field textarea:focus{border-color:var(--red)} .field textarea{resize:vertical;min-height:58px}
+  .seg{display:flex;gap:8px;margin-top:6px} .seg label{flex:1;cursor:pointer} .seg input{position:absolute;opacity:0;pointer-events:none}
+  .seg .opt{display:block;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;font-weight:700;font-size:14px;transition:.15s} .seg input:checked + .opt{background:var(--red);border-color:var(--red);color:#fff}
+  #map{height:220px;border-radius:12px;margin-top:10px;border:1px solid var(--line)}
+  .shipbox{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;font-size:13.5px}
+  .shipbox b{font-family:'Slab',serif;font-size:16px;color:var(--gold)} .shipbox.err{border-color:var(--red);color:#ff9a9a}
+  .geobtn{width:100%;margin-top:8px;background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s} .pay-wa:hover{background:var(--wa-d)} .pay-wa svg{width:20px;height:20px;fill:#fff}
+  .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
-
-  @media (min-width:560px){ .grid{grid-template-columns:1fr 1fr} .cat-banner .ph{width:170px;height:140px} }
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} .sheet{transition:none}}
+  .loading{text-align:center;color:var(--muted);padding:60px 20px}
+  @media (min-width:560px){ .grid{grid-template-columns:1fr 1fr} }
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <div class="topbar">
     <div class="brand"><img src="img/logo.png" alt="El Torito" /><span>EL TORITO</span></div>
-    <button class="cartbtn" id="openCart">
-      <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg>
-      <span>Carrito</span><span class="count" id="cartCount">0</span>
-    </button>
+    <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount">0</span></button>
   </div>
 
   <header class="hero">
-    <span class="tag">Carnicería · Desde 1970</span>
-    <h1 class="slab">Del toro<br>a tu <span class="b">mesa</span></h1>
-    <picture>
-      <source srcset="img/res.webp" type="image/webp" />
-      <img class="hero-img" src="img/res.png" alt="Corte de res premium" />
-    </picture>
-    <p>Carne fresca cortada al peso que pedís, y entregada en tu puerta. 55 años de oficio, ahora a un clic.</p>
-    <a class="cta" href="#catalogo">Armá tu pedido →</a>
+    <span class="tag reveal">Carnicería · Desde 1970</span>
+    <h1 class="slab reveal">Del toro<br>a tu <span class="b">mesa</span></h1>
+    <img class="hero-img reveal" src="img/products/ribeye.webp" alt="Corte premium El Torito" />
+    <p class="reveal">Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. 55 años de oficio, ahora a un clic.</p>
+    <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
   </header>
 
   <div class="steps">
-    <div class="step"><div class="n slab">1</div><div class="t">Armá tu pedido</div><div class="d">Elegí tus cortes y las libras que querés.</div></div>
-    <div class="step"><div class="n slab">2</div><div class="t">Confirmá</div><div class="d">Por WhatsApp o pago en línea.</div></div>
-    <div class="step"><div class="n slab">3</div><div class="t">Lo cortamos a tu medida</div><div class="d">Pesamos, confirmamos y te lo llevamos.</div></div>
+    <div class="step reveal"><div class="n slab">1</div><div class="t">Armá tu pedido</div><div class="d">Elegí tus cortes y las libras.</div></div>
+    <div class="step reveal"><div class="n slab">2</div><div class="t">Confirmá y pagá</div><div class="d">Por WhatsApp o en línea.</div></div>
+    <div class="step reveal"><div class="n slab">3</div><div class="t">Te lo llevamos</div><div class="d">Cortado a tu medida, a tu puerta.</div></div>
   </div>
 
-  <nav class="nav" id="catalogo">
-    <div class="scroll" id="navscroll"></div>
-  </nav>
-
-  <main id="catalog"></main>
+  <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
+  <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
+  <main id="catalog"><div class="loading">Cargando el catálogo…</div></main>
 
   <footer>
     <img src="img/logo.png" alt="El Torito" />
-    <div>Barrio El Manchén · Mercado San Pablo</div>
+    <div>Barrio El Manchén · Mercado San Pablo · Tegucigalpa</div>
     <div class="since">DESDE 1970</div>
-    <p class="disc">Precios en Lempiras. Los cortes por libra muestran un precio estimado que se ajusta al peso real. Sujetos a disponibilidad. Actualizado: Julio 2026.</p>
+    <p class="disc" id="footDisc">Precios en Lempiras. Los cortes por libra se cortan al peso pedido; el precio es exacto. Las piezas enteras se pesan y el total se confirma. Envío solo en Tegucigalpa.</p>
   </footer>
-
 </div>
 
-<!-- Floating cart bar -->
-<div class="fab" id="fab">
-  <button id="fabBtn">
-    <span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span>
-    <span class="tot" id="fabTotal">L 0</span>
-  </button>
-</div>
-
-<!-- Cart / checkout sheet -->
+<div class="fab" id="fab"><button id="fabBtn"><span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span><span class="tot" id="fabTotal">L 0</span></button></div>
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet">
-  <div class="head">
-    <h3 class="slab" id="sheetTitle">Tu pedido</h3>
-    <button class="close" id="closeSheet" aria-label="Cerrar">✕</button>
-  </div>
-  <div class="body" id="sheetBody"></div>
-  <div class="foot" id="sheetFoot"></div>
-</div>
+<div class="sheet" id="sheet"><div class="head"><h3 class="slab" id="sheetTitle">Tu pedido</h3><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
   "use strict";
-  var WA_PHONE = "50493785051";
-  var SUPA_URL = "https://dnyzokgmjuvbrcxxdatr.supabase.co";
-  var SUPA_KEY = "sb_publishable_jO4pGdkTBporf_cndos9OA_K_8tVn3A";
+  var WA_PHONE="50493785051", SUPA_URL="https://dnyzokgmjuvbrcxxdatr.supabase.co", SUPA_KEY="sb_publishable_jO4pGdkTBporf_cndos9OA_K_8tVn3A";
+  var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.0985,lng:-87.2075}, SHIP_PER_2KM=35;
+  var cart=load(), draft={};
+  function load(){try{return JSON.parse(localStorage.getItem("torito_cart_v2")||"{}")}catch(e){return {}}}
+  function save(){localStorage.setItem("torito_cart_v2",JSON.stringify(cart))}
+  function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
+  var UNIT={libra:{step:.5,min:.5,def:1,lab:"lb",each:"/lb"},paquete:{step:1,min:1,def:1,lab:"paq",each:"/paq"},pieza:{step:1,min:1,def:1,lab:"pieza",each:"/lb aprox"}};
+  function imgpath(p){return "img/products/"+(p.img||"")+".webp"}
+  function unitQty(p,q){return p.type==="libra"?q+" lb":p.type==="paquete"?q+" paq":q+(q>1?" piezas":" pieza")}
 
-  // ---- Catalog ----
-  var CATS = [
-    {id:"res",       label:"Res",       img:"res",       desc:"Cortado al peso que pidas"},
-    {id:"cerdo",     label:"Cerdo",     img:"cerdo",     desc:"Cortado al peso que pidas"},
-    {id:"pollo",     label:"Pollo",     img:"pollo",     desc:"Fresco del día"},
-    {id:"embutidos", label:"Embutidos", img:"embutidos", desc:"Chorizo artesanal Torito"},
-    {id:"visceras",  label:"Vísceras",  img:"visceras",  desc:"Fresco del día"},
-    {id:"extras",    label:"Extras",    img:null,        desc:"Complementos"}
-  ];
-  // unit: lb | paq | caja5
-  var P = [
-    // RES
-    ["res","Costilla de res",90,"lb"],["res","Molida",110,"lb"],["res","Bistec",110,"lb"],["res","Asar",110,"lb"],
-    ["res","Falda",110,"lb"],["res","Estofado",110,"lb"],["res","Fajitas",115,"lb"],["res","Mano de piedra",120,"lb"],
-    ["res","Milanesa",110,"lb"],["res","Bolita",120,"lb"],["res","Cabeza de lomo",120,"lb"],["res","Tajo negro",120,"lb"],
-    ["res","Carne salada",125,"lb"],["res","Lomo limpio",150,"lb"],["res","New York",175,"lb"],["res","Entraña",185,"lb"],
-    ["res","Puyazo",195,"lb"],["res","Rib eye",195,"lb"],["res","Filete",210,"lb"],
-    // CERDO
-    ["cerdo","Lonja carnuda",60,"lb"],["cerdo","Patas",45,"lb"],["cerdo","Tocino",120,"lb"],["cerdo","Chuleta",80,"lb"],
-    ["cerdo","Lomo",85,"lb"],["cerdo","Asar",80,"lb"],["cerdo","Molida",80,"lb"],["cerdo","Costilla",80,"lb"],
-    ["cerdo","Estofado",80,"lb"],["cerdo","Tajo",80,"lb"],
-    // POLLO
-    ["pollo","Menudo",25,"lb"],["pollo","Patas",25,"lb"],["pollo","Entero",40,"lb"],["pollo","Pierna / muslo",40,"lb"],
-    ["pollo","Pollo en pieza",40,"lb"],["pollo","Mollejas",40,"lb"],["pollo","Pechuga / ala",45,"lb"],
-    ["pollo","Hot dog de pollo",66,"paq"],["pollo","Medallones",80,"lb"],["pollo","Pechugas sin hueso",82,"lb"],
-    ["pollo","Pechuguitas",98,"lb"],["pollo","Trocitos de pollo en caja",98,"lb"],["pollo","Chicken finger",100,"lb"],
-    // EMBUTIDOS
-    ["embutidos","Chorizo cervecero",40,"lb"],["embutidos","Chorizo indio",50,"lb"],["embutidos","Chorizo suelto",60,"lb"],
-    ["embutidos","Chorizo criollo",55,"lb"],["embutidos","Chorizo barbacoa",65,"lb"],
-    ["embutidos","Chorizo barbacoa · paquete",60,"paq"],["embutidos","Chorizo parrillero · paquete",60,"paq"],
-    ["embutidos","Chorizo criollo · paquete",60,"paq"],
-    // VISCERAS
-    ["visceras","Mondongo",38,"lb"],["visceras","Hígado",45,"lb"],["visceras","Lengua",82,"lb"],
-    // EXTRAS
-    ["extras","Papas",33,"lb"],["extras","Manteca de cerdo",40,"lb"],["extras","Papas tornillo",40,"lb"],
-    ["extras","Papas sazonadas",45,"lb"],["extras","Camarón",625,"caja5"]
-  ].map(function(r,i){return {id:i,cat:r[0],name:r[1],price:r[2],unit:r[3]};});
+  // ---- load catalog ----
+  fetch("catalog.json?_="+Date.now()).then(function(r){return r.json()}).then(function(d){
+    CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
+    if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
+    if(d.meta&&d.meta.shipping){SHIP_PER_2KM=d.meta.shipping.base_per_2km||35}
+    render(); refreshCart();
+  }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
-  var UNIT = {
-    lb:    {step:.5, min:.5, def:1, label:"lb",   pill:"por libra",  each:"/lb"},
-    paq:   {step:1,  min:1,  def:1, label:"paq",  pill:"paquete",    each:"/paq"},
-    caja5: {step:1,  min:1,  def:1, label:"× 5 lb", pill:"caja 5 lb", each:"/caja"}
-  };
-  function money(n){ return "L " + (Math.round(n*100)/100).toLocaleString("es-HN"); }
-  function qtyLabel(u,q){ return u==="lb" ? (q+" lb") : u==="caja5" ? (q+" × 5 lb") : (q+" paq"); }
-
-  // ---- State ----
-  var draft = {};   // id -> qty currently on the product stepper
-  var cart = load();
-  function load(){ try{return JSON.parse(localStorage.getItem("torito_cart")||"{}");}catch(e){return {};} }
-  function save(){ localStorage.setItem("torito_cart", JSON.stringify(cart)); }
-
-  // ---- Render catalog ----
-  var navEl = document.getElementById("navscroll");
-  var catEl = document.getElementById("catalog");
-  CATS.forEach(function(c){
-    var items = P.filter(function(p){return p.cat===c.id;});
-    if(!items.length) return;
-    var a = document.createElement("a"); a.href="#cat-"+c.id; a.textContent=c.label; a.dataset.nav=c.id;
-    navEl.appendChild(a);
-
-    var sec = document.createElement("section"); sec.className="cat"; sec.id="cat-"+c.id;
-    var minP = Math.min.apply(null, items.map(function(p){return p.price;}));
-    sec.innerHTML =
-      '<div class="cat-banner"><div class="txt"><h2 class="slab">'+c.label+'</h2>'+
-      '<div class="m">'+items.length+' opciones · desde <b>'+money(minP)+'</b></div></div>'+
-      (c.img?'<picture class="ph"><source srcset="img/'+c.img+'.webp" type="image/webp"><img src="img/'+c.img+'.png" loading="lazy" alt="'+c.label+'"></picture>':'')+
-      '</div><div class="grid"></div>';
-    catEl.appendChild(sec);
-    var grid = sec.querySelector(".grid");
-    items.forEach(function(p){
-      draft[p.id] = UNIT[p.unit].def;
-      var card = document.createElement("div"); card.className="prod"; card.dataset.pid=p.id;
-      card.innerHTML =
-        '<div class="top"><div><div class="nm slab">'+p.name+'</div><div class="sb">'+c.desc+'</div></div>'+
-        '<span class="unitpill">'+money(p.price)+' '+UNIT[p.unit].each+'</span></div>'+
-        '<div class="stepper"><button data-dec aria-label="menos">−</button>'+
-        '<span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+UNIT[p.unit].label+'</span></span>'+
-        '<button data-inc aria-label="más">+</button></div>'+
-        '<div class="btm"><div class="price slab"><span data-lineprice>'+money(p.price*draft[p.id])+'</span>'+
-        (p.unit==="lb"?'<span class="est">estimado · se ajusta al peso</span>':'<span class="est">precio fijo</span>')+'</div>'+
-        '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div>';
-      grid.appendChild(card);
+  var navEl=document.getElementById("navscroll"), catEl=document.getElementById("catalog");
+  function render(){
+    navEl.innerHTML=""; catEl.innerHTML="";
+    CATS.forEach(function(c){
+      var items=PROD.filter(function(p){return p.cat===c.id});
+      if(!items.length) return;
+      var a=document.createElement("a"); a.href="#cat-"+c.id; a.textContent=c.label; a.dataset.nav=c.id; navEl.appendChild(a);
+      var sec=document.createElement("section"); sec.className="cat"; sec.id="cat-"+c.id;
+      var minP=Math.min.apply(null,items.map(function(p){return p.price}));
+      sec.innerHTML='<h2 class="slab reveal">'+c.label+'</h2><div class="m reveal">'+items.length+' opciones · desde '+money(minP)+' '+(items[0].type==="paquete"?"":"/lb")+'</div><div class="grid"></div>';
+      catEl.appendChild(sec);
+      var grid=sec.querySelector(".grid");
+      items.forEach(function(p){
+        draft[p.id]=UNIT[p.type].def;
+        var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
+        var badge=p.type==="pieza"?'<span class="badge">Pieza · según peso</span>':(p.type==="paquete"?'<span class="badge">Paquete</span>':'');
+        var sub=p.type==="libra"?"Cortado al peso que pidás":p.type==="paquete"?"Precio por paquete":"Se pesa · precio según pieza";
+        card.innerHTML=
+          '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
+          '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
+          '<div class="bd"><div class="nm slab">'+p.name+'</div><div class="sb">'+sub+'</div>'+
+          '<div class="rate">'+money(p.price)+' '+UNIT[p.type].each+'</div>'+
+          '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+UNIT[p.type].lab+'</span></span><button data-inc>+</button></div>'+
+          '<div class="btm"><div class="price slab"><span data-lp>'+money(linePrice(p,draft[p.id]))+'</span>'+
+          (p.type==="pieza"?'<span class="est">estimado · según peso</span>':p.type==="libra"?'<span class="est">precio exacto</span>':'<span class="est">precio fijo</span>')+'</div>'+
+          '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div></div>';
+        grid.appendChild(card);
+      });
     });
-  });
+    setupNav(); observeReveal();
+  }
+  function prodById(id){return PROD.find(function(p){return p.id===id})}
+  function linePrice(p,q){ if(p.type==="pieza"){return p.price*(p.approx_lb||1)*q} return p.price*q }
 
-  // ---- Product stepper + add ----
-  catEl.addEventListener("click", function(e){
-    var card = e.target.closest(".prod"); if(!card) return;
-    var pid = +card.dataset.pid, p = P[pid], u = UNIT[p.unit];
-    if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min, draft[pid]-u.step));
-    else if(e.target.closest("[data-inc]")) setDraft(card,p,draft[pid]+u.step);
+  catEl.addEventListener("click",function(e){
+    var card=e.target.closest(".prod"); if(!card) return;
+    var p=prodById(card.dataset.pid), u=UNIT[p.type];
+    if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min,draft[p.id]-u.step));
+    else if(e.target.closest("[data-inc]")) setDraft(card,p,draft[p.id]+u.step);
     else if(e.target.closest("[data-add]")){
-      cart[pid] = (cart[pid]||0) + draft[pid];
-      save(); refreshCart();
-      var btn = card.querySelector("[data-add]");
-      btn.classList.add("added"); btn.innerHTML = "✓ Agregado";
-      setTimeout(function(){ btn.classList.remove("added");
-        btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'; }, 1100);
+      cart[p.id]=(cart[p.id]||0)+draft[p.id]; save(); refreshCart();
+      var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
+      setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
     }
   });
-  function setDraft(card,p,q){
-    q = Math.round(q*100)/100; draft[p.id]=q;
-    card.querySelector("[data-q]").textContent = q;
-    card.querySelector("[data-lineprice]").textContent = money(p.price*q);
-  }
+  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=money(linePrice(p,q))}
 
-  // ---- Cart totals ----
-  function cartLines(){ return Object.keys(cart).map(function(k){ var p=P[+k]; return {p:p, qty:cart[k], total:p.price*cart[k]}; }); }
-  function cartCount(){ return Object.keys(cart).length; }
-  function cartTotal(){ return cartLines().reduce(function(s,l){return s+l.total;},0); }
+  // search
+  document.getElementById("search").addEventListener("input",function(){
+    var q=norm(this.value.trim());
+    document.querySelectorAll("#catalog .cat").forEach(function(sec){
+      var grid=sec.querySelector(".grid"), any=false;
+      grid.querySelectorAll(".prod").forEach(function(card){
+        var nm=norm(card.querySelector(".nm").textContent); var show=!q||nm.indexOf(q)!==-1;
+        card.style.display=show?"":"none"; if(show)any=true;
+      });
+      sec.style.display=any?"":"none"; grid.style.display=any?"":"none";
+    });
+  });
+  function norm(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()}
+
+  // cart
+  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k])}:null}).filter(Boolean)}
+  function cartCount(){return cartLines().length}
+  function cartTotal(){return cartLines().reduce(function(s,l){return s+l.total},0)}
+  function hasEst(){return cartLines().some(function(l){return l.p.type==="pieza"})}
   function refreshCart(){
-    var n = cartCount(), t = cartTotal();
-    document.getElementById("cartCount").textContent = n;
-    document.getElementById("fabCount").textContent = n;
-    document.getElementById("fabTotal").textContent = money(t);
-    document.getElementById("fab").classList.toggle("show", n>0 && !sheetOpen);
+    var n=cartCount(),t=cartTotal();
+    document.getElementById("cartCount").textContent=n; document.getElementById("fabCount").textContent=n;
+    document.getElementById("fabTotal").textContent=money(t);
+    document.getElementById("fab").classList.toggle("show",n>0&&!sheetOpen);
     if(sheetOpen) renderSheet();
   }
 
-  // ---- Sheet ----
-  var scrim=document.getElementById("scrim"), sheet=document.getElementById("sheet"),
-      sBody=document.getElementById("sheetBody"), sFoot=document.getElementById("sheetFoot"),
-      sTitle=document.getElementById("sheetTitle"), sheetOpen=false, view="cart";
-  function openSheet(){ sheetOpen=true; view="cart"; scrim.classList.add("open"); sheet.classList.add("open");
-    document.getElementById("fab").classList.remove("show"); renderSheet(); }
-  function closeSheet(){ sheetOpen=false; scrim.classList.remove("open"); sheet.classList.remove("open"); refreshCart(); }
-  document.getElementById("openCart").onclick=openSheet;
-  document.getElementById("fabBtn").onclick=openSheet;
-  document.getElementById("closeSheet").onclick=closeSheet;
-  scrim.onclick=closeSheet;
+  var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null},map=null,marker=null;
+  function openSheet(){sheetOpen=true;view="cart";scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
+  function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");refreshCart()}
+  document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
+  function renderSheet(){view==="cart"?cartView():checkoutView()}
 
-  function renderSheet(){ view==="cart" ? renderCartView() : renderCheckoutView(); }
-
-  function renderCartView(){
-    sTitle.textContent="Tu pedido";
-    var lines=cartLines();
-    if(!lines.length){ sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>'; sFoot.innerHTML=""; return; }
+  function cartView(){
+    sTitle.textContent="Tu pedido"; var lines=cartLines();
+    if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
     var html="";
     lines.forEach(function(l){
-      html+='<div class="citem" data-pid="'+l.p.id+'"><div><div class="ci-nm">'+l.p.name+'</div>'+
-        '<div class="ci-meta">'+money(l.p.price)+' '+UNIT[l.p.unit].each+'</div>'+
-        '<div class="mini"><button data-cdec>−</button><span class="q">'+qtyLabel(l.p.unit,l.qty)+'</span><button data-cinc>+</button></div>'+
-        '<button class="ci-rm" data-crm>Quitar</button></div>'+
-        '<div class="ci-right"><div class="ci-price slab">'+money(l.total)+'</div></div></div>';
+      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+'</div><div class="ci-meta">'+money(l.p.price)+' '+UNIT[l.p.type].each+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+money(l.total)+'</div>'+(l.p.type==="pieza"?'<div class="ci-meta">estimado</div>':'')+'</div></div>';
     });
     sBody.innerHTML=html;
-    var hasLb = lines.some(function(l){return l.p.unit==="lb";});
-    sFoot.innerHTML=
-      (hasLb?'<div class="estnote">El total es <b>estimado</b>. Los cortes por libra se pesan al momento y el precio final se ajusta al peso real.</div>':'')+
-      '<div class="sumline total"><span class="lbl">Total estimado</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
+    sFoot.innerHTML=(hasEst()?'<div class="estnote">Los productos marcados <b>según peso</b> (piezas enteras) se pesan al momento y el total final se confirma. El resto es precio exacto.</div>':'')+
+      '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
       '<button class="pay-wa" id="toCheckout" style="margin-top:14px">Continuar →</button>';
-    document.getElementById("toCheckout").onclick=function(){ view="checkout"; renderSheet(); sBody.scrollTop=0; };
+    document.getElementById("toCheckout").onclick=function(){view="checkout";renderSheet();sBody.scrollTop=0}
   }
-
-  sBody.addEventListener("click", function(e){
-    var row=e.target.closest(".citem"); if(!row) return;
-    var pid=+row.dataset.pid, p=P[pid], u=UNIT[p.unit];
-    if(e.target.closest("[data-cdec]")) cart[pid]=Math.max(u.min, cart[pid]-u.step);
-    else if(e.target.closest("[data-cinc]")) cart[pid]=cart[pid]+u.step;
-    else if(e.target.closest("[data-crm]")) delete cart[pid];
-    else return;
-    if(cart[pid]) cart[pid]=Math.round(cart[pid]*100)/100;
-    save(); renderCartView(); document.getElementById("cartCount").textContent=cartCount();
-    document.getElementById("fabCount").textContent=cartCount();
+  sBody.addEventListener("click",function(e){
+    var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.type];
+    if(e.target.closest("[data-cdec]"))cart[p.id]=Math.max(u.min,cart[p.id]-u.step);
+    else if(e.target.closest("[data-cinc]"))cart[p.id]=cart[p.id]+u.step;
+    else if(e.target.closest("[data-crm]"))delete cart[p.id]; else return;
+    if(cart[p.id])cart[p.id]=Math.round(cart[p.id]*100)/100; save(); cartView();
+    document.getElementById("cartCount").textContent=cartCount(); document.getElementById("fabCount").textContent=cartCount();
   });
 
-  function renderCheckoutView(){
+  function checkoutView(){
     sTitle.textContent="Datos de entrega";
     sBody.innerHTML=
       '<div class="field"><label>Nombre completo</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
       '<div class="field"><label>Teléfono / WhatsApp</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
       '<div class="field"><label>¿Cómo lo querés recibir?</label><div class="seg">'+
         '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
-        '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label>'+
-      '</div></div>'+
-      '<div class="field" id="addrWrap" style="display:none"><label>Dirección / zona de entrega</label>'+
-        '<input id="f_addr" placeholder="Colonia, calle, referencia"></div>'+
-      '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label>'+
-        '<textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
+        '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
+      '<div id="domiWrap" style="display:none"><div class="field"><label>Marcá tu ubicación (arrastrá el pin)</label><div id="map"></div>'+
+        '<button class="geobtn" id="geoBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
+        '<div class="shipbox" id="shipBox"><span>Movés el pin para calcular el envío</span><b>—</b></div></div>'+
+        '<div class="field"><label>Dirección / referencia</label><input id="f_addr" placeholder="Colonia, calle, referencia"></div></div>'+
+      '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
       '<div class="err" id="f_err">Completá tu nombre y teléfono.</div>';
-    var seg=sBody.querySelectorAll('input[name="deliv"]');
-    seg.forEach(function(r){ r.onchange=function(){ document.getElementById("addrWrap").style.display = (r.value==="domicilio"&&r.checked)?"block":"none"; }; });
-    var hasLb = cartLines().some(function(l){return l.p.unit==="lb";});
+    sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
+    ship.mode="retiro"; renderFoot();
+    document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
+  }
+  function onDeliv(v){
+    var w=document.getElementById("domiWrap"); w.style.display=v==="domicilio"?"block":"none";
+    if(v==="domicilio"){ if(!map) setTimeout(initMap,60); } renderFoot();
+  }
+  function initMap(){
+    if(typeof L==="undefined"){document.getElementById("shipBox").innerHTML='<span>Mapa no disponible, coordinamos el envío por WhatsApp</span>';return}
+    map=L.map("map",{zoomControl:true}).setView([ORIGIN.lat,ORIGIN.lng],13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OSM"}).addTo(map);
+    L.circleMarker([ORIGIN.lat,ORIGIN.lng],{radius:7,color:"#E4232A",fillColor:"#E4232A",fillOpacity:1}).addTo(map).bindTooltip("El Torito");
+    marker=L.marker([ORIGIN.lat,ORIGIN.lng],{draggable:true}).addTo(map);
+    marker.on("dragend",updateShip); map.on("click",function(e){marker.setLatLng(e.latlng);updateShip()});
+    setTimeout(function(){map.invalidateSize()},120); updateShip();
+  }
+  function geolocate(){
+    if(!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var ll=[pos.coords.latitude,pos.coords.longitude];
+      if(map&&marker){marker.setLatLng(ll);map.setView(ll,15);updateShip()}
+    },function(){},{enableHighAccuracy:true,timeout:8000});
+  }
+  function haversine(a,b){var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+  function updateShip(){
+    var ll=marker.getLatLng(); ship.pin={lat:ll.lat,lng:ll.lng};
+    var km=haversine(ORIGIN,{lat:ll.lat,lng:ll.lng}); ship.km=km;
+    var box=document.getElementById("shipBox");
+    if(km>25){ship.ok=false;ship.cost=0;box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';}
+    else{var cost=Math.max(1,Math.ceil(km/2))*SHIP_PER_2KM;ship.ok=true;ship.cost=cost;box.className="shipbox";box.innerHTML='<span>Distancia: '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';}
+    renderFoot();
+  }
+  function renderFoot(){
+    var prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0, total=prod+envio;
+    var canWa=!(ship.mode==="domicilio"&&!ship.ok);
     sFoot.innerHTML=
-      '<div class="sumline total"><span class="lbl">Total estimado</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
-      (hasLb?'<div class="estnote" style="margin-bottom:10px">Se confirma el total exacto al pesar tu pedido.</div>':'')+
-      '<button class="pay-wa" id="btnWa"><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>Enviar pedido por WhatsApp</button>'+
+      '<div class="sumline"><span class="lbl">Productos'+(hasEst()?" (estimado)":"")+'</span><span class="val">'+money(prod)+'</span></div>'+
+      (ship.mode==="domicilio"?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.ok?money(ship.cost):"—")+'</span></div>':'')+
+      '<div class="sumline total"><span class="lbl">Total'+(hasEst()?" estimado":"")+'</span><span class="val slab">'+money(total)+'</span></div>'+
+      (hasEst()?'<div class="estnote" style="margin:8px 0">Se confirma el total exacto al pesar las piezas.</div>':'')+
+      '<button class="pay-wa" id="btnWa" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>Enviar pedido por WhatsApp</button>'+
       '<button class="pay-bac" disabled>Pagar en línea con BAC<small>Próximamente</small></button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:12px auto 0">← Volver al pedido</button>';
-    document.getElementById("backCart").onclick=function(){ view="cart"; renderSheet(); };
-    document.getElementById("btnWa").onclick=submitWhatsApp;
+    document.getElementById("backCart").onclick=function(){view="cart";renderSheet()};
+    var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
   }
 
-  function getForm(){
-    var name=(document.getElementById("f_name")||{}).value||"";
-    var phone=(document.getElementById("f_phone")||{}).value||"";
-    var deliv=(sBody.querySelector('input[name="deliv"]:checked')||{}).value||"retiro";
-    var addr=(document.getElementById("f_addr")||{}).value||"";
-    var note=(document.getElementById("f_note")||{}).value||"";
-    return {name:name.trim(),phone:phone.trim(),deliv:deliv,addr:addr.trim(),note:note.trim()};
-  }
-
-  function buildOrder(f){
-    var lines=cartLines();
-    return {
-      folio: "W"+String(Date.now()).slice(-7),
-      client_name: f.name, phone: f.phone,
-      delivery: f.deliv==="domicilio", zone:"", addr: f.addr, shipping:0,
-      note: f.note, status:"cotizar", paid:false, created_at: Date.now(),
-      source:"web",
-      items: lines.map(function(l){ return {name:l.p.name, cat:l.p.cat, qty:l.qty, unit:l.p.unit, price:l.p.price, total:l.total}; }),
-      hist: [{at:Date.now(), ev:"Pedido creado desde la tienda web"}]
-    };
-  }
-
-  function waText(f, order){
-    var lines=cartLines(), s="*Nuevo pedido — Carnicería El Torito*\n\n";
-    lines.forEach(function(l){
-      var est = l.p.unit==="lb" ? " (est.)" : "";
-      s += "• "+l.p.name+" — "+qtyLabel(l.p.unit,l.qty)+" · "+money(l.total)+est+"\n";
-    });
-    s += "\n*Total estimado: "+money(cartTotal())+"*";
-    if(lines.some(function(l){return l.p.unit==="lb";})) s+="\n_Se ajusta al peso real al cortar._";
-    s += "\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone;
-    s += "\n*Entrega:* "+(f.deliv==="domicilio" ? ("Domicilio — "+(f.addr||"(dirección pendiente)")) : "Retiro en local");
-    if(f.note) s += "\n*Nota:* "+f.note;
-    s += "\n\n_Folio "+order.folio+"_";
-    return s;
-  }
-
+  function getForm(){return{name:(document.getElementById("f_name")||{}).value||"",phone:(document.getElementById("f_phone")||{}).value||"",addr:(document.getElementById("f_addr")||{}).value||"",note:(document.getElementById("f_note")||{}).value||""}}
+  function folio(){return "W"+String(Date.now()).slice(-7)}
   function submitWhatsApp(){
-    var f=getForm();
-    if(!f.name || !f.phone){ document.getElementById("f_err").style.display="block"; return; }
-    var order=buildOrder(f);
-    // fire-and-forget insert into Comandas (works once the edge function is deployed)
-    try{
-      fetch(SUPA_URL+"/functions/v1/submit-order", {
-        method:"POST",
-        headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},
-        body: JSON.stringify(order)
-      }).catch(function(){});
-    }catch(e){}
-    var url="https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(waText(f,order));
-    // clear cart after handing off
-    cart={}; save();
-    window.location.href=url;
+    var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim();
+    if(!f.name||!f.phone){document.getElementById("f_err").style.display="block";return}
+    var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0;
+    var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr.trim(),shipping:envio,note:f.note.trim(),status:"cotizar",paid:false,created_at:Date.now(),source:"web",
+      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.type,price:l.p.price,total:l.total}}),
+      hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
+    try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
+    var s="*Nuevo pedido — Carnicería El Torito*\n\n";
+    lines.forEach(function(l){s+="• "+l.p.name+" — "+unitQty(l.p,l.qty)+" · "+money(l.total)+(l.p.type==="pieza"?" (est.)":"")+"\n"});
+    s+="\nProductos: "+money(prod);
+    if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
+    s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";
+    if(hasEst())s+="\n_Las piezas enteras se pesan y se confirma el total._";
+    s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n*Entrega:* "+(ship.mode==="domicilio"?("Domicilio — "+(f.addr||"(ver ubicación)")+(ship.pin?" · https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng:"")):"Retiro en local");
+    if(f.note)s+="\n*Nota:* "+f.note;
+    s+="\n\n_Folio "+fol+"_";
+    cart={};save();
+    window.location.href="https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s);
   }
 
-  // ---- Nav active state ----
-  var navLinks={}; document.querySelectorAll("[data-nav]").forEach(function(a){navLinks[a.dataset.nav]=a;});
-  new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){
-    Object.keys(navLinks).forEach(function(k){navLinks[k].classList.remove("active");});
-    var id=e.target.id.replace("cat-",""); if(navLinks[id]) navLinks[id].classList.add("active");
-  }});},{rootMargin:"-46% 0px -50% 0px"}).observe;
-  var no=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){
-    Object.keys(navLinks).forEach(function(k){navLinks[k].classList.remove("active");});
-    var id=e.target.id.replace("cat-",""); if(navLinks[id]) navLinks[id].classList.add("active");
-  }});},{rootMargin:"-46% 0px -50% 0px"});
-  document.querySelectorAll(".cat").forEach(function(s){no.observe(s);});
-
-  refreshCart();
+  // nav + reveal
+  function setupNav(){
+    var links={}; document.querySelectorAll("[data-nav]").forEach(function(a){links[a.dataset.nav]=a});
+    var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){Object.keys(links).forEach(function(k){links[k].classList.remove("active")});var id=e.target.id.replace("cat-","");if(links[id])links[id].classList.add("active")}})},{rootMargin:"-46% 0px -50% 0px"});
+    document.querySelectorAll(".cat").forEach(function(s){obs.observe(s)});
+  }
+  function observeReveal(){
+    var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");ro.unobserve(e.target)}})},{rootMargin:"0px 0px -6% 0px"});
+    document.querySelectorAll(".reveal:not(.in)").forEach(function(el){ro.observe(el)});
+    // safety net: never leave on-screen content hidden if the observer is slow
+    function safety(){document.querySelectorAll(".reveal:not(.in)").forEach(function(el){var r=el.getBoundingClientRect();if(r.top<window.innerHeight*1.15&&r.bottom>-60)el.classList.add("in")})}
+    setTimeout(safety,350); window.addEventListener("scroll",safety,{passive:true});
+  }
+  observeReveal();
 })();
 </script>
 </body>
