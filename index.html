@@ -337,8 +337,11 @@
   }
 
   var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null},map=null,marker=null;
-  function openSheet(){sheetOpen=true;view="cart";scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
-  function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");refreshCart()}
+  var _lockY=0;
+  function lockScroll(){_lockY=window.pageYOffset||0;var b=document.body;b.style.position="fixed";b.style.top=(-_lockY)+"px";b.style.left="0";b.style.right="0";b.style.width="100%";}
+  function unlockScroll(){var b=document.body;b.style.position="";b.style.top="";b.style.left="";b.style.right="";b.style.width="";window.scrollTo(0,_lockY);}
+  function openSheet(){sheetOpen=true;view="cart";lockScroll();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
+  function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");unlockScroll();refreshCart()}
   document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
   function renderSheet(){view==="cart"?cartView():checkoutView()}
 
@@ -364,9 +367,19 @@
     document.getElementById("cartCount").textContent=cartCount(); document.getElementById("fabCount").textContent=cartCount();
   });
 
+  function fmtHM(h,m){ var hh=((h%12)||12), ap=h<12?"am":"pm", mm=m===0?"00":"30"; return hh+":"+mm+" "+ap; }
   function pickSlots(){
+    var OPEN=8, CLOSE=18; // horario 8:00–18:00 (último retiro 17:30)
+    var now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
     var out='<option value="Lo antes posible" selected>Lo antes posible</option>';
-    for(var h=8;h<=17;h++){ for(var m=0;m<60;m+=30){ var hh=((h%12)||12), ap=h<12?"am":"pm", mm=m===0?"00":"30"; var t=hh+":"+mm+" "+ap; out+='<option value="'+t+'">'+t+'</option>'; } }
+    // Hoy: solo slots que todavía no pasaron (con ~30 min de anticipación para preparar)
+    var today='';
+    for(var h=OPEN;h<CLOSE;h++){ for(var m=0;m<60;m+=30){ if(h*60+m>=nowMin+30){ var t=fmtHM(h,m); today+='<option value="Hoy · '+t+'">Hoy · '+t+'</option>'; } } }
+    if(today) out+='<optgroup label="Hoy">'+today+'</optgroup>';
+    // Mañana: horario completo (para pre-agendar)
+    var tmw='';
+    for(var h2=OPEN;h2<CLOSE;h2++){ for(var m2=0;m2<60;m2+=30){ var t2=fmtHM(h2,m2); tmw+='<option value="Mañana · '+t2+'">Mañana · '+t2+'</option>'; } }
+    out+='<optgroup label="Mañana">'+tmw+'</optgroup>';
     return out;
   }
   function checkoutView(){
@@ -486,7 +499,7 @@
       s+="*Entrega:* A domicilio — "+(f.addr||"(ver ubicación)");
       if(ship.pin)s+="\n*Ubicación:* https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng;
     } else {
-      s+="*Entrega:* Retiro en local"+(pickTxt?(" — paso a las "+pickTxt):"");
+      s+="*Entrega:* Retiro en local"+(pickTxt?(" — "+pickTxt):"");
     }
     if(f.note)s+="\n*Nota:* "+f.note;
     s+="\n\n_Folio "+fol+"_";
