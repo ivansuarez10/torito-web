@@ -145,8 +145,30 @@
   .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
   .loading{text-align:center;color:var(--muted);padding:60px 20px}
+
+  /* Checkout: campos select, dos columnas, validación */
+  .sheet .foot:empty{display:none;padding:0;border:0}
+  .field select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
+  .field select:focus{border-color:var(--red)}
+  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red)}
+  .co-grid{display:grid;gap:18px}
+  .card-sum{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card-sum h4{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:700}
+  .co-line{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .co-line:last-of-type{border-bottom:0}
+  .co-line .nm{color:var(--cream);line-height:1.3} .co-line .nm small{color:var(--muted);display:block;font-size:11.5px}
+  .co-line .vl{color:var(--gold);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;flex:none;white-space:nowrap}
+
   @media (min-width:520px){ .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))} }
   @media (min-width:768px){
+    /* El carrito deja de ser una tira abajo: pasa a modal centrado */
+    .sheet{top:50%;bottom:auto;left:50%;right:auto;margin:0;width:min(560px,calc(100% - 44px));max-width:560px;
+      border-radius:20px;max-height:88vh;transform:translate(-50%,-47%) scale(.98);opacity:0;
+      transition:transform .28s cubic-bezier(.2,.7,.2,1),opacity .24s,width .28s,max-width .28s}
+    .sheet.open{transform:translate(-50%,-50%) scale(1);opacity:1}
+    .sheet.wide{width:min(940px,calc(100% - 44px));max-width:940px}
+    .co-grid{grid-template-columns:1fr 344px;align-items:start;gap:26px}
+    .co-side{position:sticky;top:0}
     .wrap{max-width:1160px}
     .hero{display:flex;align-items:center;text-align:left;gap:48px;padding:56px 44px 50px;min-height:440px}
     .heroText{flex:1;min-width:0}
@@ -316,7 +338,7 @@
 
   var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null},map=null,marker=null;
   function openSheet(){sheetOpen=true;view="cart";scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
-  function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");refreshCart()}
+  function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");refreshCart()}
   document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
   function renderSheet(){view==="cart"?cartView():checkoutView()}
 
@@ -342,31 +364,46 @@
     document.getElementById("cartCount").textContent=cartCount(); document.getElementById("fabCount").textContent=cartCount();
   });
 
+  function pickSlots(){
+    var out='<option value="Lo antes posible" selected>Lo antes posible</option>';
+    for(var h=8;h<=17;h++){ for(var m=0;m<60;m+=30){ var hh=((h%12)||12), ap=h<12?"am":"pm", mm=m===0?"00":"30"; var t=hh+":"+mm+" "+ap; out+='<option value="'+t+'">'+t+'</option>'; } }
+    return out;
+  }
   function checkoutView(){
-    sTitle.textContent="Datos de entrega";
+    sTitle.textContent="Datos de entrega"; sheet.classList.add("wide");
     sBody.innerHTML=
-      '<div class="field"><label>Nombre completo</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
-      '<div class="field"><label>Teléfono / WhatsApp</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
-      '<div class="field"><label>¿Cómo lo querés recibir?</label><div class="seg">'+
-        '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
-        '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
-      '<div id="domiWrap" style="display:none"><div class="field"><label>Marcá tu ubicación (arrastrá el pin)</label><div id="map"></div>'+
-        '<button class="geobtn" id="geoBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
-        '<div class="shipbox" id="shipBox"><span>Movés el pin para calcular el envío</span><b>—</b></div></div>'+
-        '<div class="field"><label>Dirección / referencia</label><input id="f_addr" placeholder="Colonia, calle, referencia"></div></div>'+
-      '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
-      '<div class="err" id="f_err">Completá tu nombre y teléfono.</div>';
+      '<div class="co-grid">'+
+        '<div class="co-form">'+
+          '<div class="field" id="w_name"><label>Nombre completo *</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
+          '<div class="field" id="w_phone"><label>Teléfono / WhatsApp *</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
+          '<div class="field"><label>¿Cómo lo querés recibir?</label><div class="seg">'+
+            '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
+            '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
+          '<div id="pickWrap"><div class="field" id="w_pick"><label>¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
+          '<div id="domiWrap" style="display:none"><div class="field" id="w_map"><label>Marcá tu ubicación (arrastrá el pin) *</label><div id="map"></div>'+
+            '<button class="geobtn" id="geoBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
+            '<div class="shipbox" id="shipBox"><span>Movés el pin para calcular el envío</span><b>—</b></div></div>'+
+            '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, referencia"></div></div>'+
+          '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
+          '<div class="err" id="f_err">Completá los campos marcados.</div>'+
+        '</div>'+
+        '<div class="co-side"><div id="coSide"></div></div>'+
+      '</div>';
+    sFoot.innerHTML="";
     sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
-    ship.mode="retiro"; renderFoot();
+    sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){var w=el.closest(".field");if(w)w.classList.remove("invalid")})});
+    ship.mode="retiro"; onDeliv("retiro"); renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
   }
   function onDeliv(v){
-    var w=document.getElementById("domiWrap"); w.style.display=v==="domicilio"?"block":"none";
-    if(v==="domicilio"){ if(!map) setTimeout(initMap,60); } renderFoot();
+    var d=document.getElementById("domiWrap"), pk=document.getElementById("pickWrap");
+    if(d) d.style.display=v==="domicilio"?"block":"none";
+    if(pk) pk.style.display=v==="retiro"?"block":"none";
+    if(v==="domicilio"){ if(!map) setTimeout(initMap,60); else setTimeout(function(){map.invalidateSize()},60); } renderSide();
   }
   function initMap(){
     if(typeof L==="undefined"){document.getElementById("shipBox").innerHTML='<span>Mapa no disponible, coordinamos el envío por WhatsApp</span>';return}
-    map=L.map("map",{zoomControl:true}).setView([ORIGIN.lat,ORIGIN.lng],13);
+    map=L.map("map",{zoomControl:true,scrollWheelZoom:false}).setView([ORIGIN.lat,ORIGIN.lng],13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OSM"}).addTo(map);
     L.circleMarker([ORIGIN.lat,ORIGIN.lng],{radius:7,color:"#E4232A",fillColor:"#E4232A",fillOpacity:1}).addTo(map).bindTooltip("El Torito");
     marker=L.marker([ORIGIN.lat,ORIGIN.lng],{draggable:true}).addTo(map);
@@ -387,40 +424,70 @@
     var box=document.getElementById("shipBox");
     if(km>25){ship.ok=false;ship.cost=0;box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';}
     else{var cost=Math.max(1,Math.ceil(km/2))*SHIP_PER_2KM;ship.ok=true;ship.cost=cost;box.className="shipbox";box.innerHTML='<span>Distancia: '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';}
-    renderFoot();
+    var w=document.getElementById("w_map"); if(w)w.classList.remove("invalid");
+    renderSide();
   }
-  function renderFoot(){
-    var prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0, total=prod+envio;
+  function renderSide(){
+    var side=document.getElementById("coSide"); if(!side)return;
+    var lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0, total=prod+envio;
     var canWa=!(ship.mode==="domicilio"&&!ship.ok);
-    sFoot.innerHTML=
-      '<div class="sumline"><span class="lbl">Productos'+(hasEst()?" (estimado)":"")+'</span><span class="val">'+money(prod)+'</span></div>'+
-      (ship.mode==="domicilio"?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.ok?money(ship.cost):"—")+'</span></div>':'')+
-      '<div class="sumline total"><span class="lbl">Total'+(hasEst()?" estimado":"")+'</span><span class="val slab">'+money(total)+'</span></div>'+
-      (hasEst()?'<div class="estnote" style="margin:8px 0">Se confirma el total exacto al pesar las piezas.</div>':'')+
-      '<button class="pay-wa" id="btnWa" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>Enviar pedido por WhatsApp</button>'+
+    var itemsHtml=lines.map(function(l){
+      return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
+    }).join("");
+    side.innerHTML=
+      '<div class="card-sum"><h4>Tu pedido</h4>'+itemsHtml+
+        '<div class="sumline" style="margin-top:10px"><span class="lbl">Productos'+(hasEst()?" (estimado)":"")+'</span><span class="val">'+money(prod)+'</span></div>'+
+        (ship.mode==="domicilio"?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.ok?money(ship.cost):"—")+'</span></div>':'')+
+        '<div class="sumline total"><span class="lbl">Total'+(hasEst()?" estimado":"")+'</span><span class="val slab">'+money(total)+'</span></div>'+
+      '</div>'+
+      (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
+      '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="pay-bac" disabled>Pagar en línea con BAC<small>Próximamente</small></button>'+
-      '<button class="ci-rm" id="backCart" style="display:block;margin:12px auto 0">← Volver al pedido</button>';
-    document.getElementById("backCart").onclick=function(){view="cart";renderSheet()};
+      '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
+    document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
   }
 
-  function getForm(){return{name:(document.getElementById("f_name")||{}).value||"",phone:(document.getElementById("f_phone")||{}).value||"",addr:(document.getElementById("f_addr")||{}).value||"",note:(document.getElementById("f_note")||{}).value||""}}
+  function getForm(){return{name:(document.getElementById("f_name")||{}).value||"",phone:(document.getElementById("f_phone")||{}).value||"",addr:(document.getElementById("f_addr")||{}).value||"",note:(document.getElementById("f_note")||{}).value||"",pick:(document.getElementById("f_pick")||{}).value||""}}
   function folio(){return "W"+String(Date.now()).slice(-7)}
+  function markInvalid(id,msg){var w=document.getElementById(id);if(w)w.classList.add("invalid");var e=document.getElementById("f_err");if(e){e.textContent=msg;e.style.display="block"}}
   function submitWhatsApp(){
-    var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim();
-    if(!f.name||!f.phone){document.getElementById("f_err").style.display="block";return}
+    var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim(); f.addr=f.addr.trim(); f.note=f.note.trim();
+    // ---- Validación de campos obligatorios ----
+    var bad=false;
+    if(!f.name){markInvalid("w_name","Escribí tu nombre.");bad=true}
+    if(!f.phone){markInvalid("w_phone","Escribí tu teléfono / WhatsApp.");bad=true}
+    if(ship.mode==="domicilio"){
+      if(!ship.pin){markInvalid("w_map","Marcá tu ubicación en el mapa para calcular el envío.");bad=true}
+      else if(!ship.ok){markInvalid("w_map","Esa ubicación está fuera de zona (solo Tegucigalpa).");bad=true}
+      if(!f.addr){markInvalid("w_addr","Escribí tu dirección / referencia.");bad=true}
+    }
+    if(bad){var fe=document.getElementById("f_err");if(fe){fe.scrollIntoView({block:"nearest"})}return}
+
     var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0;
-    var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr.trim(),shipping:envio,note:f.note.trim(),status:"cotizar",paid:false,created_at:Date.now(),source:"web",
+    var pickTxt=(ship.mode==="retiro")?(f.pick||"Lo antes posible"):"";
+    var noteFull=(pickTxt?("Retiro: "+pickTxt+(f.note?" · ":"")):"")+f.note;
+    var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
       items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
-    var s="*Nuevo pedido — Carnicería El Torito*\n\n";
+
+    // ---- Mensaje de WhatsApp (tono consulta cálida si hay que pesar/cotizar) ----
+    var consulta=hasWhats();
+    var s="Hola El Torito 👋 ";
+    s+=consulta?"Me gustaría hacer este pedido. Hay cortes que se pesan o cotizan al momento — confírmenme disponibilidad y el total, porfa:\n\n"
+               :"Quiero hacer este pedido:\n\n";
     lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":""))+"\n"});
-    s+="\nProductos: "+money(prod);
+    s+="\nProductos"+(hasEst()?" (estimado)":"")+": "+money(prod);
     if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
     s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";
-    if(hasWhats())s+="\n_Los productos que se pesan o cotizan se confirman en el chat._";
-    s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n*Entrega:* "+(ship.mode==="domicilio"?("Domicilio — "+(f.addr||"(ver ubicación)")+(ship.pin?" · https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng:"")):"Retiro en local");
+    s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n";
+    if(ship.mode==="domicilio"){
+      s+="*Entrega:* A domicilio — "+(f.addr||"(ver ubicación)");
+      if(ship.pin)s+="\n*Ubicación:* https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng;
+    } else {
+      s+="*Entrega:* Retiro en local"+(pickTxt?(" — paso a las "+pickTxt):"");
+    }
     if(f.note)s+="\n*Nota:* "+f.note;
     s+="\n\n_Folio "+fol+"_";
     cart={};save();
