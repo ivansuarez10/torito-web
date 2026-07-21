@@ -26,11 +26,9 @@
   body::after{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='160'%20height='160'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px 160px}
   .hero{border-bottom:1px solid var(--line)}
-  .hero .garnish{position:absolute;pointer-events:none;mix-blend-mode:screen;z-index:0;opacity:.85}
-  .hero .heroText,.hero .hero-img{position:relative;z-index:1}
-  .garnish.g1{width:120px;top:-8px;right:5%;transform:rotate(-16deg)}
-  .garnish.g2{width:66px;bottom:14px;left:5%;transform:rotate(28deg)}
-  @media (min-width:768px){ .garnish.g1{width:190px;top:10px;right:40%} .garnish.g2{width:104px;bottom:34px;left:43%} }
+  .hero .heroText{position:relative;z-index:2}
+  .hero-bg{position:absolute;inset:0;z-index:0;background:#000 url("img/hero.webp") center/cover no-repeat}
+  .hero-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,#000 6%,rgba(0,0,0,.55) 46%,rgba(0,0,0,.12) 78%,rgba(0,0,0,.4) 100%)}
   .cat h2{letter-spacing:-.01em}
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
@@ -48,13 +46,11 @@
   .cartbtn .count{background:#fff;color:var(--red);min-width:20px;height:20px;border-radius:100px;font-size:12px;font-weight:800;display:inline-grid;place-items:center;padding:0 5px}
 
   /* Hero */
-  .hero{position:relative;padding:26px 22px 30px;text-align:center;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#161616 0%,var(--bg) 62%)}
-  .hero .tag{display:inline-block;border:1px solid #333333;color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:14px}
+  .hero{position:relative;overflow:hidden;background:#000;min-height:80vh;display:flex;flex-direction:column;justify-content:flex-end;padding:26px 22px 36px;text-align:left}
   .hero h1{font-size:clamp(46px,15vw,74px);line-height:.92;text-transform:uppercase}
   .hero h1 .b{color:var(--red)}
-  .hero-img{width:min(330px,84%);margin:14px auto 4px;filter:drop-shadow(0 24px 34px rgba(0,0,0,.55));border-radius:20px}
-  .hero p{color:var(--muted);font-size:15px;max-width:400px;margin:2px auto 20px}
-  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s;box-shadow:0 12px 26px rgba(228,35,42,.32)}
+  .hero p{color:#eaeaea;font-size:15.5px;max-width:400px;margin:14px 0 20px;text-shadow:0 1px 14px rgba(0,0,0,.7)}
+  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s;box-shadow:0 12px 26px rgba(228,35,42,.42)}
   .hero .cta:hover{background:var(--red-d)}
 
   /* Steps */
@@ -184,12 +180,12 @@
     .co-grid{grid-template-columns:1fr 344px;align-items:start;gap:26px}
     .co-side{position:sticky;top:0}
     .wrap{max-width:1160px}
-    .hero{display:flex;align-items:center;text-align:left;gap:48px;padding:56px 44px 50px;min-height:440px}
-    .heroText{flex:1;min-width:0}
-    .hero .tag{margin-bottom:16px}
+    .hero{flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:0;padding:64px 44px;min-height:560px}
+    .heroText{max-width:560px}
     .hero h1{font-size:clamp(62px,6.4vw,100px)}
-    .hero p{max-width:480px;font-size:16px;margin:16px 0 24px}
-    .hero-img{width:min(480px,45%);margin:0;flex:none}
+    .hero p{max-width:480px;font-size:17px;margin:18px 0 26px}
+    .hero-bg{background-position:right center}
+    .hero-scrim{background:linear-gradient(to right,#000 0%,rgba(0,0,0,.86) 30%,rgba(0,0,0,.4) 58%,rgba(0,0,0,.08) 100%)}
     .steps{padding:22px 44px} .searchbar{padding:10px 44px 0} .nav .scroll{padding:0 44px}
     .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px} footer{padding-left:44px;padding-right:44px}
     .topbar{padding-left:24px;padding-right:24px}
@@ -205,15 +201,13 @@
   </div>
 
   <header class="hero">
-    <img class="garnish g1" src="img/garnish-rosemary.webp" alt="" aria-hidden="true" />
-    <img class="garnish g2" src="img/garnish-chili.webp" alt="" aria-hidden="true" />
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
     <div class="heroText">
-      <span class="tag reveal">Carnicería · Desde 1970</span>
       <h1 class="slab reveal">De la<br>carnicería<br>a tu <span class="b">mesa</span></h1>
-      <p class="reveal">Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. 55 años de oficio, ahora a un clic.</p>
+      <p class="reveal">Carne fresca entregada en la puerta de tu casa, a un click.</p>
       <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
     </div>
-    <img class="hero-img reveal" src="img/products/ribeye.webp" alt="Corte premium El Torito" />
   </header>
 
   <div class="steps">
