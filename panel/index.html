@@ -154,8 +154,8 @@
   function rowHtml(p){
     return '<div class="row'+(p.active===false?" off":"")+'" data-id="'+p.id+'">'+
       '<input class="nm" value="'+(p.name||"").replace(/"/g,"&quot;")+'" placeholder="Nombre">'+
-      '<input class="pr" type="number" inputmode="decimal" value="'+(p.price||0)+'">'+
-      '<select class="ty"><option value="libra"'+(p.type==="libra"?" selected":"")+'>Libra</option><option value="paquete"'+(p.type==="paquete"?" selected":"")+'>Paquete</option><option value="pieza"'+(p.type==="pieza"?" selected":"")+'>Pieza entera</option></select>'+
+      '<input class="pr" type="number" inputmode="decimal" placeholder="a cotizar" value="'+(p.price==null?"":p.price)+'">'+
+      '<select class="ty"><option value="libra"'+(p.unit==="libra"&&!p.validate?" selected":"")+'>Libra</option><option value="libra-pesa"'+(p.unit==="libra"&&p.validate?" selected":"")+'>Libra · se pesa</option><option value="paquete"'+(p.unit==="paquete"?" selected":"")+'>Paquete</option></select>'+
       '<button class="tg'+(p.active!==false?" on":"")+'" title="Mostrar/ocultar">'+(p.active!==false?"✓":"—")+'</button>'+
       '<button class="del" title="Eliminar">✕</button>'+
       '<input class="cuts" placeholder="Cortes (separados por coma, ej: En bistec, En cubitos)" value="'+((p.cuts||[]).join(", ")).replace(/"/g,"&quot;")+'"></div>';
@@ -195,7 +195,9 @@
       cat.querySelectorAll(".row").forEach(function(r){
         var name=r.querySelector(".nm").value.trim(); if(!name) return;
         var cr=(r.querySelector(".cuts").value||"").trim(); var cuts=cr?cr.split(",").map(function(x){return x.trim()}).filter(Boolean):null;
-        var prod={id:r.dataset.id,cat:cid,name:name,price:Number(r.querySelector(".pr").value)||0,type:r.querySelector(".ty").value,active:r.querySelector(".tg").classList.contains("on")}; if(cuts&&cuts.length)prod.cuts=cuts; prods.push(prod);
+        var tyv=r.querySelector(".ty").value; var pv=(r.querySelector(".pr").value||"").trim(); var price=pv===""?null:(Number(pv)||0);
+        var prod={id:r.dataset.id,cat:cid,name:name,price:price,unit:(tyv==="paquete"?"paquete":"libra"),active:r.querySelector(".tg").classList.contains("on")};
+        if(tyv==="libra-pesa")prod.validate=true; if(price==null)prod.quote=true; if(cuts&&cuts.length)prod.cuts=cuts; prods.push(prod);
       });
     });
     var d={meta:meta,categories:DATA.categories,products:prods};

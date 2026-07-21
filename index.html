@@ -202,10 +202,11 @@
   function loadCuts(){try{return JSON.parse(localStorage.getItem("torito_cuts_v2")||"{}")}catch(e){return {}}}
   function saveCuts(){localStorage.setItem("torito_cuts_v2",JSON.stringify(cutSel))}
   function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
-  var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"},pieza:{step:1,min:1,def:1,each:"/ libra aprox"}};
+  var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"}};
   function unitWord(t,q){var w={libra:["libra","libras"],paquete:["paquete","paquetes"],pieza:["pieza","piezas"]}[t]||["",""];return q===1?w[0]:w[1]}
   function imgpath(p){return "img/products/"+(p.img||"")+".webp"}
-  function unitQty(p,q){return q+" "+unitWord(p.type,q)}
+  function unitQty(p,q){return q+" "+unitWord(p.unit,q)}
+  function priceText(p,q){return p.quote?"A cotizar":money(linePrice(p,q))}
 
   // ---- load catalog ----
   // Lee el catálogo de la nube (editable desde /panel); si no existe, usa el JSON del repo.
@@ -230,46 +231,47 @@
       if(!items.length) return;
       var a=document.createElement("a"); a.href="#"; a.textContent=c.label; a.dataset.nav=c.id; navEl.appendChild(a);
       var sec=document.createElement("section"); sec.className="cat"; sec.id="cat-"+c.id;
-      var minP=Math.min.apply(null,items.map(function(p){return p.price}));
-      sec.innerHTML='<h2 class="slab reveal">'+c.label+'</h2><div class="m reveal">'+items.length+' opciones · desde '+money(minP)+' '+(items[0].type==="paquete"?"":" / libra")+'</div><div class="grid"></div>';
+      var prs=items.map(function(p){return p.price}).filter(function(x){return typeof x==="number"}); var minP=prs.length?Math.min.apply(null,prs):null;
+      sec.innerHTML='<h2 class="slab reveal">'+c.label+'</h2><div class="m reveal">'+items.length+' opciones'+(minP!=null?' · desde '+money(minP)+(items[0].unit==="paquete"?"":" / libra"):"")+'</div><div class="grid"></div>';
       catEl.appendChild(sec);
       var grid=sec.querySelector(".grid");
       items.forEach(function(p){
-        draft[p.id]=UNIT[p.type].def; if(p.cuts&&p.cuts.length&&!cutSel[p.id])cutSel[p.id]=p.cuts[0];
-        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos?</label><select data-cut>'+p.cuts.map(function(c){return '<option'+(cutSel[p.id]===c?" selected":"")+'>'+c+'</option>'}).join("")+'</select></div>':"";
+        draft[p.id]=UNIT[p.unit].def;
+        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><select data-cut><option value="" '+(cutSel[p.id]?"":"selected")+' disabled hidden>\u2014 Eleg\u00ed el corte \u2014</option>'+p.cuts.map(function(c){return '<option'+(cutSel[p.id]===c?" selected":"")+'>'+c+'</option>'}).join("")+'</select></div>':"";
         var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
-        var badge=p.type==="pieza"?'<span class="badge">Pieza · según peso</span>':(p.type==="paquete"?'<span class="badge">Paquete</span>':'');
-        var sub=p.type==="libra"?"Cortado al peso que pidás":p.type==="paquete"?"Precio por paquete":"Se pesa · precio según pieza";
+        var badge=p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':''));
+        var sub=p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás";
         card.innerHTML=
           '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
           '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
           '<div class="bd"><div class="nm slab">'+p.name+'</div><div class="sb">'+sub+'</div>'+
-          '<div class="rate">'+money(p.price)+' '+UNIT[p.type].each+'</div>'+cutHtml+
-          '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.type,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
-          '<div class="btm"><div class="price slab"><span data-lp>'+money(linePrice(p,draft[p.id]))+'</span>'+
-          (p.type==="pieza"?'<span class="est">estimado · según peso</span>':p.type==="libra"?'<span class="est">precio exacto</span>':'<span class="est">precio fijo</span>')+'</div>'+
+          '<div class="rate">'+(p.quote?"A cotizar":money(p.price)+' '+UNIT[p.unit].each)+'</div>'+cutHtml+
+          '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.unit,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
+          '<div class="btm"><div class="price slab"><span data-lp>'+priceText(p,draft[p.id])+'</span>'+
+          (p.quote?'<span class="est">se coordina por WhatsApp</span>':p.validate?'<span class="est">estimado · se confirma</span>':p.unit==="libra"?'<span class="est">precio exacto</span>':'<span class="est">precio fijo</span>')+'</div>'+
           '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div></div>';
         grid.appendChild(card);
       });
     });
     setupNav(); showCat(activeCat||firstCat()); observeReveal();
   }
-  catEl.addEventListener("change",function(e){ if(e.target.matches&&e.target.matches("[data-cut]")){var card=e.target.closest(".prod"); if(card){cutSel[card.dataset.pid]=e.target.value; saveCuts();}} });
+  catEl.addEventListener("change",function(e){ if(e.target.matches&&e.target.matches("[data-cut]")){var card=e.target.closest(".prod"); if(card){cutSel[card.dataset.pid]=e.target.value; saveCuts(); e.target.style.borderColor="";}} });
   function prodById(id){return PROD.find(function(p){return p.id===id})}
-  function linePrice(p,q){ if(p.type==="pieza"){return p.price*(p.approx_lb||1)*q} return p.price*q }
+  function linePrice(p,q){ if(p.quote||p.price==null)return 0; return p.price*q }
 
   catEl.addEventListener("click",function(e){
     var card=e.target.closest(".prod"); if(!card) return;
-    var p=prodById(card.dataset.pid), u=UNIT[p.type];
+    var p=prodById(card.dataset.pid), u=UNIT[p.unit];
     if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min,draft[p.id]-u.step));
     else if(e.target.closest("[data-inc]")) setDraft(card,p,draft[p.id]+u.step);
     else if(e.target.closest("[data-add]")){
+      if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cs=card.querySelector("[data-cut]");if(cs){cs.style.borderColor="var(--red)";try{cs.focus()}catch(_){}}return;}
       cart[p.id]=(cart[p.id]||0)+draft[p.id]; save(); refreshCart();
       var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
       setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
     }
   });
-  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=money(linePrice(p,q));var u=card.querySelector(".qty .u");if(u)u.textContent=unitWord(p.type,q)}
+  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=priceText(p,q);var u=card.querySelector(".qty .u");if(u)u.textContent=unitWord(p.unit,q)}
 
   // search
   document.getElementById("search").addEventListener("input",function(){
@@ -290,7 +292,9 @@
   function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k]),cut:(p.cuts&&p.cuts.length)?cutSel[k]:null}:null}).filter(Boolean)}
   function cartCount(){return cartLines().length}
   function cartTotal(){return cartLines().reduce(function(s,l){return s+l.total},0)}
-  function hasEst(){return cartLines().some(function(l){return l.p.type==="pieza"})}
+  function hasEst(){return cartLines().some(function(l){return l.p.validate})}
+  function hasWhats(){return cartLines().some(function(l){return l.p.validate||l.p.quote})}
+  function hasQuote(){return cartLines().some(function(l){return l.p.quote})}
   function refreshCart(){
     var n=cartCount(),t=cartTotal();
     document.getElementById("cartCount").textContent=n; document.getElementById("fabCount").textContent=n;
@@ -310,16 +314,16 @@
     if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
     var html="";
     lines.forEach(function(l){
-      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+money(l.p.price)+' '+UNIT[l.p.type].each+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+money(l.total)+'</div>'+(l.p.type==="pieza"?'<div class="ci-meta">estimado</div>':'')+'</div></div>';
+      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':''))+'</div></div>';
     });
     sBody.innerHTML=html;
-    sFoot.innerHTML=(hasEst()?'<div class="estnote">Los productos marcados <b>según peso</b> (piezas enteras) se pesan al momento y el total final se confirma. El resto es precio exacto.</div>':'')+
+    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva productos que se <b>pesan o se cotizan</b> al momento, así que se coordina y confirma por <b>WhatsApp</b>. El resto es precio exacto.</div>':'')+
       '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
       '<button class="pay-wa" id="toCheckout" style="margin-top:14px">Continuar →</button>';
     document.getElementById("toCheckout").onclick=function(){view="checkout";renderSheet();sBody.scrollTop=0}
   }
   sBody.addEventListener("click",function(e){
-    var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.type];
+    var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.unit];
     if(e.target.closest("[data-cdec]"))cart[p.id]=Math.max(u.min,cart[p.id]-u.step);
     else if(e.target.closest("[data-cinc]"))cart[p.id]=cart[p.id]+u.step;
     else if(e.target.closest("[data-crm]"))delete cart[p.id]; else return;
@@ -396,15 +400,15 @@
     if(!f.name||!f.phone){document.getElementById("f_err").style.display="block";return}
     var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0;
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr.trim(),shipping:envio,note:f.note.trim(),status:"cotizar",paid:false,created_at:Date.now(),source:"web",
-      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.type,price:l.p.price,total:l.total,corte:l.cut||null}}),
+      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
     var s="*Nuevo pedido — Carnicería El Torito*\n\n";
-    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+money(l.total)+(l.p.type==="pieza"?" (est.)":"")+"\n"});
+    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":""))+"\n"});
     s+="\nProductos: "+money(prod);
     if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
     s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";
-    if(hasEst())s+="\n_Las piezas enteras se pesan y se confirma el total._";
+    if(hasWhats())s+="\n_Los productos que se pesan o cotizan se confirman en el chat._";
     s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n*Entrega:* "+(ship.mode==="domicilio"?("Domicilio — "+(f.addr||"(ver ubicación)")+(ship.pin?" · https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng:"")):"Retiro en local");
     if(f.note)s+="\n*Nota:* "+f.note;
     s+="\n\n_Folio "+fol+"_";
