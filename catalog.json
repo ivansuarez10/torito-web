@@ -19,6 +19,11 @@
       "on": true,
       "title": "🔥 Pedí hoy, cortado a tu medida",
       "sub": "Envío a domicilio en toda Tegucigalpa · o retirá en el local"
+    },
+    "stock": {
+      "max_libra": 20,
+      "max_paquete": 12,
+      "hard_cap": 80
     }
   },
   "categories": [

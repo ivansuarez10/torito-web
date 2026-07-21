@@ -250,6 +250,12 @@
   function imgpath(p){return "img/products/"+(p.img||"")+".webp"}
   function unitQty(p,q){return q+" "+unitWord(p.unit,q)}
   function priceText(p,q){return p.quote?"A cotizar":money(linePrice(p,q))}
+  // Tope de stock: hasta maxNormal se compra normal; arriba pasa a "bajo pedido" (se confirma por WhatsApp);
+  // el stepper nunca supera hardCap para evitar cantidades absurdas.
+  function maxNormal(p){ if(p.max!=null&&p.max!=="") return Number(p.max); var s=CAT&&CAT.meta&&CAT.meta.stock; return p.unit==="paquete"?((s&&s.max_paquete)||12):((s&&s.max_libra)||20); }
+  function hardCap(p){ var s=CAT&&CAT.meta&&CAT.meta.stock; return Math.max((s&&s.hard_cap)||80, maxNormal(p)); }
+  function isBig(p,q){ return q>maxNormal(p)+1e-9; }
+  function estText(p,q){ if(p.quote) return "se coordina por WhatsApp"; if(p.validate) return "estimado · se confirma"; if(isBig(p,q)) return "cantidad grande · se confirma disponibilidad"; return p.unit==="libra"?"precio exacto":"precio fijo"; }
 
   // ---- load catalog ----
   // Lee el catálogo de la nube (editable desde /panel); si no existe, usa el JSON del repo.
@@ -301,7 +307,7 @@
           '<div class="rate">'+(p.quote?"A cotizar":money(p.price)+' '+UNIT[p.unit].each)+'</div>'+cutHtml+
           '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.unit,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
           '<div class="btm"><div class="price slab"><span data-lp>'+priceText(p,draft[p.id])+'</span>'+
-          (p.quote?'<span class="est">se coordina por WhatsApp</span>':p.validate?'<span class="est">estimado · se confirma</span>':p.unit==="libra"?'<span class="est">precio exacto</span>':'<span class="est">precio fijo</span>')+'</div>'+
+          '<span class="est" data-est>'+estText(p,draft[p.id])+'</span></div>'+
           '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div></div>';
         grid.appendChild(card);
       });
@@ -316,15 +322,15 @@
     var card=e.target.closest(".prod"); if(!card) return;
     var p=prodById(card.dataset.pid), u=UNIT[p.unit];
     if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min,draft[p.id]-u.step));
-    else if(e.target.closest("[data-inc]")) setDraft(card,p,draft[p.id]+u.step);
+    else if(e.target.closest("[data-inc]")) setDraft(card,p,Math.min(hardCap(p),draft[p.id]+u.step));
     else if(e.target.closest("[data-add]")){
       if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cs=card.querySelector("[data-cut]");if(cs){cs.style.borderColor="var(--red)";try{cs.focus()}catch(_){}}return;}
-      cart[p.id]=(cart[p.id]||0)+draft[p.id]; save(); refreshCart();
+      cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+draft[p.id]); save(); refreshCart();
       var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
       setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
     }
   });
-  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=priceText(p,q);var u=card.querySelector(".qty .u");if(u)u.textContent=unitWord(p.unit,q)}
+  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=priceText(p,q);var u=card.querySelector(".qty .u");if(u)u.textContent=unitWord(p.unit,q);var es=card.querySelector("[data-est]");if(es)es.textContent=estText(p,q)}
 
   // search
   document.getElementById("search").addEventListener("input",function(){
@@ -342,11 +348,12 @@
   function norm(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()}
 
   // cart
-  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k]),cut:(p.cuts&&p.cuts.length)?cutSel[k]:null}:null}).filter(Boolean)}
+  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k]),cut:(p.cuts&&p.cuts.length)?cutSel[k]:null,big:isBig(p,cart[k])}:null}).filter(Boolean)}
   function cartCount(){return cartLines().length}
   function cartTotal(){return cartLines().reduce(function(s,l){return s+l.total},0)}
   function hasEst(){return cartLines().some(function(l){return l.p.validate})}
-  function hasWhats(){return cartLines().some(function(l){return l.p.validate||l.p.quote})}
+  function hasWhats(){return cartLines().some(function(l){return l.p.validate||l.p.quote||l.big})}
+  function hasBig(){return cartLines().some(function(l){return l.big})}
   function hasQuote(){return cartLines().some(function(l){return l.p.quote})}
   function refreshCart(){
     var n=cartCount(),t=cartTotal();
@@ -370,10 +377,10 @@
     if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
     var html="";
     lines.forEach(function(l){
-      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':''))+'</div></div>';
+      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
     });
     sBody.innerHTML=html;
-    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva productos que se <b>pesan o se cotizan</b> al momento, así que se coordina y confirma por <b>WhatsApp</b>. El resto es precio exacto.</div>':'')+
+    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva productos que se <b>pesan, se cotizan o van en cantidad grande</b>, así que se coordina y confirma por <b>WhatsApp</b>. El resto es precio exacto.</div>':'')+
       '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
       '<button class="pay-wa" id="toCheckout" style="margin-top:14px">Continuar →</button>';
     document.getElementById("toCheckout").onclick=function(){view="checkout";renderSheet();sBody.scrollTop=0}
@@ -381,7 +388,7 @@
   sBody.addEventListener("click",function(e){
     var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.unit];
     if(e.target.closest("[data-cdec]"))cart[p.id]=Math.max(u.min,cart[p.id]-u.step);
-    else if(e.target.closest("[data-cinc]"))cart[p.id]=cart[p.id]+u.step;
+    else if(e.target.closest("[data-cinc]"))cart[p.id]=Math.min(hardCap(p),cart[p.id]+u.step);
     else if(e.target.closest("[data-crm]"))delete cart[p.id]; else return;
     if(cart[p.id])cart[p.id]=Math.round(cart[p.id]*100)/100; save(); cartView();
     document.getElementById("cartCount").textContent=cartCount(); document.getElementById("fabCount").textContent=cartCount();
@@ -465,7 +472,7 @@
     var lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0, total=prod+envio;
     var canWa=!(ship.mode==="domicilio"&&!ship.ok);
     var itemsHtml=lines.map(function(l){
-      return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
+      return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+(l.big?' · a confirmar':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
     }).join("");
     side.innerHTML=
       '<div class="card-sum"><h4>Tu pedido</h4>'+itemsHtml+
@@ -501,16 +508,16 @@
     var pickTxt=(ship.mode==="retiro")?(f.pick||"Lo antes posible"):"";
     var noteFull=(pickTxt?("Retiro: "+pickTxt+(f.note?" · ":"")):"")+f.note;
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
-      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote}}),
+      items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote,over:!!l.big}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
 
     // ---- Mensaje de WhatsApp (tono consulta cálida si hay que pesar/cotizar) ----
     var consulta=hasWhats();
     var s="Hola El Torito 👋 ";
-    s+=consulta?"Me gustaría hacer este pedido. Hay cortes que se pesan o cotizan al momento — confírmenme disponibilidad y el total, porfa:\n\n"
+    s+=consulta?"Me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n"
                :"Quiero hacer este pedido:\n\n";
-    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":""))+"\n"});
+    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":"")+(l.big?" (cantidad grande — confirmar disponibilidad)":""))+"\n"});
     s+="\nProductos"+(hasEst()?" (estimado)":"")+": "+money(prod);
     if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
     s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";
