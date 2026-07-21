@@ -7,7 +7,6 @@
 <meta name="description" content="Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa. Armá tu pedido en línea. Desde 1970." />
 <meta name="theme-color" content="#000000" />
 <link rel="icon" href="img/logo.png" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
@@ -147,7 +146,6 @@
   .field input:focus,.field textarea:focus{border-color:var(--red)} .field textarea{resize:vertical;min-height:58px}
   .seg{display:flex;gap:8px;margin-top:6px} .seg label{flex:1;cursor:pointer} .seg input{position:absolute;opacity:0;pointer-events:none}
   .seg .opt{display:block;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;font-weight:700;font-size:14px;transition:.15s} .seg input:checked + .opt{background:var(--red);border-color:var(--red);color:#fff}
-  #map{height:220px;border-radius:12px;margin-top:10px;border:1px solid var(--line)}
   .shipbox{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;font-size:13.5px}
   .shipbox b{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;color:var(--gold)} .shipbox.err{border-color:var(--red);color:#ff9a9a}
   .geobtn{width:100%;margin-top:8px;background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -233,7 +231,6 @@
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="head"><h3 class="slab" id="sheetTitle">Tu pedido</h3><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
   "use strict";
@@ -363,7 +360,7 @@
     if(sheetOpen) renderSheet();
   }
 
-  var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null},map=null,marker=null;
+  var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null,located:false};
   var _lockY=0;
   function lockScroll(){_lockY=window.pageYOffset||0;var b=document.body;b.style.position="fixed";b.style.top=(-_lockY)+"px";b.style.left="0";b.style.right="0";b.style.width="100%";}
   function unlockScroll(){var b=document.body;b.style.position="";b.style.top="";b.style.left="";b.style.right="";b.style.width="";window.scrollTo(0,_lockY);}
@@ -420,10 +417,10 @@
             '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
             '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
           '<div id="pickWrap"><div class="field" id="w_pick"><label>¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
-          '<div id="domiWrap" style="display:none"><div class="field" id="w_map"><label>Marcá tu ubicación (arrastrá el pin) *</label><div id="map"></div>'+
-            '<button class="geobtn" id="geoBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
-            '<div class="shipbox" id="shipBox"><span>Movés el pin para calcular el envío</span><b>—</b></div></div>'+
-            '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, referencia"></div></div>'+
+          '<div id="domiWrap" style="display:none">'+
+            '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación (calcula el envío)</button>'+
+            '<div class="shipbox" id="shipBox"><span>Tocá el botón para calcular el envío por distancia — o escribí tu dirección y lo coordinamos.</span><b>—</b></div>'+
+            '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
           '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
           '<div class="err" id="f_err">Completá los campos marcados.</div>'+
         '</div>'+
@@ -439,47 +436,47 @@
     var d=document.getElementById("domiWrap"), pk=document.getElementById("pickWrap");
     if(d) d.style.display=v==="domicilio"?"block":"none";
     if(pk) pk.style.display=v==="retiro"?"block":"none";
-    if(v==="domicilio"){ if(!map) setTimeout(initMap,60); else setTimeout(function(){map.invalidateSize()},60); } renderSide();
-  }
-  function initMap(){
-    if(typeof L==="undefined"){document.getElementById("shipBox").innerHTML='<span>Mapa no disponible, coordinamos el envío por WhatsApp</span>';return}
-    map=L.map("map",{zoomControl:true,scrollWheelZoom:false}).setView([ORIGIN.lat,ORIGIN.lng],13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OSM"}).addTo(map);
-    L.circleMarker([ORIGIN.lat,ORIGIN.lng],{radius:7,color:"#E4232A",fillColor:"#E4232A",fillOpacity:1}).addTo(map).bindTooltip("El Torito");
-    marker=L.marker([ORIGIN.lat,ORIGIN.lng],{draggable:true}).addTo(map);
-    marker.on("dragend",updateShip); map.on("click",function(e){marker.setLatLng(e.latlng);updateShip()});
-    setTimeout(function(){map.invalidateSize()},120); updateShip();
-  }
-  function geolocate(){
-    if(!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(function(pos){
-      var ll=[pos.coords.latitude,pos.coords.longitude];
-      if(map&&marker){marker.setLatLng(ll);map.setView(ll,15);updateShip()}
-    },function(){},{enableHighAccuracy:true,timeout:8000});
+    renderSide();
   }
   function haversine(a,b){var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-  function updateShip(){
-    var ll=marker.getLatLng(); ship.pin={lat:ll.lat,lng:ll.lng};
-    var km=haversine(ORIGIN,{lat:ll.lat,lng:ll.lng}); ship.km=km;
+  function geolocate(){
     var box=document.getElementById("shipBox");
-    if(km>25){ship.ok=false;ship.cost=0;box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';}
-    else{var cost=Math.max(1,Math.ceil(km/2))*SHIP_PER_2KM;ship.ok=true;ship.cost=cost;box.className="shipbox";box.innerHTML='<span>Distancia: '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';}
-    var w=document.getElementById("w_map"); if(w)w.classList.remove("invalid");
+    if(!navigator.geolocation){ if(box)box.innerHTML='<span>Tu dispositivo no comparte ubicación. Escribí tu dirección y coordinamos el envío por WhatsApp.</span><b>a convenir</b>'; return; }
+    if(box){box.className="shipbox";box.innerHTML='<span>Obteniendo tu ubicación…</span><b>…</b>';}
+    navigator.geolocation.getCurrentPosition(function(pos){
+      ship.pin={lat:pos.coords.latitude,lng:pos.coords.longitude}; ship.located=true; updateShip();
+    },function(){
+      ship.pin=null; ship.located=false; ship.ok=false;
+      if(box){box.className="shipbox";box.innerHTML='<span>No pudimos obtener tu ubicación. Escribí tu dirección y coordinamos el envío por WhatsApp.</span><b>a convenir</b>';}
+      renderSide();
+    },{enableHighAccuracy:true,timeout:10000});
+  }
+  function updateShip(){
+    if(!ship.pin){ renderSide(); return; }
+    var km=haversine(ORIGIN,ship.pin); ship.km=km;
+    var box=document.getElementById("shipBox");
+    if(km>25){ ship.ok=false;ship.cost=0; if(box){box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';} }
+    else{ var cost=Math.max(1,Math.ceil(km/2))*SHIP_PER_2KM; ship.ok=true;ship.cost=cost; if(box){box.className="shipbox";box.innerHTML='<span>✓ Ubicación captada · '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';} }
+    var w=document.getElementById("w_addr"); if(w)w.classList.remove("invalid");
     renderSide();
   }
   function renderSide(){
     var side=document.getElementById("coSide"); if(!side)return;
-    var lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0, total=prod+envio;
-    var canWa=!(ship.mode==="domicilio"&&!ship.ok);
+    var isDomi=ship.mode==="domicilio";
+    var lines=cartLines(), prod=cartTotal(), envio=(isDomi&&ship.located&&ship.ok)?ship.cost:0, total=prod+envio;
+    var outZone=isDomi&&ship.located&&!ship.ok;         // GPS captado pero fuera de zona → bloquea
+    var shipToConfirm=isDomi&&!ship.located;            // sin GPS → envío a convenir por WhatsApp
+    var canWa=!outZone;
     var itemsHtml=lines.map(function(l){
       return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+(l.big?' · a confirmar':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
     }).join("");
     side.innerHTML=
       '<div class="card-sum"><h4>Tu pedido</h4>'+itemsHtml+
         '<div class="sumline" style="margin-top:10px"><span class="lbl">Productos'+(hasEst()?" (estimado)":"")+'</span><span class="val">'+money(prod)+'</span></div>'+
-        (ship.mode==="domicilio"?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.ok?money(ship.cost):"—")+'</span></div>':'')+
-        '<div class="sumline total"><span class="lbl">Total'+(hasEst()?" estimado":"")+'</span><span class="val slab">'+money(total)+'</span></div>'+
+        (isDomi?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.located&&ship.ok?money(ship.cost):(outZone?"—":"a convenir"))+'</span></div>':'')+
+        '<div class="sumline total"><span class="lbl">Total'+(hasEst()||shipToConfirm?" estimado":"")+'</span><span class="val slab">'+money(total)+(shipToConfirm?' + envío':'')+'</span></div>'+
       '</div>'+
+      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> para calcular el envío al instante, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="pay-bac" disabled>Pagar en línea con BAC<small>Próximamente</small></button>'+
@@ -498,13 +495,13 @@
     if(!f.name){markInvalid("w_name","Escribí tu nombre.");bad=true}
     if(!f.phone){markInvalid("w_phone","Escribí tu teléfono / WhatsApp.");bad=true}
     if(ship.mode==="domicilio"){
-      if(!ship.pin){markInvalid("w_map","Marcá tu ubicación en el mapa para calcular el envío.");bad=true}
-      else if(!ship.ok){markInvalid("w_map","Esa ubicación está fuera de zona (solo Tegucigalpa).");bad=true}
       if(!f.addr){markInvalid("w_addr","Escribí tu dirección / referencia.");bad=true}
+      if(ship.located&&!ship.ok){markInvalid("w_addr","Tu ubicación está fuera de zona (por ahora solo Tegucigalpa).");bad=true}
     }
     if(bad){var fe=document.getElementById("f_err");if(fe){fe.scrollIntoView({block:"nearest"})}return}
 
-    var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.ok)?ship.cost:0;
+    var fol=folio(), lines=cartLines(), prod=cartTotal(), envio=(ship.mode==="domicilio"&&ship.located&&ship.ok)?ship.cost:0;
+    var envioConvenir=(ship.mode==="domicilio"&&!ship.located);
     var pickTxt=(ship.mode==="retiro")?(f.pick||"Lo antes posible"):"";
     var noteFull=(pickTxt?("Retiro: "+pickTxt+(f.note?" · ":"")):"")+f.note;
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
@@ -519,8 +516,9 @@
                :"Quiero hacer este pedido:\n\n";
     lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":"")+(l.big?" (cantidad grande — confirmar disponibilidad)":""))+"\n"});
     s+="\nProductos"+(hasEst()?" (estimado)":"")+": "+money(prod);
-    if(ship.mode==="domicilio"&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
-    s+="\n*Total"+(hasEst()?" estimado":"")+": "+money(prod+envio)+"*";
+    if(ship.mode==="domicilio"&&ship.located&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
+    else if(envioConvenir)s+="\nEnvío: a convenir";
+    s+="\n*Total"+(hasEst()||envioConvenir?" estimado":"")+": "+money(prod+envio)+(envioConvenir?" + envío":"")+"*";
     s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n";
     if(ship.mode==="domicilio"){
       s+="*Entrega:* A domicilio — "+(f.addr||"(ver ubicación)");
