@@ -132,6 +132,13 @@
       metaFld("Ubicación carnicería · latitud","olat",(m.origin&&m.origin.lat)||"","number")+
       metaFld("Ubicación carnicería · longitud","olng",(m.origin&&m.origin.lng)||"","number")+
       '</div>';
+    // banner de promoción
+    var pr=m.promo||{};
+    html+='<div class="meta" style="grid-template-columns:1fr">'+
+      '<label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;cursor:pointer"><input type="checkbox" data-meta="promoOn" style="width:18px;height:18px;accent-color:#E4232A"'+(pr.on?" checked":"")+'> Mostrar banner de promoción en la tienda</label>'+
+      metaFld("Banner · título (ej: 2x1 en chorizo esta semana)","promoT",pr.title||"","text")+
+      metaFld("Banner · subtítulo","promoS",pr.sub||"","text")+
+      '</div>';
     // products by category
     var cats=(DATA.categories||[]).map(function(c){return c.id});
     Object.keys(CAT_LABELS).forEach(function(cid){ if(cats.indexOf(cid)<0)cats.push(cid); });
@@ -188,6 +195,9 @@
       else if(k==="ship"){meta.shipping=meta.shipping||{};meta.shipping.base_per_2km=Number(i.value)||35;}
       else if(k==="olat"){meta.origin=meta.origin||{};meta.origin.lat=Number(i.value);}
       else if(k==="olng"){meta.origin=meta.origin||{};meta.origin.lng=Number(i.value);}
+      else if(k==="promoOn"){meta.promo=meta.promo||{};meta.promo.on=i.checked;}
+      else if(k==="promoT"){meta.promo=meta.promo||{};meta.promo.title=i.value.trim();}
+      else if(k==="promoS"){meta.promo=meta.promo||{};meta.promo.sub=i.value.trim();}
     });
     var prods=[];
     document.querySelectorAll(".cat").forEach(function(cat){

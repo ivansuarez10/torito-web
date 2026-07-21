@@ -14,7 +14,12 @@
       "lng": -87.1916749,
       "confirmed": true
     },
-    "note_weight": "Los cortes por libra se cortan al peso pedido. El precio es exacto."
+    "note_weight": "Los cortes por libra se cortan al peso pedido. El precio es exacto.",
+    "promo": {
+      "on": true,
+      "title": "🔥 Pedí hoy, cortado a tu medida",
+      "sub": "Envío a domicilio en toda Tegucigalpa · o retirá en el local"
+    }
   },
   "categories": [
     {
