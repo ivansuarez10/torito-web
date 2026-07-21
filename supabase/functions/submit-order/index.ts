@@ -43,7 +43,10 @@ Deno.serve(async (req) => {
   if (!name || !phone) return json({ error: "missing_client" }, 400);
   if (items.length === 0 || items.length > 100) return json({ error: "bad_items" }, 400);
 
-  // Normaliza los items (whitelist de campos, nada de columnas arbitrarias)
+  // Normaliza los items (whitelist de campos, nada de columnas arbitrarias).
+  // Se mapea al shape que Comandas espera: corte elegido, weigh (=se pesa),
+  // available:true por defecto (el carnicero lo ajusta; sin esto el mensaje
+  // al cliente filtra por disponibles y saldría vacío).
   const cleanItems = items.slice(0, 100).map((it: any) => ({
     name: String(it?.name ?? "").slice(0, 80),
     cat: String(it?.cat ?? "").slice(0, 24),
@@ -51,6 +54,9 @@ Deno.serve(async (req) => {
     unit: String(it?.unit ?? "").slice(0, 10),
     price: Number(it?.price) || 0,
     total: Number(it?.total) || 0,
+    corte: it?.corte ? String(it.corte).slice(0, 60) : null,
+    weigh: !!it?.validate,
+    available: true,
   }));
 
   const now = Date.now();
@@ -70,7 +76,7 @@ Deno.serve(async (req) => {
     zone: String(payload?.zone ?? "").slice(0, 80),
     addr: String(payload?.addr ?? "").slice(0, 200),
     delivery: !!payload?.delivery,
-    shipping: 0,
+    shipping: Number(payload?.shipping) || 0,
     note: String(payload?.note ?? "").slice(0, 400),
     status: "cotizar", // entra a la columna "Por cotizar" para validar peso
     paid: false,
