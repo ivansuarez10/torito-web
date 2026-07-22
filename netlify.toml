@@ -1,0 +1,13 @@
+# El Torito · tienda web — config de Netlify
+# Sitio estático (sin build): se publica la raíz del repo tal cual.
+# Netlify da preview automático por rama (staging) + producción desde main.
+[build]
+  publish = "."
+  command = ""
+
+# Cabeceras suaves de seguridad (no afectan el funcionamiento)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
