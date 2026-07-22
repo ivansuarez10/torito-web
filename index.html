@@ -302,6 +302,8 @@
   // ---- Hero carrusel (editable desde el panel: meta.carousel) ----
   function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
   function safeLink(u){u=String(u||"").trim();if(!u)return "#catalogo";return /^(#|\/|https:\/\/|mailto:|tel:)/i.test(u)?u:"#catalogo";}
+  // Título del slide: texto seguro con markup simple → *palabra* = rojo, salto de línea = <br>
+  function titleHtml(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<span class="b">$1</span>').replace(/\n/g,"<br>");}
   var heroIdx=0, heroTimer=null, heroSlides=[];
   function heroDefault(){return [{img:"img/hero.webp",title:"De la<br>carnicería<br>a tu <span class=\"b\">mesa</span>",cta_text:"Armá tu pedido →",cta_link:"#catalogo",align:"left",on:true}];}
   function renderHero(){
@@ -313,7 +315,7 @@
       var al=(s.align==="center"||s.align==="right")?s.align:"left";
       var cta=s.cta_text?'<a class="cta" href="'+esc(safeLink(s.cta_link))+'">'+esc(s.cta_text)+'</a>':'';
       var img=esc(s.img).replace(/'/g,"%27");
-      return '<div class="slide align-'+al+'" style="background-image:url(\''+img+'\')"><div class="slide-scrim"></div><div class="heroText"><h1 class="slab">'+(s.title||"")+'</h1>'+cta+'</div></div>';
+      return '<div class="slide align-'+al+'" style="background-image:url(\''+img+'\')"><div class="slide-scrim"></div><div class="heroText"><h1 class="slab">'+titleHtml(s.title)+'</h1>'+cta+'</div></div>';
     }).join("");
     document.getElementById("heroDots").innerHTML=heroSlides.map(function(_,i){return '<button data-i="'+i+'" aria-label="Slide '+(i+1)+'"'+(i===0?' class="on"':'')+'></button>'}).join("");
     document.getElementById("hero").classList.toggle("single",heroSlides.length<2);

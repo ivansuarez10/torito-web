@@ -63,6 +63,26 @@
   .row .tg.on{background:rgba(37,211,102,.15);border-color:var(--ok);color:var(--ok)}
   .row .del{height:42px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer;font-size:15px}
   .row .del:hover{color:#ff8a8a;border-color:#ff8a8a}
+  /* Carrusel manager */
+  .csect{margin-bottom:22px}
+  .csect-h{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;margin:6px 2px 8px;color:#f2f2f2}
+  .chint{font-size:12.5px;color:#8f8f8f;margin:0 2px 12px;line-height:1.45}
+  .cslide{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+  .cslide.off{opacity:.5}
+  .cslide-img{flex:0 0 200px;height:112px;border-radius:9px;background:#0d0d0d center/cover no-repeat;position:relative;overflow:hidden;border:1px solid var(--line)}
+  .cslide-up{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.62);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:7px;cursor:pointer}
+  .cslide-up input{display:none}
+  .cslide-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+  .cslide-body textarea,.cslide-body input,.cslide-body select{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--cream);font-size:14px;font-family:inherit;outline:none;width:100%}
+  .cslide-body textarea{resize:vertical;min-height:46px;font-weight:700}
+  .cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .cbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .cbar select.calign{width:auto;flex:0 0 132px}
+  .cbar button{width:auto;flex:none;cursor:pointer;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--cream);font-size:14px}
+  .cbar .ctg.on{background:rgba(37,211,102,.15);border-color:var(--ok);color:var(--ok)}
+  .cbar .cspacer{flex:1}
+  .cbar .cdel{color:#ff8a8a}
+  @media(max-width:560px){.cslide{flex-direction:column} .cslide-img{flex:none;width:100%;height:150px} .cgrid2{grid-template-columns:1fr}}
   @media(min-width:560px){.row{grid-template-columns:1fr 104px 130px 42px 38px;grid-template-areas:"nm pr ty tg del" "desc desc desc desc desc" "cuts cuts cuts cuts cuts"}}
   .loading{text-align:center;color:var(--muted);padding:50px}
 </style>
@@ -107,11 +127,20 @@
   // ---------- Load ----------
   function boot(){
     app.innerHTML='<div class="loading">Cargando catálogo…</div>';
-    // try Supabase first, then repo catalog.json as seed
-    loadFromCloud().then(function(cloud){
-      if(cloud){ DATA=cloud; renderApp(false); return; }
-      fetch("../catalog.json?_="+Date.now()).then(function(r){return r.json()}).then(function(j){ DATA=j; renderApp(true); })
-        .catch(function(){ app.innerHTML='<div class="loading">No se pudo cargar el catálogo.</div>'; });
+    Promise.all([
+      loadFromCloud(),
+      fetch("../catalog.json?_="+Date.now()).then(function(r){return r.json()}).catch(function(){return {}})
+    ]).then(function(res){
+      var cloud=res[0], j=res[1]||{};
+      if(cloud){
+        // preservar campos que el panel no gestiona (img, etc.) para no romperlos al guardar
+        var jById={}; (j.products||[]).forEach(function(p){jById[p.id]=p;});
+        (cloud.products||[]).forEach(function(cp){ var jp=jById[cp.id]; if(jp){["img","needsImage","approx_lb"].forEach(function(k){if(cp[k]==null&&jp[k]!=null)cp[k]=jp[k];});} });
+        cloud.meta=cloud.meta||{};
+        if(!Array.isArray(cloud.meta.carousel)) cloud.meta.carousel=(j.meta&&j.meta.carousel)||[]; // demo del repo si aún no hay
+        DATA=cloud; renderApp(false);
+      } else if(j&&j.products){ DATA=j; renderApp(true); }
+      else { app.innerHTML='<div class="loading">No se pudo cargar el catálogo.</div>'; }
     });
   }
   function loadFromCloud(){
@@ -134,13 +163,11 @@
       metaFld("Ubicación carnicería · latitud","olat",(m.origin&&m.origin.lat)||"","number")+
       metaFld("Ubicación carnicería · longitud","olng",(m.origin&&m.origin.lng)||"","number")+
       '</div>';
-    // banner de promoción
-    var pr=m.promo||{};
-    html+='<div class="meta" style="grid-template-columns:1fr">'+
-      '<label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;cursor:pointer"><input type="checkbox" data-meta="promoOn" style="width:18px;height:18px;accent-color:#E4232A"'+(pr.on?" checked":"")+'> Mostrar banner de promoción en la tienda</label>'+
-      metaFld("Banner · título (ej: 2x1 en chorizo esta semana)","promoT",pr.title||"","text")+
-      metaFld("Banner · subtítulo","promoS",pr.sub||"","text")+
-      '</div>';
+    // carrusel del inicio
+    var slides=(m.carousel&&m.carousel.length)?m.carousel:[];
+    html+='<div class="csect"><div class="csect-h">Carrusel del inicio <button class="addbtn" id="addSlide">+ Agregar slide</button></div>'+
+      '<div class="chint">Fotos <b>horizontales 1920×1080</b>. En el título rodeá una palabra con *asteriscos* para pintarla de <b>rojo</b>, y usá Enter para salto de línea. La posición mueve el texto sobre la foto.</div>'+
+      '<div id="slides">'+slides.map(slideHtml).join("")+'</div></div>';
     // products by category
     var cats=(DATA.categories||[]).map(function(c){return c.id});
     Object.keys(CAT_LABELS).forEach(function(cid){ if(cats.indexOf(cid)<0)cats.push(cid); });
@@ -154,12 +181,58 @@
     app.innerHTML=html;
     document.getElementById("logout").onclick=logout;
     document.getElementById("saveTop").onclick=doSave;
-    bind();
+    bind(); wireCarousel();
     document.body.insertAdjacentHTML("beforeend",'<div class="savebar" id="savebar"><button id="saveBottom">Guardar cambios</button></div>');
     document.getElementById("saveBottom").onclick=doSave;
     setDirty(false);
   }
   function metaFld(label,key,val,type){return '<div class="fld"><label>'+label+'</label><input data-meta="'+key+'" type="'+(type||"text")+'" value="'+String(val).replace(/"/g,"&quot;")+'"></div>'}
+  function escAttr(s){return String(s==null?"":s).replace(/"/g,"&quot;")}
+  function escTxt(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+  function slideHtml(s){
+    s=s||{}; var on=s.on!==false; var al=s.align||"left";
+    var raw=s.img||""; var bg=(/^https?:\/\//.test(raw)?raw:(raw?("../"+raw):"")).replace(/'/g,"%27"); // preview: rutas del repo van con ../
+    return '<div class="cslide'+(on?"":" off")+'" data-img="'+escAttr(s.img)+'">'+
+      '<div class="cslide-img" style="background-image:url(\''+bg+'\')"><label class="cslide-up"><span class="uptxt">📷 Cambiar foto</span><input type="file" accept="image/*" class="cfile"></label></div>'+
+      '<div class="cslide-body">'+
+        '<textarea class="ctitle" rows="2" placeholder="Título (usá *rojo* y Enter para bajar de línea)">'+escTxt(s.title)+'</textarea>'+
+        '<div class="cgrid2"><input class="ccta" placeholder="Texto del botón (ej: Pedí el tuyo →)" value="'+escAttr(s.cta_text)+'"><input class="clink" placeholder="Link (#catalogo o https://...)" value="'+escAttr(s.cta_link)+'"></div>'+
+        '<div class="cbar">'+
+          '<select class="calign"><option value="left"'+(al==="left"?" selected":"")+'>Texto a la izquierda</option><option value="center"'+(al==="center"?" selected":"")+'>Texto al centro</option><option value="right"'+(al==="right"?" selected":"")+'>Texto a la derecha</option></select>'+
+          '<button class="ctg'+(on?" on":"")+'" type="button">'+(on?"Visible ✓":"Oculto")+'</button>'+
+          '<span class="cspacer"></span>'+
+          '<button class="cmove" data-dir="-1" type="button" title="Subir">↑</button><button class="cmove" data-dir="1" type="button" title="Bajar">↓</button>'+
+          '<button class="cdel" type="button">Eliminar</button>'+
+        '</div>'+
+      '</div></div>';
+  }
+  function wireCarousel(){
+    var add=document.getElementById("addSlide");
+    if(add) add.onclick=function(){ document.getElementById("slides").insertAdjacentHTML("beforeend", slideHtml({align:"left",on:true})); setDirty(true); };
+    var el=document.getElementById("slides"); if(!el) return;
+    el.addEventListener("input",function(e){ if(e.target.closest(".cslide")) setDirty(true); });
+    el.addEventListener("change",function(e){ var f=e.target.closest(".cfile"); if(f&&f.files&&f.files[0]) uploadBanner(f.files[0], f.closest(".cslide")); });
+    el.addEventListener("click",function(e){
+      var card=e.target.closest(".cslide"); if(!card) return;
+      if(e.target.closest(".ctg")){ var b=e.target.closest(".ctg"); var on=b.classList.toggle("on"); b.textContent=on?"Visible ✓":"Oculto"; card.classList.toggle("off",!on); setDirty(true); return; }
+      if(e.target.closest(".cdel")){ if(confirm("¿Eliminar esta slide?")){ card.remove(); setDirty(true); } return; }
+      var mv=e.target.closest(".cmove");
+      if(mv){ var dir=+mv.dataset.dir;
+        if(dir<0&&card.previousElementSibling){ card.parentNode.insertBefore(card, card.previousElementSibling); setDirty(true); }
+        else if(dir>0&&card.nextElementSibling){ card.parentNode.insertBefore(card.nextElementSibling, card); setDirty(true); } }
+    });
+  }
+  function uploadBanner(file, card){
+    if(!card) return; var txt=card.querySelector(".uptxt"); if(txt) txt.textContent="Subiendo…";
+    var ext=(((file.name||"").split(".").pop())||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+    var path="slide-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+"."+ext;
+    supa.storage.from("banners").upload(path, file, {upsert:true, contentType:file.type||"image/jpeg"}).then(function(r){
+      if(txt) txt.textContent="📷 Cambiar foto";
+      if(r.error){ alert("No se pudo subir la foto:\n"+r.error.message+"\n\n(¿Ya creaste el bucket \"banners\" en Supabase? Te paso el paso.)"); return; }
+      var url=supa.storage.from("banners").getPublicUrl(path).data.publicUrl;
+      card.dataset.img=url; card.querySelector(".cslide-img").style.backgroundImage="url('"+url.replace(/'/g,"%27")+"')"; setDirty(true);
+    });
+  }
   function rowHtml(p){
     return '<div class="row'+(p.active===false?" off":"")+'" data-id="'+p.id+'">'+
       '<input class="nm" value="'+(p.name||"").replace(/"/g,"&quot;")+'" placeholder="Nombre">'+
@@ -193,6 +266,12 @@
   // ---------- Save ----------
   function collect(){
     var meta=DATA.meta||{};
+    // carrusel: leer las tarjetas (solo las que tienen foto)
+    meta.carousel=[].map.call(document.querySelectorAll("#slides .cslide"),function(c){
+      return { img:c.dataset.img||"", title:c.querySelector(".ctitle").value, cta_text:(c.querySelector(".ccta").value||"").trim(), cta_link:(c.querySelector(".clink").value||"").trim(), align:c.querySelector(".calign").value, on:c.querySelector(".ctg").classList.contains("on") };
+    }).filter(function(s){return s.img;});
+    if(meta.promo) delete meta.promo; // el banner viejo ya no se usa
+    var origById={}; (DATA.products||[]).forEach(function(p){origById[p.id]=p;});
     document.querySelectorAll("[data-meta]").forEach(function(i){
       var k=i.dataset.meta;
       if(k==="wa")meta.whatsapp=i.value.trim();
@@ -213,6 +292,7 @@
         var mxEl=r.querySelector(".mx"); var mxv=mxEl?(mxEl.value||"").trim():""; var mx=mxv===""?null:(Number(mxv)||null);
         var dscEl=r.querySelector(".desc"); var dsc=dscEl?(dscEl.value||"").trim():"";
         var prod={id:r.dataset.id,cat:cid,name:name,price:price,unit:(tyv==="paquete"?"paquete":"libra"),active:r.querySelector(".tg").classList.contains("on")};
+        var o=origById[r.dataset.id]; if(o){["img","needsImage","approx_lb"].forEach(function(k){if(o[k]!=null)prod[k]=o[k];});}
         if(tyv==="libra-pesa")prod.validate=true; if(price==null)prod.quote=true; if(cuts&&cuts.length)prod.cuts=cuts; if(mx!=null)prod.max=mx; if(dsc)prod.desc=dsc; prods.push(prod);
       });
     });

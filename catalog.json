@@ -28,7 +28,7 @@
     "carousel": [
       {
         "img": "img/hero.webp",
-        "title": "De la<br>carnicería<br>a tu <span class=\"b\">mesa</span>",
+        "title": "De la\ncarnicería\na tu *mesa*",
         "cta_text": "Armá tu pedido →",
         "cta_link": "#catalogo",
         "align": "left",
@@ -36,7 +36,7 @@
       },
       {
         "img": "img/hero-alt.webp",
-        "title": "Parrillada<br>del <span class=\"b\">finde</span>",
+        "title": "Parrillada\ndel *finde*",
         "cta_text": "Ver cortes →",
         "cta_link": "#catalogo",
         "align": "right",
@@ -44,7 +44,7 @@
       },
       {
         "img": "img/products/ribeye.webp",
-        "title": "Rib eye<br><span class=\"b\">premium</span>",
+        "title": "Rib eye\n*premium*",
         "cta_text": "Pedí el tuyo →",
         "cta_link": "#catalogo",
         "align": "center",
