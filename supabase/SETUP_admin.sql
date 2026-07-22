@@ -36,4 +36,9 @@ create policy "app_config update autenticado"
   using (true) with check (true);
 
 -- Realtime opcional (para que Comandas y la tienda reaccionen al instante)
-alter publication supabase_realtime add table public.app_config;
+-- Envuelto para que no falle si ya estaba agregada (re-correr es seguro).
+do $$
+begin
+  alter publication supabase_realtime add table public.app_config;
+exception when duplicate_object then null;
+end $$;
