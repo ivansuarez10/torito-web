@@ -24,7 +24,33 @@
       "max_libra": 20,
       "max_paquete": 12,
       "hard_cap": 80
-    }
+    },
+    "carousel": [
+      {
+        "img": "img/hero.webp",
+        "title": "De la<br>carnicería<br>a tu <span class=\"b\">mesa</span>",
+        "cta_text": "Armá tu pedido →",
+        "cta_link": "#catalogo",
+        "align": "left",
+        "on": true
+      },
+      {
+        "img": "img/hero-alt.webp",
+        "title": "Parrillada<br>del <span class=\"b\">finde</span>",
+        "cta_text": "Ver cortes →",
+        "cta_link": "#catalogo",
+        "align": "right",
+        "on": true
+      },
+      {
+        "img": "img/products/ribeye.webp",
+        "title": "Rib eye<br><span class=\"b\">premium</span>",
+        "cta_text": "Pedí el tuyo →",
+        "cta_link": "#catalogo",
+        "align": "center",
+        "on": true
+      }
+    ]
   },
   "categories": [
     {
