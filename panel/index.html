@@ -83,6 +83,11 @@
   .cbar .cspacer{flex:1}
   .cbar .cdel{color:#ff8a8a}
   @media(max-width:560px){.cslide{flex-direction:column} .cslide-img{flex:none;width:100%;height:150px} .cgrid2{grid-template-columns:1fr}}
+  /* Filtro por categoría */
+  .catfilter{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 2px;margin:2px 0 16px;scrollbar-width:none}
+  .catfilter::-webkit-scrollbar{display:none}
+  .catfilter .cf{flex:none;background:var(--card);border:1px solid var(--line);color:var(--cream);border-radius:100px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .catfilter .cf.on{background:var(--red);border-color:var(--red);color:#fff}
   @media(min-width:560px){.row{grid-template-columns:1fr 104px 130px 42px 38px;grid-template-areas:"nm pr ty tg del" "desc desc desc desc desc" "cuts cuts cuts cuts cuts"}}
   .loading{text-align:center;color:var(--muted);padding:50px}
 </style>
@@ -171,6 +176,8 @@
     // products by category
     var cats=(DATA.categories||[]).map(function(c){return c.id});
     Object.keys(CAT_LABELS).forEach(function(cid){ if(cats.indexOf(cid)<0)cats.push(cid); });
+    html+='<div class="catfilter" id="catFilter"><button class="cf on" data-f="all">Todas</button>'+
+      cats.map(function(cid){return '<button class="cf" data-f="'+cid+'">'+(CAT_LABELS[cid]||cid)+'</button>'}).join("")+'</div>';
     cats.forEach(function(cid){
       var items=DATA.products.filter(function(p){return p.cat===cid});
       html+='<div class="cat" data-cat="'+cid+'"><h2>'+(CAT_LABELS[cid]||cid)+'<button class="addbtn" data-add="'+cid+'">+ Agregar producto</button></h2>'+
@@ -181,7 +188,7 @@
     app.innerHTML=html;
     document.getElementById("logout").onclick=logout;
     document.getElementById("saveTop").onclick=doSave;
-    bind(); wireCarousel();
+    bind(); wireCarousel(); wireFilter();
     document.body.insertAdjacentHTML("beforeend",'<div class="savebar" id="savebar"><button id="saveBottom">Guardar cambios</button></div>');
     document.getElementById("saveBottom").onclick=doSave;
     setDirty(false);
@@ -205,6 +212,15 @@
           '<button class="cdel" type="button">Eliminar</button>'+
         '</div>'+
       '</div></div>';
+  }
+  function wireFilter(){
+    var f=document.getElementById("catFilter"); if(!f) return;
+    f.addEventListener("click",function(e){ var b=e.target.closest(".cf"); if(!b) return;
+      f.querySelectorAll(".cf").forEach(function(x){x.classList.toggle("on",x===b)});
+      var val=b.dataset.f;
+      document.querySelectorAll(".cat").forEach(function(c){ c.style.display=(val==="all"||c.dataset.cat===val)?"":"none"; });
+      window.scrollTo(0,0);
+    });
   }
   function wireCarousel(){
     var add=document.getElementById("addSlide");
