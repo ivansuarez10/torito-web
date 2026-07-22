@@ -66,7 +66,8 @@
       "unit": "libra",
       "price": 110,
       "img": "slices",
-      "active": true
+      "active": true,
+      "desc": "Fino y tierno, listo para el sartén."
     },
     {
       "id": "res-fajitas",
@@ -75,7 +76,8 @@
       "unit": "libra",
       "price": 115,
       "img": "fajitas",
-      "active": true
+      "active": true,
+      "desc": "Tiras jugosas para tacos y fajitas."
     },
     {
       "id": "res-asar",
@@ -85,7 +87,8 @@
       "price": 110,
       "img": "newyork",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "El corte de siempre para el asado dominguero."
     },
     {
       "id": "res-milanesa",
@@ -94,7 +97,8 @@
       "unit": "libra",
       "price": 110,
       "img": "slices",
-      "active": true
+      "active": true,
+      "desc": "Lámina delgada, perfecta empanizada."
     },
     {
       "id": "res-costilla",
@@ -107,7 +111,8 @@
       "cuts": [
         "Cortada",
         "En tiras"
-      ]
+      ],
+      "desc": "Con hueso, ideal para sopa o a la brasa."
     },
     {
       "id": "res-molida",
@@ -116,7 +121,8 @@
       "unit": "libra",
       "price": 110,
       "img": "molida",
-      "active": true
+      "active": true,
+      "desc": "Molida fresca del día, para todo."
     },
     {
       "id": "res-estofado",
@@ -125,7 +131,8 @@
       "unit": "libra",
       "price": 110,
       "img": "cubos",
-      "active": true
+      "active": true,
+      "desc": "En cubos, se deshace en el guiso."
     },
     {
       "id": "res-puyaso",
@@ -136,7 +143,8 @@
       "img": "ribeye",
       "active": true,
       "validate": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Corte premium, suave y de sabor intenso."
     },
     {
       "id": "res-new-york",
@@ -146,7 +154,8 @@
       "price": 175,
       "img": "newyork",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Clásico de parrilla, jugoso y bien marcado."
     },
     {
       "id": "res-rib-eye",
@@ -156,7 +165,8 @@
       "price": 195,
       "img": "ribeye",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "El rey del marmoleo, jugoso en cada bocado."
     },
     {
       "id": "res-entrana",
@@ -166,7 +176,8 @@
       "price": 195,
       "img": "entrana",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Fibra fina y mucho sabor, hecha para la brasa."
     },
     {
       "id": "res-mano-de-piedra",
@@ -180,7 +191,8 @@
         "Una sola pieza",
         "Rodajas"
       ],
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Magro y rendidor para los bistecs del diario."
     },
     {
       "id": "res-cabeza-de-lomo",
@@ -195,7 +207,8 @@
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Versátil y tierno, cortado como lo pidás."
     },
     {
       "id": "res-bolita",
@@ -210,7 +223,8 @@
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Magro y parejo, ideal en bistec o cubos."
     },
     {
       "id": "res-falda",
@@ -220,7 +234,8 @@
       "price": 110,
       "img": "slices",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Sabrosa y jugosa, reina de la desmenuzada."
     },
     {
       "id": "res-tajo-negro",
@@ -235,7 +250,8 @@
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Corte noble para guisos con cuerpo."
     },
     {
       "id": "res-lomo-limpio",
@@ -245,7 +261,8 @@
       "price": 160,
       "img": "filete",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Sin grasa y suave, para comer liviano."
     },
     {
       "id": "res-filete",
@@ -255,7 +272,8 @@
       "price": 210,
       "img": "filete",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "El corte más tierno de la res."
     },
     {
       "id": "res-carne-salada",
@@ -264,7 +282,8 @@
       "unit": "libra",
       "price": 125,
       "img": "slices",
-      "active": true
+      "active": true,
+      "desc": "Curada en la casa, lista para freír con huevo."
     },
     {
       "id": "cerdo-asar-de-cerdo",
@@ -273,7 +292,8 @@
       "unit": "libra",
       "price": 80,
       "img": "lomo-cerdo",
-      "active": true
+      "active": true,
+      "desc": "Jugoso para el asado o la olla."
     },
     {
       "id": "cerdo-molida-de-cerdo",
@@ -283,7 +303,8 @@
       "price": 80,
       "img": "molida",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Molida fresca, sabrosa para rellenos."
     },
     {
       "id": "cerdo-costilla-de-cerdo",
@@ -296,7 +317,8 @@
       "cuts": [
         "Cortada",
         "En tiras para asar"
-      ]
+      ],
+      "desc": "Carnosa, pedila a la barbacoa."
     },
     {
       "id": "cerdo-estofado-de-cerdo",
@@ -306,7 +328,8 @@
       "price": 80,
       "img": "cubos",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "En cubos, perfecta para tu guiso."
     },
     {
       "id": "cerdo-lomo-de-cerdo",
@@ -319,7 +342,8 @@
       "cuts": [
         "Una sola pieza",
         "Rodajas"
-      ]
+      ],
+      "desc": "Magro y tierno, para hornear o filetear."
     },
     {
       "id": "cerdo-fajitas-de-cerdo",
@@ -328,7 +352,8 @@
       "unit": "libra",
       "price": 85,
       "img": "fajitas",
-      "active": true
+      "active": true,
+      "desc": "Tiras listas para el sartén."
     },
     {
       "id": "cerdo-bistec-de-cerdo",
@@ -338,7 +363,8 @@
       "price": 80,
       "img": "slices",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Fino y jugoso, listo para dorar."
     },
     {
       "id": "cerdo-patas-de-cerdo",
@@ -352,7 +378,8 @@
         "Entera",
         "Cortada"
       ],
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Para el mondongo y sopas con sustancia."
     },
     {
       "id": "cerdo-chuleta-ahumada",
@@ -361,7 +388,8 @@
       "unit": "libra",
       "price": 85,
       "img": "chuleta-cerdo",
-      "active": true
+      "active": true,
+      "desc": "Ahumada en la casa, solo calentar."
     },
     {
       "id": "cerdo-chuleta",
@@ -370,7 +398,8 @@
       "unit": "libra",
       "price": 80,
       "img": "chuleta-cerdo",
-      "active": true
+      "active": true,
+      "desc": "Con hueso, jugosa a la plancha."
     },
     {
       "id": "cerdo-lonja-carnuda",
@@ -379,7 +408,8 @@
       "unit": "libra",
       "price": 60,
       "img": "tocino",
-      "active": true
+      "active": true,
+      "desc": "Con su tocinito, crocante al freír."
     },
     {
       "id": "pollo-menudo",
@@ -389,7 +419,8 @@
       "price": 25,
       "img": "pechuga",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Mollejas, hígado y corazón fresquitos."
     },
     {
       "id": "pollo-entero",
@@ -403,7 +434,8 @@
       "cuts": [
         "Entero",
         "Partido"
-      ]
+      ],
+      "desc": "Fresco del día, como lo pidás."
     },
     {
       "id": "pollo-pollo-en-pieza",
@@ -413,7 +445,8 @@
       "price": 40,
       "img": "pollo-entero",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Presas surtidas, listas para cocinar."
     },
     {
       "id": "pollo-patas",
@@ -423,7 +456,8 @@
       "price": 25,
       "img": "pollo-entero",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Para un caldo con cuerpo y sabor."
     },
     {
       "id": "pollo-pechuga-ala",
@@ -433,7 +467,8 @@
       "price": 45,
       "img": "pechuga",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Pechuga con ala, jugosa al horno."
     },
     {
       "id": "pollo-pechugas-sin-hueso",
@@ -443,7 +478,8 @@
       "price": 82,
       "img": "pechuga",
       "active": true,
-      "validate": true
+      "validate": true,
+      "desc": "Limpia y magra, la más práctica."
     },
     {
       "id": "pollo-pierna-muslo",
@@ -454,7 +490,8 @@
       "img": "pollo-entero",
       "active": true,
       "validate": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Jugosa, la favorita para guisar."
     },
     {
       "id": "pollo-medallones",
@@ -464,7 +501,8 @@
       "price": 82,
       "img": "pechuga",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Empanizados, del congelador al sartén."
     },
     {
       "id": "pollo-pechuguitas",
@@ -474,7 +512,8 @@
       "price": 105,
       "img": "pechuga",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Bocaditos crocantes que aman los niños."
     },
     {
       "id": "pollo-chicken-finger",
@@ -484,7 +523,8 @@
       "price": 105,
       "img": "pechuga",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Tiras empanizadas, listas en minutos."
     },
     {
       "id": "pollo-hot-dog-de-pollo",
@@ -494,7 +534,8 @@
       "price": 66,
       "img": "pechuga",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Prácticos para el lonche."
     },
     {
       "id": "visceras-pulmon",
@@ -505,7 +546,8 @@
       "img": "higado",
       "active": true,
       "quote": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Fresco, para el bofe guisado."
     },
     {
       "id": "visceras-corazon",
@@ -516,7 +558,8 @@
       "img": "higado",
       "active": true,
       "quote": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Firme y sabroso, rico a la plancha."
     },
     {
       "id": "visceras-higado",
@@ -530,7 +573,8 @@
         "Una sola pieza",
         "Corte bistec",
         "Corte asar"
-      ]
+      ],
+      "desc": "Fresco del día, suave para encebollar."
     },
     {
       "id": "visceras-lengua",
@@ -540,7 +584,8 @@
       "price": 85,
       "img": "mondongo",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Tierna en su punto, para la lengua entomatada."
     },
     {
       "id": "visceras-vaso",
@@ -551,7 +596,8 @@
       "img": "mondongo",
       "active": true,
       "quote": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Para el mondongo tradicional."
     },
     {
       "id": "visceras-mondongo",
@@ -560,7 +606,8 @@
       "unit": "libra",
       "price": 38,
       "img": "mondongo",
-      "active": true
+      "active": true,
+      "desc": "Limpio y listo para la sopa."
     },
     {
       "id": "embutidos-chorizo-suelto",
@@ -570,7 +617,8 @@
       "price": 70,
       "img": "chorizo",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Receta de la casa, ideal para la parrilla."
     },
     {
       "id": "embutidos-chorizo-indio",
@@ -580,7 +628,8 @@
       "price": 50,
       "img": "chorizo",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Sabor tradicional catracho."
     },
     {
       "id": "embutidos-chorizo-barbacoa",
@@ -589,7 +638,8 @@
       "unit": "paquete",
       "price": 60,
       "img": "chorizo-barbacoa",
-      "active": true
+      "active": true,
+      "desc": "Ahumadito y dulzón, para la brasa."
     },
     {
       "id": "embutidos-chorizo-criollo",
@@ -599,7 +649,8 @@
       "price": 60,
       "img": "chorizo",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "El de siempre, jugoso al asar."
     },
     {
       "id": "embutidos-chorizo-parrillero",
@@ -608,7 +659,8 @@
       "unit": "paquete",
       "price": 60,
       "img": "chorizo-parrillero",
-      "active": true
+      "active": true,
+      "desc": "Hecho para la parrillada del finde."
     },
     {
       "id": "embutidos-chorizo-cervecero",
@@ -618,7 +670,8 @@
       "price": 60,
       "img": "chorizo-cervecero",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Con su toque de cerveza, para la juntada."
     },
     {
       "id": "extras-papas-congeladas",
@@ -628,7 +681,8 @@
       "price": 33,
       "img": "papas",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Corte clásico, doradas y crocantes."
     },
     {
       "id": "extras-manteca-de-cerdo",
@@ -638,7 +692,8 @@
       "price": 40,
       "img": "papas",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Manteca pura, con sabor de antes."
     },
     {
       "id": "extras-camaron",
@@ -647,7 +702,8 @@
       "unit": "libra",
       "price": 125,
       "img": "camaron",
-      "active": true
+      "active": true,
+      "desc": "Fresco, para tu coctel o al ajillo."
     },
     {
       "id": "extras-papas-sazonadas",
@@ -657,7 +713,8 @@
       "price": 45,
       "img": "papas",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Con especias, listas para freír."
     },
     {
       "id": "extras-papas-tornillo",
@@ -667,7 +724,8 @@
       "price": 40,
       "img": "papas",
       "active": true,
-      "needsImage": true
+      "needsImage": true,
+      "desc": "Divertidas y crocantes, para picar."
     },
     {
       "id": "extras-bacon",
@@ -676,7 +734,8 @@
       "unit": "paquete",
       "price": 120,
       "img": "tocino",
-      "active": true
+      "active": true,
+      "desc": "Tocino en lonjas, crocante para todo."
     }
   ]
 }

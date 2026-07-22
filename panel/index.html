@@ -51,9 +51,10 @@
   .cat{margin-bottom:22px}
   .cat h2{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--gold);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
   .cat .addbtn{background:var(--card2);border:1px solid var(--line);color:var(--cream);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:700;cursor:pointer}
-  .row{display:grid;grid-template-columns:1fr 104px 42px 38px;grid-template-areas:"nm nm nm nm" "pr ty tg del" "cuts cuts cuts cuts";gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px}
+  .row{display:grid;grid-template-columns:1fr 104px 42px 38px;grid-template-areas:"nm nm nm nm" "pr ty tg del" "desc desc desc desc" "cuts cuts cuts cuts";gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px}
   .row.off{opacity:.5}
   .row .nm{grid-area:nm} .row .pr{grid-area:pr} .row .ty{grid-area:ty} .row .tg{grid-area:tg} .row .del{grid-area:del}
+  .row .desc{grid-area:desc;font-size:13px}
   .row .cutswrap{grid-area:cuts;display:flex;gap:8px;align-items:center} .row .cuts{flex:1;font-size:13px} .row .mx{width:132px;flex:none;font-size:13px}
   .row input,.row select{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--cream);font-size:15px;outline:none;width:100%}
   .row input:focus,.row select:focus{border-color:var(--red)}
@@ -166,6 +167,7 @@
       '<select class="ty"><option value="libra"'+(p.unit==="libra"&&!p.validate?" selected":"")+'>Libra</option><option value="libra-pesa"'+(p.unit==="libra"&&p.validate?" selected":"")+'>Libra · se pesa</option><option value="paquete"'+(p.unit==="paquete"?" selected":"")+'>Paquete</option></select>'+
       '<button class="tg'+(p.active!==false?" on":"")+'" title="Mostrar/ocultar">'+(p.active!==false?"✓":"—")+'</button>'+
       '<button class="del" title="Eliminar">✕</button>'+
+      '<input class="desc" placeholder="Descripción que vende (ej: Fino y tierno, listo para el sartén.)" value="'+((p.desc||"")).replace(/"/g,"&quot;")+'">'+
       '<div class="cutswrap"><input class="cuts" placeholder="Cortes (separados por coma, ej: En bistec, En cubitos)" value="'+((p.cuts||[]).join(", ")).replace(/"/g,"&quot;")+'">'+
       '<input class="mx" type="number" inputmode="decimal" placeholder="máx/pedido" title="Máx por pedido antes de pasar a bajo pedido (vacío = default)" value="'+(p.max==null?"":p.max)+'"></div></div>';
   }
@@ -209,8 +211,9 @@
         var cr=(r.querySelector(".cuts").value||"").trim(); var cuts=cr?cr.split(",").map(function(x){return x.trim()}).filter(Boolean):null;
         var tyv=r.querySelector(".ty").value; var pv=(r.querySelector(".pr").value||"").trim(); var price=pv===""?null:(Number(pv)||0);
         var mxEl=r.querySelector(".mx"); var mxv=mxEl?(mxEl.value||"").trim():""; var mx=mxv===""?null:(Number(mxv)||null);
+        var dscEl=r.querySelector(".desc"); var dsc=dscEl?(dscEl.value||"").trim():"";
         var prod={id:r.dataset.id,cat:cid,name:name,price:price,unit:(tyv==="paquete"?"paquete":"libra"),active:r.querySelector(".tg").classList.contains("on")};
-        if(tyv==="libra-pesa")prod.validate=true; if(price==null)prod.quote=true; if(cuts&&cuts.length)prod.cuts=cuts; if(mx!=null)prod.max=mx; prods.push(prod);
+        if(tyv==="libra-pesa")prod.validate=true; if(price==null)prod.quote=true; if(cuts&&cuts.length)prod.cuts=cuts; if(mx!=null)prod.max=mx; if(dsc)prod.desc=dsc; prods.push(prod);
       });
     });
     var d={meta:meta,categories:DATA.categories,products:prods};

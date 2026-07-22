@@ -296,7 +296,7 @@
         var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><select data-cut><option value="" '+(cutSel[p.id]?"":"selected")+' disabled hidden>\u2014 Eleg\u00ed el corte \u2014</option>'+p.cuts.map(function(c){return '<option'+(cutSel[p.id]===c?" selected":"")+'>'+c+'</option>'}).join("")+'</select></div>':"";
         var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
         var badge=p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':''));
-        var sub=p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás";
+        var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
         card.innerHTML=
           '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
           '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
