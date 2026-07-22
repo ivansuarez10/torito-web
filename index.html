@@ -49,7 +49,7 @@
   .hero h1{font-size:clamp(46px,15vw,74px);line-height:.92;text-transform:uppercase}
   .hero h1 .b{color:var(--red)}
   .hero p{color:#eaeaea;font-size:15.5px;max-width:400px;margin:14px 0 20px;text-shadow:0 1px 14px rgba(0,0,0,.7)}
-  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s;box-shadow:0 12px 26px rgba(228,35,42,.42)}
+  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:15px 26px;border-radius:14px;cursor:pointer;transition:background .2s}
   .hero .cta:hover{background:var(--red-d)}
 
   /* Steps */
@@ -121,7 +121,7 @@
 
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:45;width:min(648px,calc(100% - 24px));display:none}
   .fab.show{display:block}
-  .fab button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px 20px;border-radius:100px;cursor:pointer;box-shadow:0 14px 30px rgba(228,35,42,.4),0 2px 8px rgba(0,0,0,.4)}
+  .fab button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px 20px;border-radius:100px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
   .fab .left{display:flex;align-items:center;gap:10px} .fab .badge{background:#fff;color:var(--red);min-width:24px;height:24px;border-radius:100px;font-size:13px;font-weight:800;display:grid;place-items:center;padding:0 6px} .fab .tot{font-weight:800;letter-spacing:-.01em}
 
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -130,6 +130,8 @@
   .sheet.open{transform:none}
   .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
   .sheet .head h3{font-size:21px} .sheet .close{background:var(--card);border:none;color:var(--cream);width:34px;height:34px;border-radius:100px;font-size:18px;cursor:pointer;flex:none}
+  .sheet .head-l{display:flex;align-items:center;gap:10px}
+  .sheet .sheetback{background:var(--card);border:none;color:var(--cream);width:34px;height:34px;border-radius:100px;font-size:20px;cursor:pointer;flex:none;line-height:1}
   .sheet .body{overflow-y:auto;padding:8px 20px 20px} .sheet .foot{padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg2)}
   .citem{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
   .citem img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:none;background:#0d0d0d}
@@ -203,7 +205,6 @@
     <div class="hero-scrim" aria-hidden="true"></div>
     <div class="heroText">
       <h1 class="slab reveal">De la<br>carnicería<br>a tu <span class="b">mesa</span></h1>
-      <p class="reveal">Carne fresca entregada en la puerta de tu casa, a un click.</p>
       <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
     </div>
   </header>
@@ -213,8 +214,6 @@
     <div class="step reveal"><div class="n slab">2</div><div class="t">Confirmá y pagá</div><div class="d">Por WhatsApp o en línea.</div></div>
     <div class="step reveal"><div class="n slab">3</div><div class="t">Te lo llevamos</div><div class="d">Cortado a tu medida, a tu puerta.</div></div>
   </div>
-
-  <a class="promo reveal" id="promo" href="#catalogo" hidden><span class="promo-in"><span class="promo-t" id="promoT"></span><span class="promo-s" id="promoS"></span></span><span class="promo-cta">Ver ofertas →</span></a>
 
   <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
   <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
@@ -229,7 +228,7 @@
 
 <div class="fab" id="fab"><button id="fabBtn"><span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span><span class="tot" id="fabTotal">L 0</span></button></div>
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet"><div class="head"><h3 class="slab" id="sheetTitle">Tu pedido</h3><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
+<div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
 
 <script>
 (function(){
@@ -266,7 +265,7 @@
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_PER_2KM=d.meta.shipping.base_per_2km||35}
-    render(); renderPromo(); refreshCart();
+    render(); refreshCart();
   }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
   function renderPromo(){
@@ -367,17 +366,19 @@
   function openSheet(){sheetOpen=true;view="cart";lockScroll();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
   function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");unlockScroll();refreshCart()}
   document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
+  document.getElementById("sheetBack").onclick=function(){ if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();sBody.scrollTop=0;} else { closeSheet(); } };
+  function setBack(show){var b=document.getElementById("sheetBack");if(b)b.style.display=show?"inline-flex":"none";}
   function renderSheet(){view==="cart"?cartView():checkoutView()}
 
   function cartView(){
-    sTitle.textContent="Tu pedido"; var lines=cartLines();
+    sTitle.textContent="Tu pedido"; setBack(false); var lines=cartLines();
     if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
     var html="";
     lines.forEach(function(l){
       html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
     });
     sBody.innerHTML=html;
-    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva productos que se <b>pesan, se cotizan o van en cantidad grande</b>, así que se coordina y confirma por <b>WhatsApp</b>. El resto es precio exacto.</div>':'')+
+    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva cortes que se <b>venden por pieza</b>: hay que pesarlos para darte el <b>total exacto</b>, así que lo coordinamos y confirmamos por <b>WhatsApp</b>. Lo demás ya va con precio exacto.</div>':'')+
       '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
       '<button class="pay-wa" id="toCheckout" style="margin-top:14px">Continuar →</button>';
     document.getElementById("toCheckout").onclick=function(){view="checkout";renderSheet();sBody.scrollTop=0}
@@ -407,7 +408,7 @@
     return out;
   }
   function checkoutView(){
-    sTitle.textContent="Datos de entrega"; sheet.classList.add("wide");
+    sTitle.textContent="Datos de entrega"; sheet.classList.add("wide"); setBack(true);
     sBody.innerHTML=
       '<div class="co-grid">'+
         '<div class="co-form">'+
@@ -479,7 +480,7 @@
       (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> para calcular el envío al instante, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
-      '<button class="pay-bac" disabled>Pagar en línea con BAC<small>Próximamente</small></button>'+
+      '<button class="pay-bac" disabled>Pagar en línea con BAC<small>'+(hasWhats()?"Este pedido se confirma por WhatsApp":"Próximamente")+'</small></button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
     document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
