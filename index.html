@@ -256,10 +256,25 @@
   // ---- load catalog ----
   // Lee el catálogo de la nube (editable desde /panel); si no existe, usa el JSON del repo.
   function loadCatalog(){
-    return fetch(SUPA_URL+"/rest/v1/app_config?select=value&key=eq.store_catalog",{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}})
+    // Se lee SIEMPRE catalog.json (repo) para recuperar campos que el panel no gestiona
+    // (img, needsImage, approx_lb) y se les sobrepone lo editado en la nube (precios, etc.).
+    var jsonP=fetch("catalog.json?_="+Date.now()).then(function(r){return r.json()}).catch(function(){return {}});
+    var cloudP=fetch(SUPA_URL+"/rest/v1/app_config?select=value&key=eq.store_catalog",{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}})
       .then(function(r){return r.ok?r.json():[]})
-      .then(function(a){ if(a&&a[0]&&a[0].value&&a[0].value.products) return a[0].value; throw 0; })
-      .catch(function(){ return fetch("catalog.json?_="+Date.now()).then(function(r){return r.json()}); });
+      .then(function(a){ return (a&&a[0]&&a[0].value&&a[0].value.products)?a[0].value:null; })
+      .catch(function(){return null;});
+    return Promise.all([cloudP,jsonP]).then(function(res){
+      var cloud=res[0], j=res[1]||{};
+      if(!cloud) return j; // sin nube → catalog.json tal cual
+      var jById={}; (j.products||[]).forEach(function(p){jById[p.id]=p;});
+      cloud.products=(cloud.products||[]).map(function(cp){
+        var jp=jById[cp.id];
+        if(jp){ ["img","needsImage","approx_lb"].forEach(function(k){ if(cp[k]==null&&jp[k]!=null) cp[k]=jp[k]; }); }
+        return cp;
+      });
+      if(!cloud.categories) cloud.categories=j.categories;
+      return cloud;
+    });
   }
   loadCatalog().then(function(d){
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
