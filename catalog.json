@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated": "2026-07-20",
+    "updated": "2026-07-24",
     "currency": "L",
     "whatsapp": "50493785051",
     "shipping": {
@@ -175,7 +175,7 @@
     {
       "id": "res-new-york",
       "cat": "res",
-      "name": "New york",
+      "name": "New York",
       "unit": "libra",
       "price": 175,
       "img": "newyork",
@@ -430,7 +430,7 @@
     {
       "id": "cerdo-lonja-carnuda",
       "cat": "cerdo",
-      "name": "Lonja Carnuda",
+      "name": "Lonja carnuda",
       "unit": "libra",
       "price": 60,
       "img": "tocino",
@@ -566,7 +566,7 @@
     {
       "id": "visceras-pulmon",
       "cat": "visceras",
-      "name": "Pulmon",
+      "name": "Pulmón",
       "unit": "libra",
       "price": null,
       "img": "higado",
@@ -578,7 +578,7 @@
     {
       "id": "visceras-corazon",
       "cat": "visceras",
-      "name": "Corazon",
+      "name": "Corazón",
       "unit": "libra",
       "price": null,
       "img": "higado",
@@ -590,7 +590,7 @@
     {
       "id": "visceras-higado",
       "cat": "visceras",
-      "name": "Higado",
+      "name": "Hígado",
       "unit": "libra",
       "price": 45,
       "img": "higado",
@@ -724,7 +724,7 @@
     {
       "id": "extras-camaron",
       "cat": "extras",
-      "name": "Camaron",
+      "name": "Camarón",
       "unit": "libra",
       "price": 125,
       "img": "camaron",
@@ -734,7 +734,7 @@
     {
       "id": "extras-papas-sazonadas",
       "cat": "extras",
-      "name": "Papas Sazonadas",
+      "name": "Papas sazonadas",
       "unit": "libra",
       "price": 45,
       "img": "papas",
@@ -745,7 +745,7 @@
     {
       "id": "extras-papas-tornillo",
       "cat": "extras",
-      "name": "Papas Tornillo",
+      "name": "Papas tornillo",
       "unit": "libra",
       "price": 40,
       "img": "papas",
