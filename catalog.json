@@ -4,7 +4,8 @@
     "currency": "L",
     "whatsapp": "50493785051",
     "shipping": {
-      "base_per_2km": 35,
+      "base": 50,
+      "per_km": 9,
       "free_over": null,
       "city": "Tegucigalpa"
     },

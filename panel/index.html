@@ -130,7 +130,8 @@
     // meta
     html+='<div class="meta">'+
       metaFld("WhatsApp de pedidos","wa",m.whatsapp||"","tel")+
-      metaFld("Envío: L por cada 2 km","ship",(m.shipping&&m.shipping.base_per_2km)||35,"number")+
+      metaFld("Envío: base (L)","shipbase",(m.shipping&&m.shipping.base)||50,"number")+
+      metaFld("Envío: L por km","shipperkm",(m.shipping&&m.shipping.per_km)||9,"number")+
       metaFld("Ubicación carnicería · latitud","olat",(m.origin&&m.origin.lat)||"","number")+
       metaFld("Ubicación carnicería · longitud","olng",(m.origin&&m.origin.lng)||"","number")+
       '</div>';
@@ -196,7 +197,8 @@
     document.querySelectorAll("[data-meta]").forEach(function(i){
       var k=i.dataset.meta;
       if(k==="wa")meta.whatsapp=i.value.trim();
-      else if(k==="ship"){meta.shipping=meta.shipping||{};meta.shipping.base_per_2km=Number(i.value)||35;}
+      else if(k==="shipbase"){meta.shipping=meta.shipping||{};meta.shipping.base=Number(i.value)||50;}
+      else if(k==="shipperkm"){meta.shipping=meta.shipping||{};meta.shipping.per_km=Number(i.value)||9;}
       else if(k==="olat"){meta.origin=meta.origin||{};meta.origin.lat=Number(i.value);}
       else if(k==="olng"){meta.origin=meta.origin||{};meta.origin.lng=Number(i.value);}
       else if(k==="promoOn"){meta.promo=meta.promo||{};meta.promo.on=i.checked;}

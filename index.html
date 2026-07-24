@@ -247,7 +247,7 @@
 (function(){
   "use strict";
   var WA_PHONE="50493785051", SUPA_URL="https://dnyzokgmjuvbrcxxdatr.supabase.co", SUPA_KEY="sb_publishable_jO4pGdkTBporf_cndos9OA_K_8tVn3A";
-  var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.0985,lng:-87.2075}, SHIP_PER_2KM=35;
+  var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.0985,lng:-87.2075}, SHIP_BASE=50, SHIP_PER_KM=9;
   var cart=load(), draft={}, cutSel=loadCuts();
   function load(){try{return JSON.parse(localStorage.getItem("torito_cart_v2")||"{}")}catch(e){return {}}}
   function save(){localStorage.setItem("torito_cart_v2",JSON.stringify(cart))}
@@ -292,7 +292,7 @@
   loadCatalog().then(function(d){
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
-    if(d.meta&&d.meta.shipping){SHIP_PER_2KM=d.meta.shipping.base_per_2km||35}
+    if(d.meta&&d.meta.shipping){SHIP_BASE=d.meta.shipping.base||50; SHIP_PER_KM=d.meta.shipping.per_km||9}
     render(); refreshCart();
   }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
@@ -485,7 +485,7 @@
     var km=haversine(ORIGIN,ship.pin); ship.km=km;
     var box=document.getElementById("shipBox");
     if(km>25){ ship.ok=false;ship.cost=0; if(box){box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';} }
-    else{ var cost=Math.max(1,Math.ceil(km/2))*SHIP_PER_2KM; ship.ok=true;ship.cost=cost; if(box){box.className="shipbox";box.innerHTML='<span>✓ Ubicación captada · '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';} }
+    else{ var cost=Math.max(SHIP_BASE, Math.round((SHIP_BASE+SHIP_PER_KM*km)/5)*5); ship.ok=true;ship.cost=cost; if(box){box.className="shipbox";box.innerHTML='<span>✓ Ubicación captada · '+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>';} }
     var w=document.getElementById("w_addr"); if(w)w.classList.remove("invalid");
     renderSide();
   }
