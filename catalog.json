@@ -167,10 +167,9 @@
       "name": "Puyaso",
       "unit": "libra",
       "price": 195,
-      "img": "ribeye",
+      "img": "puyaso",
       "active": true,
       "validate": true,
-      "needsImage": true,
       "desc": "Corte premium, suave y de sabor intenso."
     },
     {
@@ -286,7 +285,7 @@
       "name": "Lomo limpio",
       "unit": "libra",
       "price": 160,
-      "img": "filete",
+      "img": "lomo-limpio",
       "active": true,
       "validate": true,
       "desc": "Sin grasa y suave, para comer liviano."
@@ -414,7 +413,7 @@
       "name": "Chuleta Ahumada",
       "unit": "libra",
       "price": 85,
-      "img": "chuleta-cerdo",
+      "img": "chuleta-ahumada",
       "active": true,
       "desc": "Ahumada en la casa, solo calentar."
     },
@@ -481,9 +480,8 @@
       "name": "Patas",
       "unit": "libra",
       "price": 25,
-      "img": "pollo-entero",
+      "img": "patas-pollo",
       "active": true,
-      "needsImage": true,
       "desc": "Para un caldo con cuerpo y sabor."
     },
     {
@@ -642,9 +640,8 @@
       "name": "Chorizo Suelto",
       "unit": "libra",
       "price": 70,
-      "img": "chorizo",
+      "img": "chorizo-suelto",
       "active": true,
-      "needsImage": true,
       "desc": "Receta de la casa, ideal para la parrilla."
     },
     {
@@ -674,9 +671,8 @@
       "name": "Chorizo Criollo",
       "unit": "paquete",
       "price": 60,
-      "img": "chorizo",
+      "img": "chorizo-criollo",
       "active": true,
-      "needsImage": true,
       "desc": "El de siempre, jugoso al asar."
     },
     {
@@ -697,7 +693,6 @@
       "price": 60,
       "img": "chorizo-cervecero",
       "active": true,
-      "needsImage": true,
       "desc": "Con su toque de cerveza, para la juntada."
     },
     {
