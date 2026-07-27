@@ -112,9 +112,8 @@
       "name": "Asar",
       "unit": "libra",
       "price": 110,
-      "img": "newyork",
+      "img": "asar",
       "active": true,
-      "needsImage": true,
       "desc": "El corte de siempre para el asado dominguero."
     },
     {
@@ -211,13 +210,12 @@
       "name": "Mano de piedra",
       "unit": "libra",
       "price": 120,
-      "img": "cubos",
+      "img": "mano-de-piedra",
       "active": true,
       "cuts": [
         "Una sola pieza",
         "Rodajas"
       ],
-      "needsImage": true,
       "desc": "Magro y rendidor para los bistecs del diario."
     },
     {
@@ -226,14 +224,13 @@
       "name": "Cabeza de lomo",
       "unit": "libra",
       "price": 120,
-      "img": "newyork",
+      "img": "cabeza-de-lomo",
       "active": true,
       "cuts": [
         "Una sola pieza",
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true,
       "desc": "Versátil y tierno, cortado como lo pidás."
     },
     {
@@ -242,14 +239,13 @@
       "name": "Bolita",
       "unit": "libra",
       "price": 120,
-      "img": "cubos",
+      "img": "bolita",
       "active": true,
       "cuts": [
         "Una sola pieza",
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true,
       "desc": "Magro y parejo, ideal en bistec o cubos."
     },
     {
@@ -258,9 +254,8 @@
       "name": "Falda",
       "unit": "libra",
       "price": 110,
-      "img": "slices",
+      "img": "falda",
       "active": true,
-      "needsImage": true,
       "desc": "Sabrosa y jugosa, reina de la desmenuzada."
     },
     {
@@ -269,14 +264,13 @@
       "name": "Tajo negro",
       "unit": "libra",
       "price": 120,
-      "img": "cubos",
+      "img": "tajo-negro",
       "active": true,
       "cuts": [
         "Una sola pieza",
         "Corte bistec",
         "Corte asar"
       ],
-      "needsImage": true,
       "desc": "Corte noble para guisos con cuerpo."
     },
     {
@@ -327,9 +321,8 @@
       "name": "Molida de cerdo",
       "unit": "libra",
       "price": 80,
-      "img": "molida",
+      "img": "molida-cerdo",
       "active": true,
-      "needsImage": true,
       "desc": "Molida fresca, sabrosa para rellenos."
     },
     {
@@ -352,9 +345,8 @@
       "name": "Estofado de cerdo",
       "unit": "libra",
       "price": 80,
-      "img": "cubos",
+      "img": "estofado-cerdo",
       "active": true,
-      "needsImage": true,
       "desc": "En cubos, perfecta para tu guiso."
     },
     {
@@ -387,9 +379,8 @@
       "name": "Bistec de cerdo",
       "unit": "libra",
       "price": 80,
-      "img": "slices",
+      "img": "bistec-cerdo",
       "active": true,
-      "needsImage": true,
       "desc": "Fino y jugoso, listo para dorar."
     },
     {
@@ -398,13 +389,12 @@
       "name": "Patas de cerdo",
       "unit": "libra",
       "price": 45,
-      "img": "lomo-cerdo",
+      "img": "patas-cerdo",
       "active": true,
       "cuts": [
         "Entera",
         "Cortada"
       ],
-      "needsImage": true,
       "desc": "Para el mondongo y sopas con sustancia."
     },
     {
@@ -443,9 +433,8 @@
       "name": "Menudo",
       "unit": "libra",
       "price": 25,
-      "img": "pechuga",
+      "img": "menudo",
       "active": true,
-      "needsImage": true,
       "desc": "Mollejas, hígado y corazón fresquitos."
     },
     {
@@ -512,10 +501,9 @@
       "name": "Pierna/muslo",
       "unit": "libra",
       "price": 40,
-      "img": "pollo-entero",
+      "img": "pierna-muslo",
       "active": true,
       "validate": true,
-      "needsImage": true,
       "desc": "Jugosa, la favorita para guisar."
     },
     {
@@ -524,9 +512,8 @@
       "name": "Medallones",
       "unit": "paquete",
       "price": 82,
-      "img": "pechuga",
+      "img": "medallones",
       "active": true,
-      "needsImage": true,
       "desc": "Empanizados, del congelador al sartén."
     },
     {
@@ -535,9 +522,8 @@
       "name": "Pechuguitas",
       "unit": "paquete",
       "price": 105,
-      "img": "pechuga",
+      "img": "pechuguitas",
       "active": true,
-      "needsImage": true,
       "desc": "Bocaditos crocantes que aman los niños."
     },
     {
@@ -546,9 +532,8 @@
       "name": "Chicken finger",
       "unit": "paquete",
       "price": 105,
-      "img": "pechuga",
+      "img": "chicken-finger",
       "active": true,
-      "needsImage": true,
       "desc": "Tiras empanizadas, listas en minutos."
     },
     {
@@ -557,9 +542,8 @@
       "name": "Hot dog de pollo",
       "unit": "paquete",
       "price": 66,
-      "img": "pechuga",
+      "img": "hot-dog-de-pollo",
       "active": true,
-      "needsImage": true,
       "desc": "Prácticos para el lonche."
     },
     {
@@ -568,10 +552,9 @@
       "name": "Pulmón",
       "unit": "libra",
       "price": null,
-      "img": "higado",
+      "img": "pulmon",
       "active": true,
       "quote": true,
-      "needsImage": true,
       "desc": "Fresco, para el bofe guisado."
     },
     {
@@ -580,10 +563,9 @@
       "name": "Corazón",
       "unit": "libra",
       "price": null,
-      "img": "higado",
+      "img": "corazon",
       "active": true,
       "quote": true,
-      "needsImage": true,
       "desc": "Firme y sabroso, rico a la plancha."
     },
     {
@@ -607,9 +589,8 @@
       "name": "Lengua",
       "unit": "libra",
       "price": 85,
-      "img": "mondongo",
+      "img": "lengua",
       "active": true,
-      "needsImage": true,
       "desc": "Tierna en su punto, para la lengua entomatada."
     },
     {
@@ -618,10 +599,9 @@
       "name": "Vaso",
       "unit": "libra",
       "price": null,
-      "img": "mondongo",
+      "img": "vaso",
       "active": true,
       "quote": true,
-      "needsImage": true,
       "desc": "Para el mondongo tradicional."
     },
     {
@@ -701,9 +681,8 @@
       "name": "Papas congeladas",
       "unit": "libra",
       "price": 33,
-      "img": "papas",
+      "img": "papas-congeladas",
       "active": true,
-      "needsImage": true,
       "desc": "Corte clásico, doradas y crocantes."
     },
     {
@@ -712,9 +691,8 @@
       "name": "Manteca de cerdo",
       "unit": "libra",
       "price": 40,
-      "img": "papas",
+      "img": "manteca-de-cerdo",
       "active": true,
-      "needsImage": true,
       "desc": "Manteca pura, con sabor de antes."
     },
     {
@@ -733,9 +711,8 @@
       "name": "Papas sazonadas",
       "unit": "libra",
       "price": 45,
-      "img": "papas",
+      "img": "papas-sazonadas",
       "active": true,
-      "needsImage": true,
       "desc": "Con especias, listas para freír."
     },
     {
@@ -744,9 +721,8 @@
       "name": "Papas tornillo",
       "unit": "libra",
       "price": 40,
-      "img": "papas",
+      "img": "papas-tornillo",
       "active": true,
-      "needsImage": true,
       "desc": "Divertidas y crocantes, para picar."
     },
     {
