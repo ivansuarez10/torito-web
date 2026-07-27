@@ -604,9 +604,8 @@
       "name": "Chorizo Indio",
       "unit": "libra",
       "price": 50,
-      "img": "chorizo",
+      "img": "chorizo-indio",
       "active": true,
-      "needsImage": true,
       "desc": "Sabor tradicional catracho."
     },
     {
