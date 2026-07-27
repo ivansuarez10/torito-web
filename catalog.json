@@ -743,7 +743,8 @@
       "unit": "paquete",
       "price": 625,
       "active": true,
-      "desc": "Camarón, presentación de 5 libras."
+      "desc": "Camarón, presentación de 5 libras.",
+      "img": "camaron"
     }
   ]
 }
