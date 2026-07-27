@@ -84,7 +84,7 @@
       "name": "Bistec",
       "unit": "libra",
       "price": 110,
-      "img": "slices",
+      "img": "bistec-res",
       "active": true,
       "desc": "Fino y tierno, listo para el sartén."
     },
@@ -94,7 +94,7 @@
       "name": "Fajitas",
       "unit": "libra",
       "price": 115,
-      "img": "fajitas",
+      "img": "fajitas-res",
       "active": true,
       "desc": "Tiras jugosas para tacos y fajitas."
     },
@@ -114,7 +114,7 @@
       "name": "Milanesa",
       "unit": "libra",
       "price": 110,
-      "img": "slices",
+      "img": "milanesa",
       "active": true,
       "desc": "Lámina delgada, perfecta empanizada."
     },
@@ -293,7 +293,7 @@
       "name": "Carne salada",
       "unit": "libra",
       "price": 125,
-      "img": "slices",
+      "img": "carne-salada",
       "active": true,
       "desc": "Curada en la casa, lista para freír con huevo."
     },
@@ -303,7 +303,7 @@
       "name": "Asar de cerdo",
       "unit": "libra",
       "price": 80,
-      "img": "lomo-cerdo",
+      "img": "asar-cerdo",
       "active": true,
       "desc": "Jugoso para el asado o la olla."
     },
@@ -361,7 +361,7 @@
       "name": "Fajitas de cerdo",
       "unit": "libra",
       "price": 85,
-      "img": "fajitas",
+      "img": "fajitas-cerdo",
       "active": true,
       "desc": "Tiras listas para el sartén."
     },
@@ -450,7 +450,7 @@
       "name": "Pollo en pieza",
       "unit": "libra",
       "price": 40,
-      "img": "pollo-entero",
+      "img": "pollo-piezas",
       "active": true,
       "validate": true,
       "desc": "Presas surtidas, listas para cocinar."
@@ -471,7 +471,7 @@
       "name": "Pechuga/ala",
       "unit": "libra",
       "price": 45,
-      "img": "pechuga",
+      "img": "pechuga-ala",
       "active": true,
       "validate": true,
       "desc": "Pechuga con ala, jugosa al horno."
@@ -722,7 +722,7 @@
       "name": "Bacon",
       "unit": "paquete",
       "price": 120,
-      "img": "tocino",
+      "img": "bacon",
       "active": true,
       "desc": "Tocino en lonjas, crocante para todo."
     },
