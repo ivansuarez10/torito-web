@@ -28,27 +28,19 @@
     },
     "carousel": [
       {
-        "img": "img/hero.webp",
-        "title": "De la\ncarnicería\na tu *mesa*",
-        "cta_text": "Armá tu pedido →",
-        "cta_link": "#catalogo",
-        "align": "left",
-        "on": true
-      },
-      {
-        "img": "img/hero-alt.webp",
-        "title": "Parrillada\ndel *finde*",
-        "cta_text": "Ver cortes →",
-        "cta_link": "#catalogo",
-        "align": "right",
-        "on": true
-      },
-      {
-        "img": "img/products/ribeye.webp",
-        "title": "Rib eye\n*premium*",
+        "img": "img/banners/barbacoa.jpg",
+        "title": "Chorizo *Barbacoa*",
         "cta_text": "Pedí el tuyo →",
         "cta_link": "#catalogo",
-        "align": "center",
+        "align": "izq",
+        "on": true
+      },
+      {
+        "img": "img/banners/ahumado.jpg",
+        "title": "Chorizo *Ahumado*",
+        "cta_text": "Armá tu pedido →",
+        "cta_link": "#catalogo",
+        "align": "izq",
         "on": true
       }
     ]
