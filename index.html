@@ -598,7 +598,7 @@
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
       items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote,over:!!l.big}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
-    try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
+    try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
 
     // ---- Mensaje de WhatsApp: SOLO la lista de productos. Datos/envío/totales/ubicación/folio van a Comandas (submit-order), NO al cliente. El total con cuenta de pago se le envía después desde Comandas (espera de pago). ----
     var s="Hola El Torito 👋 Me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
