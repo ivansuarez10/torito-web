@@ -561,7 +561,11 @@
     var envioConvenir=(ship.mode==="domicilio"&&!ship.located);
     var pickTxt=(ship.mode==="retiro")?(f.pick||"Lo antes posible"):"";
     var noteFull=(pickTxt?("Retiro: "+pickTxt+(f.note?" · ":"")):"")+f.note;
-    var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:f.addr,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
+    // Ubicación GPS: si el cliente compartió su pin, adjuntamos el link de Maps PEGADO a la dirección
+    // → viaja a Comandas y el repartidor lo abre de un toque. submit-order corta addr a 200 → dejamos margen.
+    var geoLink=(ship.mode==="domicilio"&&ship.pin)?("https://maps.google.com/?q="+ship.pin.lat.toFixed(6)+","+ship.pin.lng.toFixed(6)):"";
+    var addrFull=geoLink?((f.addr?f.addr.slice(0,130)+" · ":"")+"📍 Ubicación: "+geoLink):f.addr;
+    var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:addrFull,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
       items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote,over:!!l.big}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
