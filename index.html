@@ -122,6 +122,22 @@
   .cutchip.on{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
   .cutsel.warn label{color:var(--red)}
   .cutsel.warn .cutchip:not(.on){border-color:var(--red)}
+  /* Perfil local (sin login): saludo + repetir pedido + favoritos */
+  .welcome{margin:14px 16px 2px;background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+  .welcome-hi{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+  .welcome-hi .wave{font-size:17px;line-height:1}
+  .welcome-sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .welcome-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .btn-repeat{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:13.5px;padding:11px 15px;border-radius:11px;cursor:pointer;transition:background .15s;touch-action:manipulation}
+  .btn-repeat:hover{background:var(--red-d)} .btn-repeat:active{transform:scale(.97)} .btn-repeat svg{width:15px;height:15px;fill:currentColor}
+  .fav-label{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin:14px 0 8px}
+  .fav-row{display:flex;flex-wrap:wrap;gap:7px}
+  .fav-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;padding:8px 12px;border-radius:100px;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation}
+  .fav-chip:active{transform:scale(.96)} .fav-chip.added{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
+  .fav-chip svg{width:13px;height:13px;fill:currentColor;opacity:.65}
+  .empty-repeat{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px;cursor:pointer}
+  .empty-repeat svg{width:16px;height:16px;fill:currentColor}
+  @media (min-width:768px){.welcome{margin:14px 44px 2px}}
   /* Disclaimers de horario / retiro-entrega en el checkout */
   .disc-box{margin:12px 0 2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:9px}
   .disc-line{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--gold);line-height:1.35}
@@ -238,6 +254,8 @@
     <div class="step reveal"><div class="n slab">3</div><div class="t">Te lo llevamos</div><div class="d">Cortado a tu medida, a tu puerta.</div></div>
   </div>
 
+  <div id="welcomeHost"></div>
+
   <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
   <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
   <main id="catalog"><div class="loading">Cargando el catálogo…</div></main>
@@ -263,6 +281,72 @@
   function save(){localStorage.setItem("torito_cart_v2",JSON.stringify(cart))}
   function loadCuts(){try{return JSON.parse(localStorage.getItem("torito_cuts_v2")||"{}")}catch(e){return {}}}
   function saveCuts(){localStorage.setItem("torito_cuts_v2",JSON.stringify(cutSel))}
+  // ---- Perfil local (sin login): el navegador recuerda al cliente. Cero servidor, cero fricción. ----
+  var PROFILE=loadProfile(), FREQ=loadFreq(), LASTORDER=loadLastOrder();
+  function loadProfile(){try{return JSON.parse(localStorage.getItem("torito_profile_v1")||"null")}catch(e){return null}}
+  function saveProfile(){try{localStorage.setItem("torito_profile_v1",JSON.stringify(PROFILE))}catch(e){}}
+  function loadFreq(){try{return JSON.parse(localStorage.getItem("torito_freq_v1")||"{}")}catch(e){return {}}}
+  function saveFreq(){try{localStorage.setItem("torito_freq_v1",JSON.stringify(FREQ))}catch(e){}}
+  function loadLastOrder(){try{return JSON.parse(localStorage.getItem("torito_lastorder_v1")||"null")}catch(e){return null}}
+  function saveLastOrder(){try{localStorage.setItem("torito_lastorder_v1",JSON.stringify(LASTORDER))}catch(e){}}
+  function firstName(n){return (n||"").trim().split(/\s+/)[0]||"";}
+  function pesc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return c==="&"?"&amp;":c==="<"?"&lt;":"&gt;";});}
+  // Guarda el perfil al concretar un pedido: datos para autollenar + último pedido + frecuencia por producto.
+  function rememberOrder(f,lines){
+    PROFILE={name:f.name, phone:f.phone, addr:f.addr, mode:ship.mode,
+      pin:(ship.mode==="domicilio"&&ship.pin)?ship.pin:(PROFILE&&PROFILE.pin)||null, at:Date.now()};
+    saveProfile();
+    LASTORDER={items:lines.map(function(l){return {id:l.p.id, qty:l.qty, cut:l.cut||null}}), at:Date.now()};
+    saveLastOrder();
+    lines.forEach(function(l){ FREQ[l.p.id]=(FREQ[l.p.id]||0)+1; }); saveFreq();
+  }
+  // Reconstruye el carrito con el último pedido (mismas cantidades y cortes).
+  function repeatLast(){
+    if(!LASTORDER||!LASTORDER.items) return;
+    LASTORDER.items.forEach(function(it){ var p=prodById(it.id); if(!p) return;
+      cart[it.id]=Math.min(hardCap(p),(cart[it.id]||0)+(it.qty||UNIT[p.unit].def));
+      if(it.cut) cutSel[it.id]=it.cut; });
+    saveCuts(); save(); refreshCart(); if(sheetOpen){view="cart";renderSheet();} else openSheet();
+  }
+  // Agrega un favorito al carrito; si requiere corte y no hay elegido, lleva al producto para escogerlo.
+  function addFav(id,btn){
+    var p=prodById(id); if(!p) return;
+    if(p.cuts&&p.cuts.length&&!cutSel[id]){
+      if(sheetOpen) closeSheet();
+      showCat(p.cat);
+      var card=document.querySelector('.prod[data-pid="'+id+'"]');
+      if(card){ card.scrollIntoView({block:"center",behavior:"smooth"});
+        var cs=card.querySelector(".cutsel"); if(cs){cs.classList.add("warn"); setTimeout(function(){cs.classList.remove("warn");},2200);} }
+      return;
+    }
+    cart[id]=Math.min(hardCap(p),(cart[id]||0)+UNIT[p.unit].def); save(); refreshCart();
+    if(btn){ btn.classList.add("added"); var t=btn.innerHTML; btn.innerHTML='✓ Agregado';
+      setTimeout(function(){btn.classList.remove("added");btn.innerHTML=t;},1100); }
+  }
+  // Pinta el saludo + repetir + favoritos en el home (si el navegador ya conoce al cliente).
+  function renderWelcome(){
+    var host=document.getElementById("welcomeHost"); if(!host) return;
+    var favIds=Object.keys(FREQ).sort(function(a,b){return FREQ[b]-FREQ[a];}).filter(function(id){return prodById(id);}).slice(0,5);
+    var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
+    if(!PROFILE && !lastValid.length && !favIds.length){ host.innerHTML=""; return; }
+    var name=PROFILE?firstName(PROFILE.name):"";
+    var h='<div class="welcome reveal in">'+
+      '<div class="welcome-hi"><span class="wave">👋</span>'+(name?'¡Qué bueno verte de nuevo, '+pesc(name)+'!':'¡Bienvenido de vuelta!')+'</div>'+
+      '<div class="welcome-sub">Ya guardamos tus datos en este dispositivo — pedir es más rápido.</div>';
+    if(lastValid.length){
+      h+='<div class="welcome-actions"><button class="btn-repeat" id="btnRepeat"><svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4z"/></svg>Repetir mi último pedido ('+lastValid.length+')</button></div>';
+    }
+    if(favIds.length){
+      h+='<div class="fav-label">Lo que suele pedir</div><div class="fav-row">';
+      favIds.forEach(function(id){ var p=prodById(id);
+        h+='<button class="fav-chip" data-fav="'+id+'"><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>'+pesc(p.name)+'</button>'; });
+      h+='</div>';
+    }
+    h+='</div>';
+    host.innerHTML=h;
+    var br=document.getElementById("btnRepeat"); if(br)br.onclick=repeatLast;
+    host.querySelectorAll("[data-fav]").forEach(function(b){ b.onclick=function(){addFav(b.dataset.fav,b);}; });
+  }
   function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
   var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"}};
   function unitWord(t,q){var w={libra:["libra","libras"],paquete:["paquete","paquetes"],pieza:["pieza","piezas"]}[t]||["",""];return q===1?w[0]:w[1]}
@@ -303,7 +387,7 @@
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_BASE=d.meta.shipping.base||50; SHIP_PER_KM=d.meta.shipping.per_km||9}
-    render(); refreshCart();
+    render(); refreshCart(); renderWelcome();
   }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
   function renderPromo(){
@@ -416,7 +500,13 @@
 
   function cartView(){
     sTitle.textContent="Tu pedido"; setBack(false); var lines=cartLines();
-    if(!lines.length){sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.</div>';sFoot.innerHTML="";return}
+    if(!lines.length){
+      var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
+      var rep=lastValid.length?'<br><button class="empty-repeat" id="emptyRepeat"><svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4z"/></svg>Repetir mi último pedido ('+lastValid.length+')</button>':'';
+      sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.'+rep+'</div>';sFoot.innerHTML="";
+      var er=document.getElementById("emptyRepeat"); if(er)er.onclick=repeatLast;
+      return;
+    }
     var html="";
     lines.forEach(function(l){
       html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
@@ -486,7 +576,17 @@
     sFoot.innerHTML="";
     sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
     sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){var w=el.closest(".field");if(w)w.classList.remove("invalid")})});
-    ship.mode="retiro"; onDeliv("retiro"); renderSide();
+    // Autollenado desde el perfil local (sin login)
+    if(PROFILE){
+      var pv=function(id,v){var e=document.getElementById(id); if(e&&v)e.value=v;};
+      pv("f_name",PROFILE.name); pv("f_phone",PROFILE.phone); pv("f_addr",PROFILE.addr);
+    }
+    var startMode=(PROFILE&&PROFILE.mode==="domicilio")?"domicilio":"retiro";
+    var rad=sBody.querySelector('input[name="deliv"][value="'+startMode+'"]'); if(rad)rad.checked=true;
+    ship.mode=startMode; onDeliv(startMode);
+    // Restaurar la ubicación guardada → recalcula el envío al instante
+    if(startMode==="domicilio" && PROFILE && PROFILE.pin){ ship.pin=PROFILE.pin; ship.located=true; updateShip(); }
+    renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
   }
   function onDeliv(v){
@@ -576,6 +676,7 @@
       var nota=l.p.quote?" (a cotizar)":(l.p.validate?" (pendiente confirmar peso y disponibilidad)":"");
       s+="• "+unitQty(l.p,l.qty)+" de "+l.p.name+(l.cut?" ("+l.cut+")":"")+nota+"\n";
     });
+    rememberOrder(f,lines); // perfil local: datos + último pedido + favoritos para la próxima
     cart={};save();
     window.location.href="https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s);
   }
