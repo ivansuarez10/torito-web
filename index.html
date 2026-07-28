@@ -600,25 +600,12 @@
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
 
-    // ---- Mensaje de WhatsApp (tono consulta cálida si hay que pesar/cotizar) ----
-    var consulta=hasWhats();
-    var s="Hola El Torito 👋 ";
-    s+=consulta?"Me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n"
-               :"Quiero hacer este pedido:\n\n";
-    lines.forEach(function(l){s+="• "+l.p.name+(l.cut?" ("+l.cut+")":"")+" — "+unitQty(l.p,l.qty)+" · "+(l.p.quote?"a cotizar":money(l.total)+(l.p.validate?" (se pesa)":"")+(l.big?" (cantidad grande — confirmar disponibilidad)":""))+"\n"});
-    s+="\nProductos"+(hasEst()?" (estimado)":"")+": "+money(prod);
-    if(ship.mode==="domicilio"&&ship.located&&ship.ok)s+="\nEnvío ("+ship.km.toFixed(1)+" km): "+money(ship.cost);
-    else if(envioConvenir)s+="\nEnvío: a convenir";
-    s+="\n*Total"+(hasEst()||envioConvenir?" estimado":"")+": "+money(prod+envio)+(envioConvenir?" + envío":"")+"*";
-    s+="\n\n*Cliente:* "+f.name+"\n*Tel:* "+f.phone+"\n";
-    if(ship.mode==="domicilio"){
-      s+="*Entrega:* A domicilio — "+(f.addr||"(ver ubicación)");
-      if(ship.pin)s+="\n*Ubicación:* https://maps.google.com/?q="+ship.pin.lat+","+ship.pin.lng;
-    } else {
-      s+="*Entrega:* Retiro en local"+(pickTxt?(" — "+pickTxt):"");
-    }
-    if(f.note)s+="\n*Nota:* "+f.note;
-    s+="\n\n_Folio "+fol+"_";
+    // ---- Mensaje de WhatsApp: SOLO la lista de productos. Datos/envío/totales/ubicación/folio van a Comandas (submit-order), NO al cliente. El total con cuenta de pago se le envía después desde Comandas (espera de pago). ----
+    var s="Hola El Torito 👋 Me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
+    lines.forEach(function(l){
+      var nota=l.p.quote?" (a cotizar)":(l.p.validate?" (pendiente confirmar peso y disponibilidad)":"");
+      s+="• "+unitQty(l.p,l.qty)+" de "+l.p.name+(l.cut?" ("+l.cut+")":"")+nota+"\n";
+    });
     cart={};save();
     window.location.href="https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s);
   }
