@@ -114,9 +114,14 @@
   .prod .sb{color:var(--muted);font-size:12px;margin-top:3px;min-height:15px}
   .prod .rate{color:var(--gold);font-weight:700;font-size:12.5px;margin-top:8px}
   .cutsel{margin-top:10px}
-  .cutsel label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
-  .cutsel select{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--cream);font-size:14px;font-family:inherit;outline:none}
-  .cutsel select:focus{border-color:var(--red)}
+  .cutsel label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;transition:color .2s}
+  /* Selector de corte por chips tocables (sin <select> nativo — funciona igual en iOS/Android/Huawei/Xiaomi) */
+  .cuts{display:flex;flex-wrap:wrap;gap:7px}
+  .cutchip{flex:1 1 auto;min-width:76px;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;line-height:1.1;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .cutchip:active{transform:scale(.96)}
+  .cutchip.on{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
+  .cutsel.warn label{color:var(--red)}
+  .cutsel.warn .cutchip:not(.on){border-color:var(--red)}
   .stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
   .stepper button{width:40px;height:40px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
   .stepper button:hover{background:#2c2c2c} .stepper button:active{transform:scale(.94)}
@@ -320,7 +325,7 @@
       var grid=sec.querySelector(".grid");
       items.forEach(function(p){
         draft[p.id]=UNIT[p.unit].def;
-        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><select data-cut><option value="" '+(cutSel[p.id]?"":"selected")+' disabled hidden>\u2014 Eleg\u00ed el corte \u2014</option>'+p.cuts.map(function(c){return '<option'+(cutSel[p.id]===c?" selected":"")+'>'+c+'</option>'}).join("")+'</select></div>':"";
+        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><div class="cuts" role="group" aria-label="Eleg\u00ed el corte">'+p.cuts.map(function(c){var on=cutSel[p.id]===c;return '<button type="button" class="cutchip'+(on?" on":"")+'" data-cutopt="'+c.replace(/"/g,"&quot;")+'" aria-pressed="'+(on?"true":"false")+'">'+c+'</button>'}).join("")+'</div></div>':"";
         var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
         var badge=p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':''));
         var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
@@ -338,17 +343,23 @@
     });
     setupNav(); showCat(activeCat||firstCat()); observeReveal();
   }
-  catEl.addEventListener("change",function(e){ if(e.target.matches&&e.target.matches("[data-cut]")){var card=e.target.closest(".prod"); if(card){cutSel[card.dataset.pid]=e.target.value; saveCuts(); e.target.style.borderColor="";}} });
   function prodById(id){return PROD.find(function(p){return p.id===id})}
   function linePrice(p,q){ if(p.quote||p.price==null)return 0; return p.price*q }
 
   catEl.addEventListener("click",function(e){
     var card=e.target.closest(".prod"); if(!card) return;
     var p=prodById(card.dataset.pid), u=UNIT[p.unit];
+    var cutBtn=e.target.closest("[data-cutopt]");
+    if(cutBtn){
+      cutSel[p.id]=cutBtn.dataset.cutopt; saveCuts();
+      card.querySelectorAll("[data-cutopt]").forEach(function(c){var on=(c===cutBtn);c.classList.toggle("on",on);c.setAttribute("aria-pressed",on?"true":"false")});
+      var cwOk=card.querySelector(".cutsel"); if(cwOk)cwOk.classList.remove("warn");
+      return;
+    }
     if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min,draft[p.id]-u.step));
     else if(e.target.closest("[data-inc]")) setDraft(card,p,Math.min(hardCap(p),draft[p.id]+u.step));
     else if(e.target.closest("[data-add]")){
-      if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cs=card.querySelector("[data-cut]");if(cs){cs.style.borderColor="var(--red)";try{cs.focus()}catch(_){}}return;}
+      if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cw=card.querySelector(".cutsel");if(cw){cw.classList.add("warn");try{cw.scrollIntoView({block:"center",behavior:"smooth"})}catch(_){}}return;}
       cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+draft[p.id]); save(); refreshCart();
       var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
       setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
