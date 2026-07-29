@@ -21,6 +21,9 @@
 <meta name="twitter:image" content="https://carniceriaeltorito.com/img/og-image.jpg" />
 <link rel="icon" href="img/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+<!-- Mapa (pin arrastrable para elegir otra dirección de entrega) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
   :root{
     --bg:#000000; --bg2:#0d0d0d; --card:#161616; --card2:#232323;
@@ -213,6 +216,7 @@
   .shipbox{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;font-size:13.5px}
   .shipbox b{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;color:var(--gold)} .shipbox.err{border-color:var(--red);color:#ff9a9a}
   .geobtn{width:100%;margin-top:8px;background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .altlink{display:block;margin:10px auto 2px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;transition:color .15s} .altlink u{color:var(--cream)} .altlink:hover{color:var(--cream)}
   .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s} .pay-wa:hover{background:var(--wa-d)} .pay-wa svg{width:20px;height:20px;fill:#fff}
   .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
@@ -230,6 +234,25 @@
   .co-line:last-of-type{border-bottom:0}
   .co-line .nm{color:var(--cream);line-height:1.3} .co-line .nm small{color:var(--muted);display:block;font-size:11.5px}
   .co-line .vl{color:var(--gold);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;flex:none;white-space:nowrap}
+
+  /* Popup de mapa: elegir otra ubicación con pin arrastrable */
+  .mapov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:16px}
+  .mapov.open{display:flex}
+  .mapcard{background:var(--bg2);border:1px solid var(--line);border-radius:18px;width:min(560px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  .maphead{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+  .maphead h3{font-size:18px} .maphead .close{background:var(--card);border:none;color:var(--cream);width:34px;height:34px;border-radius:100px;font-size:18px;cursor:pointer;flex:none}
+  .mapsearch{display:flex;gap:8px;padding:12px 18px 6px}
+  .mapsearch input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
+  .mapsearch input:focus{border-color:var(--red)}
+  .mapsearch button{background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:0 16px;font-weight:700;font-size:14px;cursor:pointer;flex:none}
+  .maphint{padding:2px 18px 10px;color:var(--muted);font-size:12.5px}
+  .mapwrap{position:relative;flex:1;min-height:280px}
+  #mapEl{position:absolute;inset:0;width:100%;height:100%;background:#0d0d0d}
+  .mapfoot{padding:14px 18px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .mapreadout{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted)}
+  .mapreadout b{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:17px;color:var(--gold)} .mapreadout.err b{color:#ff9a9a}
+  .mapconfirm{width:100%;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px;border-radius:13px;cursor:pointer;transition:background .2s} .mapconfirm:hover{background:var(--red-d)} .mapconfirm:disabled{opacity:.45;cursor:not-allowed}
+  .leaflet-container{font-family:inherit}
 
   @media (min-width:520px){ .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))} }
   @media (min-width:768px){
@@ -298,6 +321,16 @@
 <div class="fab" id="fab"><button id="fabBtn"><span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span><span class="tot" id="fabTotal">L 0</span></button></div>
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
+<!-- Popup: elegir otra dirección de entrega con pin arrastrable -->
+<div class="mapov" id="mapov" aria-hidden="true">
+  <div class="mapcard" role="dialog" aria-modal="true" aria-label="Elegir ubicación de entrega">
+    <div class="maphead"><h3 class="slab">Elegí la ubicación de entrega</h3><button class="close" id="mapClose" aria-label="Cerrar">✕</button></div>
+    <div class="mapsearch"><input id="mapQ" type="text" placeholder="Buscar dirección (ej. Ferreplaza Villa Vieja)" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div>
+    <div class="maphint">Arrastrá el pin al portón exacto de entrega, o tocá el mapa para moverlo.</div>
+    <div class="mapwrap"><div id="mapEl"></div></div>
+    <div class="mapfoot"><div class="mapreadout" id="mapRead"><span>Moviendo el pin…</span><b>—</b></div><button class="mapconfirm" id="mapConfirm" type="button">Confirmar ubicación</button></div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -597,6 +630,7 @@
           '<div id="pickWrap"><div class="field" id="w_pick"><label>¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
           '<div id="domiWrap" style="display:none">'+
             '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación (calcula el envío)</button>'+
+            '<button class="altlink" id="mapBtn" type="button">¿Es para otra dirección? <u>Elegila en el mapa</u></button>'+
             '<div class="shipbox" id="shipBox"><span>Tocá el botón para calcular el envío por distancia — o escribí tu dirección y lo coordinamos.</span><b>—</b></div>'+
             '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
           '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
@@ -619,6 +653,7 @@
     if(startMode==="domicilio" && PROFILE && PROFILE.pin){ ship.pin=PROFILE.pin; ship.located=true; updateShip(); }
     renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
+    document.getElementById("mapBtn") && (document.getElementById("mapBtn").onclick=openMapPicker);
   }
   function onDeliv(v){
     var d=document.getElementById("domiWrap"), pk=document.getElementById("pickWrap");
@@ -648,6 +683,53 @@
     var w=document.getElementById("w_addr"); if(w)w.classList.remove("invalid");
     renderSide();
   }
+
+  // ---- Popup de mapa: elegir otra dirección con pin arrastrable (Leaflet + OpenStreetMap, gratis) ----
+  var MAP=null, MAPMARK=null, mapPin=null;
+  function mapReadout(ll){
+    mapPin={lat:ll.lat,lng:ll.lng};
+    var km=haversine(ORIGIN,mapPin), rd=document.getElementById("mapRead"), cf=document.getElementById("mapConfirm");
+    if(!rd)return;
+    if(km>25){ rd.className="mapreadout err"; rd.innerHTML='<span>Fuera de zona · por ahora solo Tegucigalpa</span><b>—</b>'; if(cf)cf.disabled=true; }
+    else{ var cost=Math.max(SHIP_BASE,Math.round((SHIP_BASE+SHIP_PER_KM*km)/5)*5); rd.className="mapreadout"; rd.innerHTML='<span>'+km.toFixed(1)+' km · envío estimado</span><b>'+money(cost)+'</b>'; if(cf)cf.disabled=false; }
+  }
+  function openMapPicker(){
+    var ov=document.getElementById("mapov"); if(!ov)return;
+    if(typeof L==="undefined"){ alert("El mapa aún se está cargando. Probá de nuevo en un momento."); return; }
+    var start=ship.pin||(PROFILE&&PROFILE.pin)||ORIGIN;
+    ov.classList.add("open"); ov.setAttribute("aria-hidden","false");
+    if(!MAP){
+      MAP=L.map("mapEl",{zoomControl:true}).setView([start.lat,start.lng],14);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(MAP);
+      MAPMARK=L.marker([start.lat,start.lng],{draggable:true,autoPan:true}).addTo(MAP);
+      MAPMARK.on("drag",function(e){ mapReadout(e.target.getLatLng()); });
+      MAP.on("click",function(e){ MAPMARK.setLatLng(e.latlng); mapReadout(e.latlng); });
+    }else{ MAP.setView([start.lat,start.lng],14); MAPMARK.setLatLng([start.lat,start.lng]); }
+    mapReadout({lat:start.lat,lng:start.lng});
+    setTimeout(function(){ MAP.invalidateSize(); },200);
+  }
+  function closeMapPicker(){ var ov=document.getElementById("mapov"); if(ov){ov.classList.remove("open");ov.setAttribute("aria-hidden","true");} }
+  function mapSearchGo(){
+    var el=document.getElementById("mapQ"), q=el?(el.value||"").trim():""; if(!q||!MAP)return;
+    var rd=document.getElementById("mapRead"); if(rd){rd.className="mapreadout";rd.innerHTML='<span>Buscando dirección…</span><b>…</b>';}
+    fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=hn&q="+encodeURIComponent(q+", Tegucigalpa, Honduras"),{headers:{"Accept":"application/json"}})
+      .then(function(r){return r.json()}).then(function(a){
+        if(a&&a[0]){ var ll={lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)}; MAP.setView([ll.lat,ll.lng],15); MAPMARK.setLatLng([ll.lat,ll.lng]); mapReadout(ll); }
+        else if(rd){ rd.className="mapreadout err"; rd.innerHTML='<span>No encontré esa dirección · arrastrá el pin a mano</span><b>—</b>'; }
+      }).catch(function(){ if(rd){rd.className="mapreadout err";rd.innerHTML='<span>No se pudo buscar · arrastrá el pin a mano</span><b>—</b>';} });
+  }
+  function confirmMapPin(){
+    if(!mapPin)return; if(haversine(ORIGIN,mapPin)>25)return;
+    ship.mode="domicilio"; ship.pin={lat:mapPin.lat,lng:mapPin.lng}; ship.located=true;
+    closeMapPicker(); updateShip();
+  }
+  (function wireMap(){
+    var c=document.getElementById("mapClose"); if(c)c.onclick=closeMapPicker;
+    var g=document.getElementById("mapGo"); if(g)g.onclick=mapSearchGo;
+    var cf=document.getElementById("mapConfirm"); if(cf)cf.onclick=confirmMapPin;
+    var q=document.getElementById("mapQ"); if(q)q.addEventListener("keydown",function(e){ if(e.key==="Enter"){e.preventDefault();mapSearchGo();} });
+    var ov=document.getElementById("mapov"); if(ov)ov.addEventListener("click",function(e){ if(e.target===ov)closeMapPicker(); });
+  })();
   function renderSide(){
     var side=document.getElementById("coSide"); if(!side)return;
     var isDomi=ship.mode==="domicilio";
