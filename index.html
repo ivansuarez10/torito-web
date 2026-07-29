@@ -743,6 +743,7 @@
     return fetch("https://photon.komoot.io/api/?limit=6&lang=default&bbox=-87.50,13.80,-86.90,14.40&lat=14.0985&lon=-87.2075&q="+encodeURIComponent(q))
       .then(function(r){return r.json()}).then(function(j){ return (j&&j.features)||[]; });
   }
+  function sugEsc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   function sugLabel(f){
     var p=f.properties||{};
     var main=p.name||[p.street,p.housenumber].filter(Boolean).join(" ")||p.city||p.district||p.locality||"Ubicación";
@@ -754,7 +755,7 @@
   function renderSug(feats){
     var s=document.getElementById("mapSug"); if(!s)return; sugItems=feats; sugActive=-1;
     if(!feats.length){ s.innerHTML='<div class="empty">Sin sugerencias · arrastrá el pin a mano</div>'; s.hidden=false; return; }
-    s.innerHTML=feats.map(function(f,i){ var l=sugLabel(f); return '<button type="button" data-i="'+i+'">'+esc(l.main)+(l.sub?'<span class="sub">'+esc(l.sub)+'</span>':'')+'</button>'; }).join("");
+    s.innerHTML=feats.map(function(f,i){ var l=sugLabel(f); return '<button type="button" data-i="'+i+'">'+sugEsc(l.main)+(l.sub?'<span class="sub">'+sugEsc(l.sub)+'</span>':'')+'</button>'; }).join("");
     s.hidden=false;
     var bs=s.querySelectorAll("button"); for(var k=0;k<bs.length;k++){ (function(b){ b.onclick=function(){ pickSug(+b.getAttribute("data-i")); }; })(bs[k]); }
   }
