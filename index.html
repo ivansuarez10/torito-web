@@ -816,7 +816,7 @@
     var reduce=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
     var imgs=[], iw=1, ih=1, ready=0;
     function pad(i){return ("000"+i).slice(-3);}
-    for(var i=1;i<=N;i++){ var im=new Image(); im.onload=function(){ if(ready===0){iw=this.naturalWidth;ih=this.naturalHeight;} ready++; if(ready===1){fit();onScroll();} }; im.src="img/cine/"+dir+"_"+pad(i)+".jpg"; imgs.push(im); }
+    for(var i=1;i<=N;i++){ var im=new Image(); im.onload=function(){ if(ready===0){iw=this.naturalWidth;ih=this.naturalHeight;} ready++; if(ready===1){fit();onScroll();} }; im.src="img/cine/"+dir+"_"+pad(i)+".jpg?q=4k"; imgs.push(im); }
     var dpr=1;
     function fit(){ dpr=Math.min(window.devicePixelRatio||1,2); cv.width=Math.round(innerWidth*dpr); cv.height=Math.round(innerHeight*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
     function draw(p){ var idx=Math.max(0,Math.min(N-1,Math.round(p*(N-1)))); var im=imgs[idx]; if(!im||!im.complete||!im.naturalWidth){im=imgs[0];if(!im||!im.complete)return;}
