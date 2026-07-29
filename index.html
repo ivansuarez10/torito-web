@@ -49,7 +49,7 @@
   .reveal.in{opacity:1;transform:none}
   @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
   /* ===== Cine de entrada: hero scroll-scrubbed responsivo (vertical cel / wide web) ===== */
-  .cine{position:relative;height:340vh;background:#000}
+  .cine{position:relative;height:250vh;background:#000}
   .cine-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
   #cineCv{position:absolute;inset:0;width:100%;height:100%;display:block}
   .cine-vig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 52%,rgba(0,0,0,.9) 100%)}
@@ -94,14 +94,14 @@
   .step .n{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--red);font-size:20px}
   .step .t{font-weight:700;font-size:14px;margin-top:2px}
   .step .d{color:var(--muted);font-size:12.5px;margin-top:2px}
-  /* Ticker de confianza — loop continuo sin costura, sin cajas (reemplaza los steps) */
-  .ticker{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:15px 0;background:#000;
-    -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
-  .ticker-track{display:flex;align-items:center;gap:22px;width:max-content;animation:tickerMove 32s linear infinite}
+  /* Ticker en loop — cada frase ocupa un "slot" fijo bien espaciado (se lee con calma), sin cajas */
+  .ticker{--slot:min(86vw,460px);overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0;background:#000;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+  .ticker-track{display:flex;width:max-content;animation:tickerMove 11s linear infinite}
   .ticker:hover .ticker-track{animation-play-state:paused}
-  .ti{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap}
-  .sep{width:4px;height:4px;border-radius:50%;background:var(--red);flex:none}
-  @keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ti{flex:none;width:var(--slot);display:flex;align-items:center;justify-content:center;gap:14px;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap}
+  .ti .sep{width:5px;height:5px;border-radius:50%;background:var(--red);flex:none}
+  @keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--slot)))}}
   @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
 
   /* Promo banner (editable desde el panel) */
@@ -173,7 +173,13 @@
   .fav-chip svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:2.4;stroke-linecap:round}
   .empty-repeat{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px;cursor:pointer}
   .empty-repeat svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-  @media (min-width:768px){.welcome{padding:32px 44px 6px}}
+  @media (min-width:768px){
+    .welcome{padding:34px 44px 8px;text-align:center}
+    .welcome-over,.welcome-actions,.fav-row{justify-content:center}
+    .welcome-sub{margin-left:auto;margin-right:auto}
+    .searchbar .f{max-width:640px;margin:0 auto}
+    .nav .scroll{justify-content:center}
+  }
   /* Disclaimers de horario / retiro-entrega en el checkout */
   .disc-box{margin:12px 0 2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:9px}
   .disc-line{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--gold);line-height:1.35}
@@ -317,12 +323,14 @@
   </section>
 
   <div class="ticker" aria-hidden="true"><div class="ticker-track">
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
-    <span class="ti">Armá tu pedido a tu gusto</span><i class="sep"></i>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
+    <span class="ti"><i class="sep"></i>Armá tu pedido a tu gusto</span>
   </div></div>
 
   <div id="welcomeHost"></div>
