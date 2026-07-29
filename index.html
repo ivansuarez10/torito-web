@@ -172,11 +172,6 @@
   .welcome-actions{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
   .btn-repeat{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:13.5px;padding:11px 15px;border-radius:11px;cursor:pointer;transition:background .18s;touch-action:manipulation}
   .btn-repeat:hover{background:var(--red-d)} .btn-repeat:active{transform:scale(.97)} .btn-repeat svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-  .fav-label{position:relative;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:16px 0 9px}
-  .fav-row{position:relative;display:flex;flex-wrap:wrap;gap:7px}
-  .fav-chip{display:inline-flex;align-items:center;gap:6px;background:#0d0d0d;border:1px solid var(--line);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:100px;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation}
-  .fav-chip:hover{border-color:var(--red);color:#fff} .fav-chip:active{transform:scale(.96)} .fav-chip.added{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
-  .fav-chip svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:2.4;stroke-linecap:round}
   .empty-repeat{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px;cursor:pointer}
   .empty-repeat svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   @media (min-width:768px){.welcome{margin:14px 44px 2px}}
@@ -376,6 +371,7 @@
   function firstName(n){return (n||"").trim().split(/\s+/)[0]||"";}
   function pesc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return c==="&"?"&amp;":c==="<"?"&lt;":"&gt;";});}
   // Guarda el perfil al concretar un pedido: datos para autollenar + último pedido + frecuencia por producto.
+  // (FREQ se sigue acumulando aunque hoy nada la muestre — queda lista para la fase de lealtad.)
   function rememberOrder(f,lines){
     PROFILE={name:f.name, phone:f.phone, addr:f.addr, mode:ship.mode,
       pin:(ship.mode==="domicilio"&&ship.pin)?ship.pin:(PROFILE&&PROFILE.pin)||null, at:Date.now()};
@@ -392,27 +388,11 @@
       if(it.cut) cutSel[it.id]=it.cut; });
     saveCuts(); save(); refreshCart(); if(sheetOpen){view="cart";renderSheet();} else openSheet();
   }
-  // Agrega un favorito al carrito; si requiere corte y no hay elegido, lleva al producto para escogerlo.
-  function addFav(id,btn){
-    var p=prodById(id); if(!p) return;
-    if(p.cuts&&p.cuts.length&&!cutSel[id]){
-      if(sheetOpen) closeSheet();
-      showCat(p.cat);
-      var card=document.querySelector('.prod[data-pid="'+id+'"]');
-      if(card){ card.scrollIntoView({block:"center",behavior:"smooth"});
-        var cs=card.querySelector(".cutsel"); if(cs){cs.classList.add("warn"); setTimeout(function(){cs.classList.remove("warn");},2200);} }
-      return;
-    }
-    cart[id]=Math.min(hardCap(p),(cart[id]||0)+UNIT[p.unit].def); save(); refreshCart();
-    if(btn){ btn.classList.add("added"); var t=btn.innerHTML; btn.innerHTML='✓ Agregado';
-      setTimeout(function(){btn.classList.remove("added");btn.innerHTML=t;},1100); }
-  }
-  // Pinta el saludo + repetir + favoritos en el home (si el navegador ya conoce al cliente).
+  // Pinta el saludo + repetir pedido en el home (si el navegador ya conoce al cliente).
   function renderWelcome(){
     var host=document.getElementById("welcomeHost"); if(!host) return;
-    var favIds=Object.keys(FREQ).sort(function(a,b){return FREQ[b]-FREQ[a];}).filter(function(id){return prodById(id);}).slice(0,5);
     var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
-    if(!PROFILE && !lastValid.length && !favIds.length){ host.innerHTML=""; return; }
+    if(!PROFILE && !lastValid.length){ host.innerHTML=""; return; }
     var name=PROFILE?firstName(PROFILE.name):"";
     var hasLast=lastValid.length>0;
     var h='<div class="welcome">'+
@@ -423,16 +403,9 @@
     if(hasLast){
       h+='<div class="welcome-actions"><button class="btn-repeat" id="btnRepeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Repetir mi pedido ('+lastValid.length+')</button></div>';
     }
-    if(favIds.length){
-      h+='<div class="fav-label">Lo de siempre</div><div class="fav-row">';
-      favIds.forEach(function(id){ var p=prodById(id);
-        h+='<button class="fav-chip" data-fav="'+id+'"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'+pesc(p.name)+'</button>'; });
-      h+='</div>';
-    }
     h+='</div>';
     host.innerHTML=h;
     var br=document.getElementById("btnRepeat"); if(br)br.onclick=repeatLast;
-    host.querySelectorAll("[data-fav]").forEach(function(b){ b.onclick=function(){addFav(b.dataset.fav,b);}; });
   }
   function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
   var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"}};
