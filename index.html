@@ -256,13 +256,20 @@
   .mapsearch input:focus{border-color:var(--red)}
   .mapsearch button{background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:0 16px;font-weight:700;font-size:14px;cursor:pointer;flex:none}
   .maphint{padding:2px 18px 10px;color:var(--muted);font-size:12.5px}
-  .mapwrap{position:relative;flex:1;min-height:280px}
+  .mapwrap{position:relative;flex:1;min-height:280px;z-index:1}
   #mapEl{position:absolute;inset:0;width:100%;height:100%;background:#0d0d0d}
   .mapfoot{padding:14px 18px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
   .mapreadout{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted)}
   .mapreadout b{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:17px;color:var(--gold)} .mapreadout.err b{color:#ff9a9a}
   .mapconfirm{width:100%;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px;border-radius:13px;cursor:pointer;transition:background .2s} .mapconfirm:hover{background:var(--red-d)} .mapconfirm:disabled{opacity:.45;cursor:not-allowed}
   .leaflet-container{font-family:inherit}
+  .mapsearchwrap{position:relative;z-index:5}
+  .mapsug{position:absolute;left:18px;right:18px;top:100%;margin-top:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;max-height:232px;overflow-y:auto;box-shadow:0 12px 28px rgba(0,0,0,.55);z-index:6}
+  .mapsug[hidden]{display:none}
+  .mapsug button{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);color:var(--cream);font-family:inherit;font-size:14px;line-height:1.3;padding:11px 14px;cursor:pointer}
+  .mapsug button:last-child{border-bottom:0} .mapsug button:hover,.mapsug button.active{background:var(--card2)}
+  .mapsug .sub{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .mapsug .empty{padding:12px 14px;color:var(--muted);font-size:13px}
 
   @media (min-width:520px){ .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))} }
   @media (min-width:768px){
@@ -338,7 +345,7 @@
 <div class="mapov" id="mapov" aria-hidden="true">
   <div class="mapcard" role="dialog" aria-modal="true" aria-label="Elegir ubicación de entrega">
     <div class="maphead"><h3 class="slab">Elegí la ubicación de entrega</h3><button class="close" id="mapClose" aria-label="Cerrar">✕</button></div>
-    <div class="mapsearch"><input id="mapQ" type="text" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div>
+    <div class="mapsearchwrap"><div class="mapsearch"><input id="mapQ" type="text" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div><div class="mapsug" id="mapSug" hidden></div></div>
     <div class="maphint">Arrastrá el pin al portón exacto de entrega, o tocá el mapa para moverlo.</div>
     <div class="mapwrap"><div id="mapEl"></div></div>
     <div class="mapfoot"><div class="mapreadout" id="mapRead"><span>Moviendo el pin…</span><b>—</b></div><button class="mapconfirm" id="mapConfirm" type="button">Confirmar ubicación</button></div>
@@ -715,20 +722,52 @@
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(MAP);
       MAPMARK=L.marker([start.lat,start.lng],{draggable:true,autoPan:true}).addTo(MAP);
       MAPMARK.on("drag",function(e){ mapReadout(e.target.getLatLng()); });
-      MAP.on("click",function(e){ MAPMARK.setLatLng(e.latlng); mapReadout(e.latlng); });
+      MAP.on("click",function(e){ MAPMARK.setLatLng(e.latlng); mapReadout(e.latlng); hideSug(); });
     }else{ MAP.setView([start.lat,start.lng],14); MAPMARK.setLatLng([start.lat,start.lng]); }
     mapReadout({lat:start.lat,lng:start.lng});
     setTimeout(function(){ MAP.invalidateSize(); },200);
   }
-  function closeMapPicker(){ var ov=document.getElementById("mapov"); if(ov){ov.classList.remove("open");ov.setAttribute("aria-hidden","true");} }
+  function closeMapPicker(){ hideSug(); var ov=document.getElementById("mapov"); if(ov){ov.classList.remove("open");ov.setAttribute("aria-hidden","true");} }
+  // Autocompletado de direcciones con Photon (OpenStreetMap) — gratis, sin API key, pensado para typeahead
+  var sugItems=[], sugActive=-1, sugTimer=null, sugSeq=0;
+  function photonSearch(q){
+    // bbox acota a Tegucigalpa metro (filtro duro: sin ruido internacional ni de otros pueblos) + bias al local
+    return fetch("https://photon.komoot.io/api/?limit=6&lang=default&bbox=-87.50,13.80,-86.90,14.40&lat=14.0985&lon=-87.2075&q="+encodeURIComponent(q))
+      .then(function(r){return r.json()}).then(function(j){ return (j&&j.features)||[]; });
+  }
+  function sugLabel(f){
+    var p=f.properties||{};
+    var main=p.name||[p.street,p.housenumber].filter(Boolean).join(" ")||p.city||p.district||p.locality||"Ubicación";
+    var parts=[]; [p.district,p.suburb,p.locality,p.city,p.state].forEach(function(v){ if(v&&v!==main&&parts.indexOf(v)<0)parts.push(v); });
+    return { main:main, sub:parts.slice(0,2).join(", ") };
+  }
+  function hideSug(){ var s=document.getElementById("mapSug"); if(s){s.hidden=true;s.innerHTML="";} sugItems=[];sugActive=-1; }
+  function highlightSug(){ var s=document.getElementById("mapSug"); if(!s)return; var bs=s.querySelectorAll("button"); for(var i=0;i<bs.length;i++)bs[i].classList.toggle("active",i===sugActive); if(sugActive>=0&&bs[sugActive])bs[sugActive].scrollIntoView({block:"nearest"}); }
+  function renderSug(feats){
+    var s=document.getElementById("mapSug"); if(!s)return; sugItems=feats; sugActive=-1;
+    if(!feats.length){ s.innerHTML='<div class="empty">Sin sugerencias · arrastrá el pin a mano</div>'; s.hidden=false; return; }
+    s.innerHTML=feats.map(function(f,i){ var l=sugLabel(f); return '<button type="button" data-i="'+i+'">'+esc(l.main)+(l.sub?'<span class="sub">'+esc(l.sub)+'</span>':'')+'</button>'; }).join("");
+    s.hidden=false;
+    var bs=s.querySelectorAll("button"); for(var k=0;k<bs.length;k++){ (function(b){ b.onclick=function(){ pickSug(+b.getAttribute("data-i")); }; })(bs[k]); }
+  }
+  function pickSug(i){
+    var f=sugItems[i]; if(!f||!f.geometry||!MAP)return;
+    var ll={lat:f.geometry.coordinates[1], lng:f.geometry.coordinates[0]};
+    var l=sugLabel(f); var q=document.getElementById("mapQ"); if(q)q.value=l.main;
+    MAP.setView([ll.lat,ll.lng],16); MAPMARK.setLatLng([ll.lat,ll.lng]); mapReadout(ll); hideSug();
+  }
+  function onMapQInput(){
+    var q=(document.getElementById("mapQ").value||"").trim();
+    if(sugTimer)clearTimeout(sugTimer);
+    if(q.length<3){ hideSug(); return; }
+    sugTimer=setTimeout(function(){ var my=++sugSeq; photonSearch(q).then(function(feats){ if(my===sugSeq)renderSug(feats); }).catch(function(){}); }, 350);
+  }
   function mapSearchGo(){
     var el=document.getElementById("mapQ"), q=el?(el.value||"").trim():""; if(!q||!MAP)return;
+    if(sugActive>=0&&sugItems[sugActive]){ pickSug(sugActive); return; }
+    if(sugItems.length){ pickSug(0); return; }
     var rd=document.getElementById("mapRead"); if(rd){rd.className="mapreadout";rd.innerHTML='<span>Buscando dirección…</span><b>…</b>';}
-    fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=hn&q="+encodeURIComponent(q+", Tegucigalpa, Honduras"),{headers:{"Accept":"application/json"}})
-      .then(function(r){return r.json()}).then(function(a){
-        if(a&&a[0]){ var ll={lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)}; MAP.setView([ll.lat,ll.lng],15); MAPMARK.setLatLng([ll.lat,ll.lng]); mapReadout(ll); }
-        else if(rd){ rd.className="mapreadout err"; rd.innerHTML='<span>No encontré esa dirección · arrastrá el pin a mano</span><b>—</b>'; }
-      }).catch(function(){ if(rd){rd.className="mapreadout err";rd.innerHTML='<span>No se pudo buscar · arrastrá el pin a mano</span><b>—</b>';} });
+    photonSearch(q).then(function(feats){ if(feats.length){ sugItems=feats; pickSug(0); } else if(rd){ rd.className="mapreadout err"; rd.innerHTML='<span>No encontré esa dirección · arrastrá el pin a mano</span><b>—</b>'; } }).catch(function(){ if(rd){rd.className="mapreadout err";rd.innerHTML='<span>No se pudo buscar · arrastrá el pin a mano</span><b>—</b>';} });
   }
   function confirmMapPin(){
     if(!mapPin)return; if(haversine(ORIGIN,mapPin)>25)return;
@@ -739,7 +778,18 @@
     var c=document.getElementById("mapClose"); if(c)c.onclick=closeMapPicker;
     var g=document.getElementById("mapGo"); if(g)g.onclick=mapSearchGo;
     var cf=document.getElementById("mapConfirm"); if(cf)cf.onclick=confirmMapPin;
-    var q=document.getElementById("mapQ"); if(q)q.addEventListener("keydown",function(e){ if(e.key==="Enter"){e.preventDefault();mapSearchGo();} });
+    var q=document.getElementById("mapQ");
+    if(q){
+      q.addEventListener("input",onMapQInput);
+      q.addEventListener("keydown",function(e){
+        var s=document.getElementById("mapSug"), open=s&&!s.hidden&&sugItems.length;
+        if(e.key==="ArrowDown"&&open){ e.preventDefault(); sugActive=Math.min(sugItems.length-1,sugActive+1); highlightSug(); }
+        else if(e.key==="ArrowUp"&&open){ e.preventDefault(); sugActive=Math.max(0,sugActive-1); highlightSug(); }
+        else if(e.key==="Enter"){ e.preventDefault(); mapSearchGo(); }
+        else if(e.key==="Escape"){ hideSug(); }
+      });
+      q.addEventListener("blur",function(){ setTimeout(hideSug,150); });
+    }
     var ov=document.getElementById("mapov"); if(ov)ov.addEventListener("click",function(e){ if(e.target===ov)closeMapPicker(); });
   })();
   function renderSide(){
