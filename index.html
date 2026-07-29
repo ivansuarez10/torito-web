@@ -45,6 +45,26 @@
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
   @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+  /* ===== Cine de entrada: hero scroll-scrubbed responsivo (vertical cel / wide web) ===== */
+  .cine{position:relative;height:340vh;background:#000}
+  .cine-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+  #cineCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .cine-vig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 52%,rgba(0,0,0,.9) 100%)}
+  .cine-beats{position:absolute;inset:0;pointer-events:none}
+  .cine-beat{position:absolute;left:0;right:0;text-align:center;padding:0 26px;opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease}
+  .cine-beat.on{opacity:1;transform:none}
+  .cb1{bottom:15vh} .cb1 .over{display:inline-flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#e2ded7;font-weight:700;margin-bottom:11px}
+  .cb1 .over .ln{width:24px;height:1px;background:var(--red)} .cb1 .over::after{content:"";width:24px;height:1px;background:var(--red)}
+  .cb1 h1{font-size:clamp(46px,15vw,96px);line-height:.86;text-transform:uppercase}
+  .cb1 p{font-size:12px;letter-spacing:.44em;text-transform:uppercase;color:#b9b4ac;margin-top:11px}
+  .cb2{bottom:18vh} .cb2 h2{font-size:clamp(28px,7.5vw,52px);line-height:1.02} .cb2 h2 em{font-style:normal;color:var(--red)}
+  .cb3{bottom:15vh}
+  .cine-cta{pointer-events:auto;display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px 28px;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 12px 32px rgba(228,35,42,.3);transition:background .2s}
+  .cine-cta:hover{background:var(--red-d)}
+  .cine-skip{position:absolute;top:calc(60px + env(safe-area-inset-top));right:16px;z-index:6;pointer-events:auto;font-size:12px;font-weight:800;color:#fff;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.28);padding:8px 13px;border-radius:100px;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .cine-hint{position:absolute;left:0;right:0;bottom:5vh;text-align:center;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#c7c2ba;animation:cineBob 1.9s ease-in-out infinite}
+  @keyframes cineBob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+  @media (prefers-reduced-motion:reduce){.cine{height:100vh}.cine-hint{animation:none}.cine-beat{transition:none}}
 
   /* Top bar */
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
@@ -242,14 +262,19 @@
     <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount">0</span></button>
   </div>
 
-  <header class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="hero-scrim" aria-hidden="true"></div>
-    <div class="heroText">
-      <h1 class="slab reveal">De la<br>carnicería<br>a tu <span class="b">mesa</span></h1>
-      <a class="cta reveal" href="#catalogo">Armá tu pedido →</a>
+  <section class="cine" id="cine">
+    <div class="cine-sticky">
+      <canvas id="cineCv"></canvas>
+      <div class="cine-vig"></div>
+      <div class="cine-beats">
+        <div class="cine-beat cb1" id="cb1"><div class="over"><span class="ln"></span>Desde 1970</div><h1 class="slab">El Torito</h1><p>Carnicería</p></div>
+        <div class="cine-beat cb2" id="cb2"><h2 class="slab">Cada corte,<br><em>un ritual.</em></h2></div>
+        <div class="cine-beat cb3" id="cb3"><button class="cine-cta slab" id="cineCta">Realizá tu pedido →</button></div>
+      </div>
+      <a class="cine-skip" id="cineSkip" href="#catalogo">Pedí ya →</a>
+      <div class="cine-hint" id="cineHint">Scrolleá ↓</div>
     </div>
-  </header>
+  </section>
 
   <div class="steps">
     <div class="step reveal"><div class="n slab">1</div><div class="t">Armá tu pedido</div><div class="d">Elegí tus cortes y las libras.</div></div>
@@ -393,7 +418,7 @@
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_BASE=d.meta.shipping.base||50; SHIP_PER_KM=d.meta.shipping.per_km||9}
-    render(); refreshCart(); renderWelcome();
+    render(); refreshCart(); renderWelcome(); initCine();
   }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
   function renderPromo(){
@@ -717,6 +742,29 @@
     setTimeout(safety,350); window.addEventListener("scroll",safety,{passive:true});
   }
   observeReveal();
+
+  // ===== Cine de entrada: hero scroll-scrubbed responsivo (vertical cel / wide web) =====
+  function initCine(){
+    var scene=document.getElementById("cine"); if(!scene) return;
+    var cv=document.getElementById("cineCv"); if(!cv) return; var ctx=cv.getContext("2d");
+    var wide=window.matchMedia("(min-width:820px)").matches;
+    var dir=wide?"w":"v", N=40;
+    var reduce=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    var imgs=[], iw=1, ih=1, ready=0;
+    function pad(i){return ("000"+i).slice(-3);}
+    for(var i=1;i<=N;i++){ var im=new Image(); im.onload=function(){ if(ready===0){iw=this.naturalWidth;ih=this.naturalHeight;} ready++; if(ready===1){fit();onScroll();} }; im.src="img/cine/"+dir+"_"+pad(i)+".jpg?q=4k"; imgs.push(im); }
+    var dpr=1;
+    function fit(){ dpr=Math.min(window.devicePixelRatio||1,2); cv.width=Math.round(innerWidth*dpr); cv.height=Math.round(innerHeight*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+    function draw(p){ var idx=Math.max(0,Math.min(N-1,Math.round(p*(N-1)))); var im=imgs[idx]; if(!im||!im.complete||!im.naturalWidth){im=imgs[0];if(!im||!im.complete)return;}
+      var cw=innerWidth,ch=innerHeight,s=Math.max(cw/iw,ch/ih),w=iw*s,h=ih*s; ctx.clearRect(0,0,cw,ch); ctx.drawImage(im,(cw-w)/2,(ch-h)/2,w,h); }
+    var cb1=document.getElementById("cb1"),cb2=document.getElementById("cb2"),cb3=document.getElementById("cb3"),hint=document.getElementById("cineHint");
+    function onScroll(){ var r=scene.getBoundingClientRect(),total=scene.offsetHeight-innerHeight; var p=total>0?Math.max(0,Math.min(1,(-r.top)/total)):0;
+      draw(p); if(cb1)cb1.classList.toggle("on",p<0.24); if(cb2)cb2.classList.toggle("on",p>=0.4&&p<0.72); if(cb3)cb3.classList.toggle("on",p>=0.8); if(hint)hint.style.opacity=p>0.03?"0":"1"; }
+    if(reduce){ scene.style.height="100vh"; fit(); draw(0); if(cb1)cb1.classList.add("on"); if(cb3)cb3.classList.add("on"); if(hint)hint.style.display="none"; }
+    else { var ticking=false; window.addEventListener("scroll",function(){ if(!ticking){requestAnimationFrame(function(){onScroll();ticking=false;});ticking=true;} },{passive:true}); fit(); onScroll(); }
+    window.addEventListener("resize",function(){ fit(); onScroll(); });
+    var cta=document.getElementById("cineCta"); if(cta)cta.onclick=function(){ var t=document.querySelector(".steps")||document.getElementById("catalogo"); if(t)t.scrollIntoView({behavior:"smooth"}); };
+  }
 })();
 </script>
 </body>
