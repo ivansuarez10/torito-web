@@ -325,7 +325,7 @@
 <div class="mapov" id="mapov" aria-hidden="true">
   <div class="mapcard" role="dialog" aria-modal="true" aria-label="Elegir ubicación de entrega">
     <div class="maphead"><h3 class="slab">Elegí la ubicación de entrega</h3><button class="close" id="mapClose" aria-label="Cerrar">✕</button></div>
-    <div class="mapsearch"><input id="mapQ" type="text" placeholder="Buscar dirección (ej. Ferreplaza Villa Vieja)" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div>
+    <div class="mapsearch"><input id="mapQ" type="text" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div>
     <div class="maphint">Arrastrá el pin al portón exacto de entrega, o tocá el mapa para moverlo.</div>
     <div class="mapwrap"><div id="mapEl"></div></div>
     <div class="mapfoot"><div class="mapreadout" id="mapRead"><span>Moviendo el pin…</span><b>—</b></div><button class="mapconfirm" id="mapConfirm" type="button">Confirmar ubicación</button></div>
@@ -629,11 +629,11 @@
           '</div>'+
           '<div id="pickWrap"><div class="field" id="w_pick"><label>¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
           '<div id="domiWrap" style="display:none">'+
-            '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación (calcula el envío)</button>'+
+            '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
             '<button class="altlink" id="mapBtn" type="button">¿Es para otra dirección? <u>Elegila en el mapa</u></button>'+
-            '<div class="shipbox" id="shipBox"><span>Tocá el botón para calcular el envío por distancia — o escribí tu dirección y lo coordinamos.</span><b>—</b></div>'+
+            '<div class="shipbox" id="shipBox"><span>Elegí tu ubicación de entrega y compartenos información de referencia de tu domicilio.</span><b>—</b></div>'+
             '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
-          '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: la molida bien limpia, todo en una bolsa…"></textarea></div>'+
+          '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: carne molida empacada en libras"></textarea></div>'+
           '<div class="err" id="f_err">Completá los campos marcados.</div>'+
         '</div>'+
         '<div class="co-side"><div id="coSide"></div></div>'+
@@ -691,7 +691,7 @@
     var km=haversine(ORIGIN,mapPin), rd=document.getElementById("mapRead"), cf=document.getElementById("mapConfirm");
     if(!rd)return;
     if(km>25){ rd.className="mapreadout err"; rd.innerHTML='<span>Fuera de zona · por ahora solo Tegucigalpa</span><b>—</b>'; if(cf)cf.disabled=true; }
-    else{ var cost=Math.max(SHIP_BASE,Math.round((SHIP_BASE+SHIP_PER_KM*km)/5)*5); rd.className="mapreadout"; rd.innerHTML='<span>'+km.toFixed(1)+' km · envío estimado</span><b>'+money(cost)+'</b>'; if(cf)cf.disabled=false; }
+    else{ var cost=Math.max(SHIP_BASE,Math.round((SHIP_BASE+SHIP_PER_KM*km)/5)*5); rd.className="mapreadout"; rd.innerHTML='<span>'+km.toFixed(1)+' km</span><b>'+money(cost)+'</b>'; if(cf)cf.disabled=false; }
   }
   function openMapPicker(){
     var ov=document.getElementById("mapov"); if(!ov)return;
@@ -746,7 +746,7 @@
         (isDomi?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.located&&ship.ok?money(ship.cost):(outZone?"—":"a convenir"))+'</span></div>':'')+
         '<div class="sumline total"><span class="lbl">Total'+(hasEst()||shipToConfirm?" estimado":"")+'</span><span class="val slab">'+money(total)+(shipToConfirm?' + envío':'')+'</span></div>'+
       '</div>'+
-      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> para calcular el envío al instante, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
+      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> o elegila en el mapa, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="pay-bac" disabled>Pagar en línea con BAC<small>'+(hasWhats()?"Este pedido se confirma por WhatsApp":"Próximamente")+'</small></button>'+
