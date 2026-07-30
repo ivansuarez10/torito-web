@@ -173,6 +173,16 @@
     .welcome-sub{max-width:46ch;margin-left:auto;margin-right:auto}
     .searchbar .f{max-width:640px}
   }
+  /* Agotado: el producto se sigue viendo (para que el cliente sepa que existe) pero no se puede pedir */
+  .prod.soldout .ph img{filter:grayscale(1);opacity:.38}
+  .prod.soldout .nm,.prod.soldout .rate{opacity:.55}
+  .prod .badge.out{background:#2a2a2a;color:#bdbdbd;border-color:#3a3a3a}
+  .soldnote{display:flex;align-items:center;gap:8px;margin-top:12px;padding:11px 12px;border:1px dashed #3a3a3a;border-radius:11px;color:var(--muted);font-size:13px;font-weight:600}
+  .soldnote svg{width:15px;height:15px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.9;stroke-linecap:round}
+  .citem.out .ci-nm{opacity:.6} .citem.out img{filter:grayscale(1);opacity:.4}
+  .ci-out{color:var(--red);font-size:12px;font-weight:700;margin-top:3px}
+  .cart-out{margin:0 0 12px;background:rgba(228,35,42,.1);border:1px solid rgba(228,35,42,.4);border-radius:12px;padding:11px 13px;color:var(--cream);font-size:13px;line-height:1.4}
+  .cart-out b{color:#fff}
   /* Disclaimers de horario / retiro-entrega en el checkout */
   .disc-box{margin:12px 0 2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:9px}
   .disc-line{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--gold);line-height:1.35}
@@ -432,9 +442,16 @@
       .then(function(r){return r.ok?r.json():[]})
       .then(function(a){ return (a&&a[0]&&a[0].value&&a[0].value.products)?a[0].value:null; })
       .catch(function(){return null;});
-    return Promise.all([cloudP,jsonP]).then(function(res){
-      var cloud=res[0], j=res[1]||{};
-      if(!cloud) return j; // sin nube → catalog.json tal cual
+    // Agotados: los marca el carnicero en Comandas ("Agotar"), que los guarda en app_config key='catalog'
+    // como value.disabled = {idProducto:true}. Solo LEEMOS: la tienda nunca escribe esa fila.
+    var soldP=fetch(SUPA_URL+"/rest/v1/app_config?select=value&key=eq.catalog",{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}})
+      .then(function(r){return r.ok?r.json():[]})
+      .then(function(a){ return (a&&a[0]&&a[0].value&&a[0].value.disabled)||{}; })
+      .catch(function(){return {};});
+    return Promise.all([cloudP,jsonP,soldP]).then(function(res){
+      var cloud=res[0], j=res[1]||{}, sold=res[2]||{};
+      function stampSold(o){ (o&&o.products||[]).forEach(function(p){ p.soldout=!!sold[p.id]; }); return o; }
+      if(!cloud) return stampSold(j); // sin nube → catalog.json tal cual
       var jById={}; (j.products||[]).forEach(function(p){jById[p.id]=p;});
       cloud.products=(cloud.products||[]).map(function(cp){
         var jp=jById[cp.id];
@@ -442,7 +459,7 @@
         return cp;
       });
       if(!cloud.categories) cloud.categories=j.categories;
-      return cloud;
+      return stampSold(cloud);
     });
   }
   loadCatalog().then(function(d){
@@ -477,18 +494,21 @@
       items.forEach(function(p){
         draft[p.id]=UNIT[p.unit].def;
         var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><div class="cuts" role="group" aria-label="Eleg\u00ed el corte">'+p.cuts.map(function(c){var on=cutSel[p.id]===c;return '<button type="button" class="cutchip'+(on?" on":"")+'" data-cutopt="'+c.replace(/"/g,"&quot;")+'" aria-pressed="'+(on?"true":"false")+'">'+c+'</button>'}).join("")+'</div></div>':"";
-        var card=document.createElement("div"); card.className="prod reveal"; card.dataset.pid=p.id;
-        var badge=p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':''));
+        var card=document.createElement("div"); card.className="prod reveal"+(p.soldout?" soldout":""); card.dataset.pid=p.id;
+        var badge=p.soldout?'<span class="badge out">Agotado</span>':(p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':'')));
         var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
         card.innerHTML=
           '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
           '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
           '<div class="bd"><div class="nm slab">'+p.name+'</div><div class="sb">'+sub+'</div>'+
-          '<div class="rate">'+(p.quote?"A cotizar":money(p.price)+' '+UNIT[p.unit].each)+'</div>'+cutHtml+
-          '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.unit,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
-          '<div class="btm"><div class="price slab"><span data-lp>'+priceText(p,draft[p.id])+'</span>'+
-          '<span class="est" data-est>'+estText(p,draft[p.id])+'</span></div>'+
-          '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div></div>';
+          '<div class="rate">'+(p.quote?"A cotizar":money(p.price)+' '+UNIT[p.unit].each)+'</div>'+
+          (p.soldout
+            ? '<div class="soldnote"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.01M10.3 3.9 2.4 17.2A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Se acabó por hoy</div>'
+            : cutHtml+
+              '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.unit,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
+              '<div class="btm"><div class="price slab"><span data-lp>'+priceText(p,draft[p.id])+'</span>'+
+              '<span class="est" data-est>'+estText(p,draft[p.id])+'</span></div>'+
+              '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div>')+'</div>';
         grid.appendChild(card);
       });
     });
@@ -500,6 +520,7 @@
   catEl.addEventListener("click",function(e){
     var card=e.target.closest(".prod"); if(!card) return;
     var p=prodById(card.dataset.pid), u=UNIT[p.unit];
+    if(p.soldout) return; // agotado: no se agrega ni se cambia cantidad
     var cutBtn=e.target.closest("[data-cutopt]");
     if(cutBtn){
       cutSel[p.id]=cutBtn.dataset.cutopt; saveCuts();
@@ -541,6 +562,8 @@
   function hasWhats(){return cartLines().some(function(l){return l.p.validate||l.p.quote||l.big})}
   function hasBig(){return cartLines().some(function(l){return l.big})}
   function hasQuote(){return cartLines().some(function(l){return l.p.quote})}
+  // Se acabó mientras el cliente lo tenía en el carrito (lo agotó el carnicero en Comandas).
+  function soldLines(){return cartLines().filter(function(l){return l.p.soldout})}
   function refreshCart(){
     var n=cartCount(),t=cartTotal();
     document.getElementById("cartCount").textContent=n; document.getElementById("fabCount").textContent=n;
@@ -569,15 +592,16 @@
       var er=document.getElementById("emptyRepeat"); if(er)er.onclick=repeatLast;
       return;
     }
-    var html="";
+    var out=soldLines();
+    var html=out.length?('<div class="cart-out">Se acabó por hoy: <b>'+out.map(function(l){return l.p.name}).join(", ")+'</b>. Quitalo del carrito para seguir con tu pedido.</div>'):"";
     lines.forEach(function(l){
-      html+='<div class="citem" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div><div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div><button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
+      html+='<div class="citem'+(l.p.soldout?" out":"")+'" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div>'+(l.p.soldout?'<div class="ci-out">Se acabó por hoy</div>':'<div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div>')+'<button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
     });
     sBody.innerHTML=html;
     sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva cortes que se <b>venden por pieza</b>: hay que pesarlos para darte el <b>total exacto</b>, así que lo coordinamos y confirmamos por <b>WhatsApp</b>. Lo demás ya va con precio exacto.</div>':'')+
       '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
-      '<button class="pay-wa" id="toCheckout" style="margin-top:14px">Continuar →</button>';
-    document.getElementById("toCheckout").onclick=function(){view="checkout";renderSheet();sBody.scrollTop=0}
+      '<button class="pay-wa" id="toCheckout" style="margin-top:14px'+(out.length?';opacity:.45;cursor:not-allowed':'')+'"'+(out.length?' disabled':'')+'>Continuar →</button>';
+    document.getElementById("toCheckout").onclick=function(){ if(soldLines().length){sBody.scrollTop=0;return;} view="checkout";renderSheet();sBody.scrollTop=0}
   }
   sBody.addEventListener("click",function(e){
     var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.unit];
@@ -803,6 +827,8 @@
   function submitWhatsApp(){
     var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim(); f.addr=f.addr.trim(); f.note=f.note.trim();
     // ---- Validación de campos obligatorios ----
+    var out=soldLines();
+    if(out.length){ view="cart"; renderSheet(); sBody.scrollTop=0; return; } // se acabó mientras llenaba el checkout
     var bad=false;
     if(!f.name){markInvalid("w_name","Escribí tu nombre.");bad=true}
     if(!f.phone){markInvalid("w_phone","Escribí tu teléfono / WhatsApp.");bad=true}
