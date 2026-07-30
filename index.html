@@ -872,7 +872,7 @@
     try{fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){})}catch(e){}
 
     // ---- Mensaje de WhatsApp: SOLO la lista de productos. Datos/envío/totales/ubicación/folio van a Comandas (submit-order), NO al cliente. El total con cuenta de pago se le envía después desde Comandas (espera de pago). ----
-    var s="Hola El Torito 👋 Me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
+    var s="Hola El Torito, me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
     lines.forEach(function(l){
       var nota=l.p.quote?" (a cotizar)":(l.p.validate?" (pendiente confirmar peso y disponibilidad)":"");
       s+="• "+unitQty(l.p,l.qty)+" de "+l.p.name+(l.cut?" ("+l.cut+")":"")+nota+"\n";
