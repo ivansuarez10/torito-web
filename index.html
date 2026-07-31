@@ -71,7 +71,7 @@
   .cb3{bottom:15vh}
   .cine-cta{pointer-events:auto;display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px 28px;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 12px 32px rgba(228,35,42,.3);transition:background .2s}
   .cine-cta:hover{background:var(--red-d)}
-  .cine-skip{position:absolute;top:calc(60px + env(safe-area-inset-top));right:16px;z-index:6;pointer-events:auto;font-size:12px;font-weight:800;color:#fff;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.28);padding:8px 13px;border-radius:100px;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .cine-skip{position:absolute;top:calc(60px + env(safe-area-inset-top));right:16px;z-index:6;pointer-events:auto;font-size:12px;font-weight:800;color:#fff;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.28);padding:8px 13px;border-radius:100px;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:inline-flex;align-items:center;min-height:44px}
   .cine-hint{position:absolute;left:0;right:0;bottom:5vh;text-align:center;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#c7c2ba;animation:cineBob 1.9s ease-in-out infinite}
   @keyframes cineBob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
   @media (prefers-reduced-motion:reduce){.cine{height:100vh}.cine-hint{animation:none}.cine-beat{transition:none}}
@@ -83,7 +83,7 @@
   .topbar .brand{display:flex;align-items:center;gap:9px}
   .topbar .brand img{height:34px}
   .topbar .brand span{font-size:15px;letter-spacing:.14em;font-weight:700}
-  .cartbtn{display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;font-weight:700;font-size:14px;padding:9px 14px;border-radius:100px;cursor:pointer;transition:background .2s}
+  .cartbtn{display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;font-weight:700;font-size:14px;padding:9px 14px;min-height:44px;border-radius:100px;cursor:pointer;transition:background .2s}
   .cartbtn:hover{background:var(--red-d)} .cartbtn svg{width:17px;height:17px;fill:#fff}
   .cartbtn .count{background:#fff;color:var(--red);min-width:20px;height:20px;border-radius:100px;font-size:12px;font-weight:800;display:inline-grid;place-items:center;padding:0 5px}
 
@@ -133,7 +133,7 @@
   .nav{position:sticky;top:52px;z-index:30;padding:10px 0;background:rgba(0,0,0,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
   .nav .scroll{display:flex;gap:8px;overflow-x:auto;padding:0 16px;scrollbar-width:none}
   .nav .scroll::-webkit-scrollbar{display:none}
-  .nav a{flex:none;text-decoration:none;font-size:13.5px;font-weight:700;color:#cfcfcf;background:transparent;border:1px solid #2b2b2b;padding:9px 16px;border-radius:100px;white-space:nowrap;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+  .nav a{flex:none;display:inline-flex;align-items:center;min-height:44px;text-decoration:none;font-size:13.5px;font-weight:700;color:#cfcfcf;background:transparent;border:1px solid #2b2b2b;padding:9px 16px;border-radius:100px;white-space:nowrap;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
   .nav a:hover{border-color:#454545;color:#fff}
   .nav a.active{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 4px 14px rgba(228,35,42,.28)}
 
@@ -157,7 +157,7 @@
   .cutsel label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;transition:color .2s}
   /* Selector de corte por chips tocables (sin <select> nativo — funciona igual en iOS/Android/Huawei/Xiaomi) */
   .cuts{display:flex;flex-wrap:wrap;gap:7px}
-  .cutchip{flex:1 1 auto;min-width:76px;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;line-height:1.1;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .cutchip{flex:1 1 auto;min-width:76px;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;line-height:1.1;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   .cutchip:active{transform:scale(.96)}
   .cutchip.on{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
   .cutsel.warn label{color:var(--red)}
@@ -196,13 +196,13 @@
   .disc-line svg{width:16px;height:16px;flex:none;stroke:var(--red);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
   .disc-line b{color:var(--cream);font-weight:700}
   .stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
-  .stepper button{width:40px;height:40px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
+  .stepper button{width:44px;height:44px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
   .stepper button:hover{background:#2c2c2c} .stepper button:active{transform:scale(.94)}
   .stepper .qty{font-weight:700;font-size:15px} .stepper .qty .u{color:var(--muted);font-size:12px;font-weight:600;margin-left:2px}
   .btm{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
   .price{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:23px;line-height:1}
   .price .est{display:block;font-family:-apple-system,sans-serif;font-size:10px;color:var(--muted);font-weight:600;margin-top:3px}
-  .add{display:inline-flex;align-items:center;gap:6px;background:var(--cream);color:#17140f;border:none;font-weight:800;font-size:14px;padding:11px 16px;border-radius:11px;cursor:pointer;transition:.15s}
+  .add{display:inline-flex;align-items:center;justify-content:center;min-height:44px;gap:6px;background:var(--cream);color:#17140f;border:none;font-weight:800;font-size:14px;padding:11px 16px;border-radius:11px;cursor:pointer;transition:.15s}
   .add:hover{background:#fff} .add.added{background:var(--red);color:#fff} .add svg{width:15px;height:15px;fill:currentColor}
 
   footer{padding:34px 22px calc(120px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:13px}
@@ -309,6 +309,18 @@
     .topbar{padding-left:24px;padding-right:24px}
   }
   @media (min-width:1040px){ .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))} }
+  /* ===== Foco visible por teclado (WCAG 2.4.7) =====
+     Va al final a propósito: los campos traen outline:none y con la misma
+     especificidad gana la última regla. :focus-visible solo se muestra a quien
+     navega con teclado, así que el mouse no ve ningún anillo.
+     El aro va por FUERA (outline-offset) para que se vea igual sobre el botón
+     crema y sobre las tarjetas oscuras. */
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+  textarea:focus-visible,[tabindex]:focus-visible{
+    outline:3px solid #fff;outline-offset:2px;border-radius:4px}
+  .searchbar input:focus-visible,.field input:focus-visible,.field textarea:focus-visible,
+  .field select:focus-visible,.mapsearch input:focus-visible{
+    outline:3px solid #fff;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -345,7 +357,7 @@
 
   <div id="welcomeHost"></div>
 
-  <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
+  <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" aria-label="Buscar productos del catálogo" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
   <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
   <main id="catalog"><div class="loading">Cargando el catálogo…</div></main>
 
@@ -363,7 +375,7 @@
 <div class="mapov" id="mapov" aria-hidden="true">
   <div class="mapcard" role="dialog" aria-modal="true" aria-label="Elegir ubicación de entrega">
     <div class="maphead"><h3 class="slab">Elegí la ubicación de entrega</h3><button class="close" id="mapClose" aria-label="Cerrar">✕</button></div>
-    <div class="mapsearchwrap"><div class="mapsearch"><input id="mapQ" type="text" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div><div class="mapsug" id="mapSug" hidden></div></div>
+    <div class="mapsearchwrap"><div class="mapsearch"><input id="mapQ" type="text" aria-label="Buscar tu dirección en el mapa" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div><div class="mapsug" id="mapSug" hidden></div></div>
     <div class="maphint">Arrastrá el pin al portón exacto de entrega, o tocá el mapa para moverlo.</div>
     <div class="mapwrap"><div id="mapEl"></div></div>
     <div class="mapfoot"><div class="mapreadout" id="mapRead"><span>Moviendo el pin…</span><b>—</b></div><button class="mapconfirm" id="mapConfirm" type="button">Confirmar ubicación</button></div>
