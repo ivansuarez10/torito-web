@@ -47,6 +47,13 @@
   .cat h2{letter-spacing:-.01em}
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
+  /* Las tarjetas SOLO aparecen, no se desplazan: llevan botones y, si se mueven 22px
+     mientras el cliente hace clic, el botón se le escapa al cursor y el clic se pierde
+     (reportado en escritorio: había que hacer clic dos veces para agregar).
+     NO se les pone pointer-events:none mientras no estén reveladas: si el observer
+     fallara, la tarjeta quedaría muerta y se perdería la venta. Invisible pero
+     clickeable es mejor que invisible y muerta. */
+  .prod.reveal{transform:none}
   @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
   /* ===== Cine de entrada: hero scroll-scrubbed responsivo (vertical cel / wide web) ===== */
   .cine{position:relative;height:250vh;background:#000}
