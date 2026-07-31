@@ -28,7 +28,7 @@
   :root{
     --bg:#000000; --bg2:#0d0d0d; --card:#161616; --card2:#232323;
     --cream:#f2f2f2; --muted:#8f8f8f; --line:#242424;
-    --red:#E4232A; --red-d:#c11c22; --wa:#25D366; --wa-d:#1da851; --gold:#cfcfcf;
+    --red:#E4232A; --red-d:#c11c22; --wa:#17853F; --wa-d:#0F7B3D; --gold:#cfcfcf;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{scroll-behavior:auto}
@@ -704,8 +704,8 @@
     sBody.innerHTML=
       '<div class="co-grid">'+
         '<div class="co-form">'+
-          '<div class="field" id="w_name"><label>Nombre completo *</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
-          '<div class="field" id="w_phone"><label>Teléfono / WhatsApp *</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
+          '<div class="field" id="w_name"><label for="f_name">Nombre completo *</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
+          '<div class="field" id="w_phone"><label for="f_phone">Teléfono / WhatsApp *</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
           '<div class="field"><label>¿Cómo lo querés recibir?</label><div class="seg">'+
             '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
             '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
@@ -713,12 +713,12 @@
             '<div class="disc-line"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg><span><b>Horario:</b> lunes a viernes 6am–3pm · fin de semana 6am–1pm.</span></div>'+
             '<div class="disc-line"><svg viewBox="0 0 24 24"><path d="M3 7.5h12v9H3zM15 10.5h3.2l2.3 3v3H15"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="18" cy="17" r="1.5"/></svg><span><b>Retiros y entregas:</b> solo días hábiles, 6am–2pm. Sábados y domingos no hay retiro ni entrega a domicilio.</span></div>'+
           '</div>'+
-          '<div id="pickWrap"><div class="field" id="w_pick"><label>¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
+          '<div id="pickWrap"><div class="field" id="w_pick"><label for="f_pick">¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
           '<div id="domiWrap" style="display:none">'+
             '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
             '<button class="altlink" id="mapBtn" type="button">¿Es para otra dirección? <u>Elegila en el mapa</u></button>'+
             '<div class="shipbox" id="shipBox"><span>Elegí tu ubicación de entrega y compartenos información de referencia de tu domicilio.</span><b>—</b></div>'+
-            '<div class="field" id="w_addr"><label>Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
+            '<div class="field" id="w_addr"><label for="f_addr">Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
           '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: carne molida empacada en libras"></textarea></div>'+
           '<div class="err" id="f_err">Completá los campos marcados.</div>'+
         '</div>'+
