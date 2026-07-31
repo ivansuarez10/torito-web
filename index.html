@@ -297,6 +297,13 @@
   .mapsearch button{background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:0 16px;font-weight:700;font-size:14px;cursor:pointer;flex:none}
   .maphint{padding:2px 18px 10px;color:var(--muted);font-size:12.5px}
   .mapwrap{position:relative;flex:1;min-height:280px;z-index:1}
+  /* Interruptor de vista. Va sobre el mapa; z-index alto porque los paneles internos
+     de Leaflet llegan a 700 y si no, quedan encima. */
+  .mapview{position:absolute;top:10px;right:10px;z-index:800;display:flex;gap:0;background:rgba(0,0,0,.72);
+    border:1px solid rgba(255,255,255,.22);border-radius:100px;padding:3px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .mapview button{min-height:36px;padding:0 14px;border:none;background:none;color:#e8e8e8;font-family:inherit;
+    font-size:12.5px;font-weight:800;border-radius:100px;cursor:pointer;transition:background .15s,color .15s;touch-action:manipulation}
+  .mapview button.on{background:var(--red);color:#fff}
   #mapEl{position:absolute;inset:0;width:100%;height:100%;background:#0d0d0d}
   .mapfoot{padding:14px 18px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
   .mapreadout{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted)}
@@ -403,7 +410,10 @@
     <div class="maphead"><h3 class="slab">Elegí la ubicación de entrega</h3><button class="close" id="mapClose" aria-label="Cerrar">✕</button></div>
     <div class="mapsearchwrap"><div class="mapsearch"><input id="mapQ" type="text" aria-label="Buscar tu dirección en el mapa" placeholder="Escribí tu dirección" autocomplete="off"><button id="mapGo" type="button">Buscar</button></div><div class="mapsug" id="mapSug" hidden></div></div>
     <div class="maphint">Arrastrá el pin al portón exacto de entrega, o tocá el mapa para moverlo.</div>
-    <div class="mapwrap"><div id="mapEl"></div></div>
+    <div class="mapwrap"><div id="mapEl"></div>
+      <div class="mapview" id="mapView" role="group" aria-label="Tipo de vista del mapa">
+        <button type="button" data-view="sat">Satélite</button><button type="button" data-view="mapa">Mapa</button>
+      </div></div>
     <div class="mapfoot"><div class="mapreadout" id="mapRead"><span>Moviendo el pin…</span><b>—</b></div><button class="mapconfirm" id="mapConfirm" type="button">Confirmar ubicación</button></div>
   </div>
 </div>
@@ -766,15 +776,47 @@
     var start=ship.pin||(PROFILE&&PROFILE.pin)||ORIGIN;
     ov.classList.add("open"); ov.setAttribute("aria-hidden","false");
     if(!MAP){
-      MAP=L.map("mapEl",{zoomControl:true}).setView([start.lat,start.lng],14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(MAP);
+      MAP=L.map("mapEl",{zoomControl:true}).setView([start.lat,start.lng],17);
+      applyMapView(loadMapView());
       MAPMARK=L.marker([start.lat,start.lng],{draggable:true,autoPan:true}).addTo(MAP);
       MAPMARK.on("drag",function(e){ mapReadout(e.target.getLatLng()); });
       MAP.on("click",function(e){ MAPMARK.setLatLng(e.latlng); mapReadout(e.latlng); hideSug(); });
-    }else{ MAP.setView([start.lat,start.lng],14); MAPMARK.setLatLng([start.lat,start.lng]); }
+    }else{ MAP.setView([start.lat,start.lng],17); MAPMARK.setLatLng([start.lat,start.lng]); }
     mapReadout({lat:start.lat,lng:start.lng});
     setTimeout(function(){ MAP.invalidateSize(); },200);
   }
+  // Vista satelital: en Tegucigalpa las direcciones no ayudan — la gente reconoce su TECHO,
+  // no su calle. Se muestra la foto aérea con una capa de nombres encima (lo mejor de las dos).
+  // Teselas de Esri: gratis y sin API key. Si algún día el volumen crece, tocaría un proveedor
+  // con llave (Mapbox/Google). La vista elegida se recuerda en el navegador.
+  var LYR_SAT=null, LYR_LBL=null, LYR_ROAD=null, LYR_OSM=null, MAPVIEW=null;
+  function loadMapView(){ try{ return localStorage.getItem("torito_mapview_v1")||"sat"; }catch(e){ return "sat"; } }
+  function saveMapView(v){ try{ localStorage.setItem("torito_mapview_v1",v); }catch(e){} }
+  function applyMapView(v){
+    if(!MAP||MAPVIEW===v) return;
+    MAPVIEW=v; saveMapView(v);
+    [LYR_SAT,LYR_LBL,LYR_ROAD,LYR_OSM].forEach(function(l){ if(l&&MAP.hasLayer(l)) MAP.removeLayer(l); });
+    if(v==="sat"){
+      if(!LYR_SAT) LYR_SAT=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {maxZoom:19,attribution:"Imágenes © Esri"});
+      // Encima de la foto van dos capas de referencia: calles con sus nombres y nombres de
+      // colonia. Pesan ~4.7KB por tesela contra 22KB de la foto, así que salen casi gratis.
+      if(!LYR_ROAD) LYR_ROAD=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
+        {maxZoom:19,opacity:.95});
+      if(!LYR_LBL) LYR_LBL=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        {maxZoom:19,opacity:.95});
+      LYR_SAT.addTo(MAP); LYR_ROAD.addTo(MAP); LYR_LBL.addTo(MAP);
+    }else{
+      if(!LYR_OSM) LYR_OSM=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"});
+      LYR_OSM.addTo(MAP);
+    }
+    var g=document.getElementById("mapView");
+    if(g) g.querySelectorAll("[data-view]").forEach(function(b){ b.classList.toggle("on", b.dataset.view===v); });
+  }
+  (function wireMapView(){
+    var g=document.getElementById("mapView"); if(!g) return;
+    g.addEventListener("click",function(e){ var b=e.target.closest("[data-view]"); if(b) applyMapView(b.dataset.view); });
+  })();
   function closeMapPicker(){ hideSug(); var ov=document.getElementById("mapov"); if(ov){ov.classList.remove("open");ov.setAttribute("aria-hidden","true");} }
   // Autocompletado de direcciones con Photon (OpenStreetMap) — gratis, sin API key, pensado para typeahead
   var sugItems=[], sugActive=-1, sugTimer=null, sugSeq=0;
