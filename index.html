@@ -214,6 +214,35 @@
   .conf-acts{margin-top:26px}
   .conf-hint{margin-top:13px;font-size:12.5px;color:#6f6f6f}
   .conf-back{margin-top:16px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;text-decoration:underline;cursor:pointer;padding:10px;min-height:44px}
+  /* ===== Cuenta del cliente (OPCIONAL: nunca bloquea la compra) ===== */
+  .acctbtn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 12px;
+    background:transparent;border:1px solid #2b2b2b;border-radius:100px;color:var(--cream);font-family:inherit;
+    font-size:13.5px;font-weight:700;cursor:pointer;transition:border-color .2s,color .2s}
+  .acctbtn:hover{border-color:#454545}
+  .acctbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .acctbtn .lbl{display:none}
+  @media (min-width:520px){.acctbtn .lbl{display:inline}}
+  .auth-lead{color:var(--muted);font-size:14px;line-height:1.5;margin:2px 0 18px}
+  .auth-alt{margin-top:20px;text-align:center;font-size:14px;color:var(--muted)}
+  .auth-alt button{background:none;border:none;color:var(--cream);font-family:inherit;font-size:14px;
+    font-weight:700;text-decoration:underline;cursor:pointer;padding:10px 6px;min-height:44px}
+  .auth-err{margin-top:14px;background:rgba(228,35,42,.1);border:1px solid rgba(228,35,42,.4);border-radius:11px;
+    padding:11px 13px;color:var(--cream);font-size:13.5px;line-height:1.4;display:none}
+  .auth-err.on{display:block}
+  .codein{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px 14px;
+    color:var(--cream);font-size:26px;font-family:inherit;font-weight:800;letter-spacing:.42em;text-align:center;outline:none}
+  .codein:focus{border-color:var(--red)}
+  /* Lista de pedidos */
+  .po{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px;background:var(--card)}
+  .po-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .po-folio{font-weight:800;font-size:15px;letter-spacing:.03em}
+  .po-fecha{color:var(--muted);font-size:12.5px;flex:none}
+  .po-est{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;letter-spacing:.04em;
+    text-transform:uppercase;padding:6px 11px;border-radius:100px;border:1px solid #333;color:var(--gold)}
+  .po-est.vivo{border-color:var(--red);color:#fff;background:rgba(228,35,42,.16)}
+  .po-items{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.45}
+  .po-tot{margin-top:8px;font-weight:800;font-size:15px}
+  .po-vacio{text-align:center;color:var(--muted);padding:40px 10px;font-size:14.5px;line-height:1.5}
   /* Disclaimers de horario / retiro-entrega en el checkout */
   .disc-box{margin:12px 0 2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:9px}
   .disc-line{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--gold);line-height:1.35}
@@ -498,6 +527,7 @@
 <div class="wrap">
   <div class="topbar">
     <div class="brand" id="brand"><img id="brandBull" src="img/torito-bull.webp" alt="El Torito" /><span>EL TORITO</span></div>
+    <button class="acctbtn" id="openAcct" aria-label="Mi cuenta y mis pedidos"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="lbl">Mis pedidos</span></button>
     <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount">0</span></button>
   </div>
 
@@ -614,6 +644,124 @@
     host.innerHTML=h;
     var br=document.getElementById("btnRepeat"); if(br)br.onclick=repeatLast;
   }
+  // ---- Pantalla: crear cuenta / entrar ----
+  function authView(){
+    var crear=(view==="crear");
+    sTitle.textContent = crear ? "Crear mi cuenta" : "Entrar";
+    setBack(true);
+    sBody.innerHTML =
+      '<div class="auth-lead">'+(crear
+        ? "Con una cuenta podés ver tus pedidos anteriores y en qué van. No hace falta para comprar."
+        : "Entrá con el teléfono y la contraseña que elegiste.")+'</div>'+
+      '<div class="field" id="w_atel"><label for="a_tel">Tu celular</label>'+
+        '<div class="telbox"><span class="telpre" aria-hidden="true">+504</span>'+
+        '<input id="a_tel" type="tel" inputmode="numeric" placeholder="9999 9999" autocomplete="tel-national" value="'+pesc(authTel)+'" aria-label="Tu celular, 8 dígitos"></div></div>'+
+      '<div class="field" id="w_apass"><label for="a_pass">Contraseña</label>'+
+        '<input id="a_pass" type="password" placeholder="'+(crear?"Al menos 6 caracteres":"Tu contraseña")+'" autocomplete="'+(crear?"new-password":"current-password")+'"></div>'+
+      '<div class="auth-err" id="authErr"></div>';
+    sFoot.innerHTML =
+      '<button class="pay-wa" id="aGo" style="background:var(--red)">'+(crear?"Enviarme el código":"Entrar")+'</button>'+
+      '<div class="auth-alt">'+(crear
+        ? '¿Ya tenés cuenta? <button type="button" id="aSwap">Entrar</button>'
+        : '¿Primera vez? <button type="button" id="aSwap">Crear mi cuenta</button>')+'</div>';
+    var go=document.getElementById("aGo");
+    go.onclick=function(){
+      authClearErr();
+      var tel=telDigits(document.getElementById("a_tel").value);
+      var pass=document.getElementById("a_pass").value;
+      if(!telValido(tel)){ authErr(telEsFijo(tel)
+        ? "Ese es un teléfono fijo y no recibe mensajes. Necesitamos un celular."
+        : "El celular lleva 8 dígitos y empieza con 3, 7, 8 o 9."); return; }
+      if(pass.length<6){ authErr("La contraseña necesita al menos 6 caracteres."); return; }
+      authTel=tel; authPass=pass;
+      go.disabled=true; go.textContent=crear?"Enviando…":"Entrando…";
+      if(crear){
+        authPost("signup",{phone:e164(tel),password:pass}).then(function(r){
+          go.disabled=false; go.textContent="Enviarme el código";
+          if(!r.ok){ authErr(authMsg(r.j)); return; }
+          view="codigo"; renderSheet(); sBody.scrollTop=0;
+        });
+      }else{
+        authPost("token?grant_type=password",{phone:e164(tel),password:pass}).then(function(r){
+          go.disabled=false; go.textContent="Entrar";
+          if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
+          view="pedidos"; renderSheet(); sBody.scrollTop=0;
+        });
+      }
+    };
+    document.getElementById("aSwap").onclick=function(){ view=crear?"entrar":"crear"; renderSheet(); };
+  }
+
+  // ---- Pantalla: código del SMS ----
+  function codeView(){
+    sTitle.textContent="Escribí el código"; setBack(true);
+    sBody.innerHTML =
+      '<div class="auth-lead">Te mandamos un código de 6 dígitos por mensaje al <b>+504 '+pesc(authTel)+'</b>.</div>'+
+      '<input id="a_code" class="codein" type="tel" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="one-time-code" aria-label="Código de 6 dígitos">'+
+      '<div class="auth-err" id="authErr"></div>'+
+      '<div class="auth-alt">¿No te llegó? <button type="button" id="aResend">Mandalo de nuevo</button></div>';
+    sFoot.innerHTML='<button class="pay-wa" id="aOk" style="background:var(--red)">Confirmar</button>';
+    var inp=document.getElementById("a_code");
+    inp.addEventListener("input",function(){ var d=inp.value.replace(/\D/g,"").slice(0,6); if(inp.value!==d) inp.value=d; });
+    try{ inp.focus(); }catch(e){}
+    document.getElementById("aOk").onclick=function(){
+      authClearErr();
+      var code=inp.value.replace(/\D/g,"");
+      if(code.length!==6){ authErr("El código tiene 6 dígitos."); return; }
+      var b=document.getElementById("aOk"); b.disabled=true; b.textContent="Confirmando…";
+      authPost("verify",{type:"sms",phone:e164(authTel),token:code}).then(function(r){
+        b.disabled=false; b.textContent="Confirmar";
+        if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
+        view="pedidos"; renderSheet(); sBody.scrollTop=0;
+      });
+    };
+    document.getElementById("aResend").onclick=function(){
+      authClearErr();
+      var rb=document.getElementById("aResend"); rb.disabled=true; rb.textContent="Enviando…";
+      authPost("otp",{phone:e164(authTel),create_user:false}).then(function(r){
+        rb.disabled=false; rb.textContent="Mandalo de nuevo";
+        if(!r.ok) authErr(authMsg(r.j)); else authErr("Listo, te lo mandamos otra vez.");
+      });
+    };
+  }
+
+  // ---- Pantalla: mis pedidos ----
+  var ESTADOS={cotizar:["Confirmando disponibilidad",true],espera_pago:["Esperando tu pago",true],
+    preparacion:["Preparando tu pedido",true],lista:["Lista para entregar",true],en_ruta:["En camino",true]};
+  function pedidosView(){
+    sTitle.textContent="Mis pedidos"; setBack(true);
+    sBody.innerHTML='<div class="po-vacio">Buscando tus pedidos…</div>';
+    sFoot.innerHTML='<button class="conf-back" id="aOut" style="width:100%">Cerrar sesión</button>';
+    document.getElementById("aOut").onclick=function(){ saveSess(null); view="cart"; renderSheet(); };
+    sesionValida().then(function(tok){
+      if(!tok){ view="entrar"; renderSheet(); return; }
+      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,shipping,archived&order=created_at.desc&limit=20",
+        {headers:{apikey:SUPA_KEY,Authorization:"Bearer "+tok}})
+        .then(function(r){ return r.ok?r.json():[]; })
+        .then(function(rows){
+          if(!rows||!rows.length){
+            sBody.innerHTML='<div class="po-vacio">Todavía no tenés pedidos con este número.<br>Cuando hagas uno, va a aparecer acá.</div>';
+            return;
+          }
+          var h="";
+          rows.forEach(function(o){
+            var est=ESTADOS[o.status]||[o.archived?"Entregado":"Recibido",false];
+            var f=new Date(Number(o.created_at)||Date.now());
+            var items=(o.items||[]).map(function(i){ return (i.qty||"")+" "+(i.unit==="paquete"?"paq":"lb")+" "+(i.name||""); }).join(" · ");
+            var tot=(o.items||[]).reduce(function(a,i){ return a+(Number(i.total)||0); },0)+(Number(o.shipping)||0);
+            h+='<div class="po"><div class="po-top"><span class="po-folio">'+pesc(o.folio||"")+'</span>'+
+               '<span class="po-fecha">'+f.toLocaleDateString("es-HN",{day:"2-digit",month:"short"})+'</span></div>'+
+               '<div class="po-est'+(est[1]&&!o.archived?" vivo":"")+'">'+pesc(o.archived?"Entregado":est[0])+'</div>'+
+               '<div class="po-items">'+pesc(items)+'</div>'+
+               (tot>0?'<div class="po-tot">'+money(tot)+'</div>':'')+'</div>';
+          });
+          sBody.innerHTML=h;
+        });
+    }).catch(function(){
+      sBody.innerHTML='<div class="po-vacio">No pudimos traer tus pedidos ahora.<br>Probá de nuevo en un momento.</div>';
+    });
+  }
+
   function money(n){return "L "+(Math.round(n)).toLocaleString("es-HN")}
   var UNIT={libra:{step:.5,min:.5,def:1,each:"/ libra"},paquete:{step:1,min:1,def:1,each:"/ paquete"}};
   function unitWord(t,q){var w={libra:["libra","libras"],paquete:["paquete","paquetes"],pieza:["pieza","piezas"]}[t]||["",""];return q===1?w[0]:w[1]}
@@ -771,12 +919,77 @@
   var _lockY=0;
   function lockScroll(){_lockY=window.pageYOffset||0;var b=document.body;b.style.position="fixed";b.style.top=(-_lockY)+"px";b.style.left="0";b.style.right="0";b.style.width="100%";}
   function unlockScroll(){var b=document.body;b.style.position="";b.style.top="";b.style.left="";b.style.right="";b.style.width="";window.scrollTo(0,_lockY);}
+  function openSheetAt(v){sheetOpen=true;view=v;lockScroll();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
   function openSheet(){sheetOpen=true;view="cart";lockScroll();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
   function closeSheet(){sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");unlockScroll();refreshCart()}
   document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
-  document.getElementById("sheetBack").onclick=function(){ if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();sBody.scrollTop=0;} else { closeSheet(); } };
+  document.getElementById("sheetBack").onclick=function(){
+    if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();sBody.scrollTop=0;}
+    else if(view==="codigo"){view="crear";renderSheet();sBody.scrollTop=0;}
+    else if(view==="entrar"||view==="crear"||view==="pedidos"){closeSheet();}
+    else { closeSheet(); }
+  };
+  // Entrada a la cuenta. Si ya hay sesión va directo a los pedidos; si no, a entrar.
+  document.getElementById("openAcct").onclick=function(){
+    authTel = telDigits((PROFILE&&PROFILE.phone)||"");   // si ya pidió, le adelantamos el número
+    openSheetAt(SESS?"pedidos":"entrar");
+  };
   function setBack(show){var b=document.getElementById("sheetBack");if(b)b.style.display=show?"inline-flex":"none";}
-  function renderSheet(){view==="cart"?cartView():checkoutView()}
+  // ===== Cuenta del cliente =====
+  // OPCIONAL por diseño: quien no quiere cuenta pide igual que siempre. Sirve para
+  // que el cliente vea SUS pedidos anteriores; el negocio no depende de esto.
+  // Se usa REST directo en vez del SDK de Supabase (~100KB): el peso de la página es
+  // una restricción de producto, el cliente típico usa Android de gama baja.
+  var SESS=null, authTel="", authPass="", authModo="crear";
+  try{ SESS=JSON.parse(localStorage.getItem("torito_sess_v1")||"null"); }catch(e){ SESS=null; }
+  function saveSess(o){ SESS=o; try{ o?localStorage.setItem("torito_sess_v1",JSON.stringify(o))
+    :localStorage.removeItem("torito_sess_v1"); }catch(e){} }
+  function e164(t){ return "+504"+telDigits(t); }
+  function authPost(path,body){
+    return fetch(SUPA_URL+"/auth/v1/"+path,{method:"POST",
+      headers:{"Content-Type":"application/json","apikey":SUPA_KEY},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,j:j}; }); });
+  }
+  function guardarSesion(j){
+    if(!j||!j.access_token) return false;
+    saveSess({at:j.access_token, rt:j.refresh_token||"",
+      exp:Date.now()+(((j.expires_in||3600)-60)*1000),
+      tel:(j.user&&j.user.phone)||e164(authTel).replace(/^\+/,"")});
+    return true;
+  }
+  // El token dura ~1h; si venció se renueva solo con el refresh_token (que no caduca
+  // mientras se use). Por eso la clienta no tiene que volver a escribir la contraseña.
+  function sesionValida(){
+    if(!SESS) return Promise.resolve(null);
+    if(Date.now()<SESS.exp) return Promise.resolve(SESS.at);
+    if(!SESS.rt){ saveSess(null); return Promise.resolve(null); }
+    return fetch(SUPA_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",
+      headers:{"Content-Type":"application/json","apikey":SUPA_KEY},
+      body:JSON.stringify({refresh_token:SESS.rt})})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(j){ if(j&&j.access_token){ guardarSesion(j); return SESS.at; } saveSess(null); return null; })
+      .catch(function(){ return SESS?SESS.at:null; });
+  }
+  // Traduce los errores de Supabase a algo que una clienta entienda.
+  function authMsg(j){
+    var c=(j&&(j.error_code||j.code))||"", m=(j&&(j.msg||j.error_description||j.error))||"";
+    if(c==="invalid_credentials") return "El teléfono o la contraseña no coinciden.";
+    if(c==="otp_expired") return "Ese código ya venció o no es el correcto. Pedí uno nuevo.";
+    if(c==="over_sms_send_rate_limit"||/rate/i.test(c)) return "Esperá un momento antes de pedir otro código.";
+    if(c==="user_already_exists"||/already regist/i.test(m)) return "Ese número ya tiene cuenta. Entrá con tu contraseña.";
+    if(c==="weak_password"||/password/i.test(m)&&/6|short|length/i.test(m)) return "La contraseña necesita al menos 6 caracteres.";
+    if(c==="phone_provider_disabled") return "El envío de códigos no está disponible ahora. Pedí por WhatsApp como siempre.";
+    return m||"No se pudo completar. Probá de nuevo en un momento.";
+  }
+  function authErr(t){ var e=document.getElementById("authErr"); if(e){ e.textContent=t; e.classList.add("on"); } }
+  function authClearErr(){ var e=document.getElementById("authErr"); if(e) e.classList.remove("on"); }
+
+  function renderSheet(){
+    if(view==="entrar"||view==="crear") return authView();
+    if(view==="codigo") return codeView();
+    if(view==="pedidos") return pedidosView();
+    return view==="cart"?cartView():checkoutView();
+  }
 
   function cartView(){
     sTitle.textContent="Tu pedido"; setBack(false); var lines=cartLines();
