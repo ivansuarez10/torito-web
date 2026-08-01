@@ -449,6 +449,19 @@
   .intro-wave-b{animation:intro-vaiven 4.2s linear infinite reverse;opacity:.55}
   @keyframes intro-vaiven{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
+  /* Barrido de luz al colmarse: UNA sola pasada, ya lleno el toro.
+     Vive dentro de la máscara, así que nunca produce halo por fuera
+     de la silueta — no es un resplandor, es luz cruzando una superficie. */
+  .intro-sweep{position:absolute;inset:-10% -60%;pointer-events:none;opacity:0;
+    background:linear-gradient(105deg,transparent 42%,rgba(255,226,210,.62) 50%,transparent 58%);
+    mix-blend-mode:screen}
+  .intro-bull.is-sweeping .intro-sweep{animation:intro-barrer 620ms cubic-bezier(.4,0,.3,1) both}
+  @keyframes intro-barrer{
+    from{transform:translateX(-58%);opacity:0}
+    22% {opacity:1}
+    to  {transform:translateX(58%);opacity:0}
+  }
+
   .intro-bull.is-revealing{animation:intro-asentar var(--intro-fill) var(--intro-rise) both}
   .intro-bull.is-revealing .intro-liquid{animation:intro-llenar var(--intro-fill) var(--intro-easefill) both}
   .intro-bull.is-revealing .intro-surface{animation:intro-calmar var(--intro-fill) var(--intro-easefill) both}
@@ -517,6 +530,7 @@
         </div>
         <div class="cuerpo"></div>
       </div>
+      <div class="intro-sweep"></div>
     </div>
     <div class="intro-word" id="introWord">EL TORITO</div>
     <div class="intro-since" id="introSince"><span class="ln"></span>DESDE 1970<span class="ln"></span></div>
@@ -1481,6 +1495,8 @@
   after(T.hold, function(){ el.bull.classList.add('is-revealing'); });
   after(T.hold+T.fill-390, function(){ el.word.classList.add('is-in'); });
   after(T.hold+T.fill-60,  function(){ el.since.classList.add('is-in'); });
+  // el barrido dispara justo al colmarse; termina 460 ms antes del vuelo
+  after(T.hold+T.fill,     function(){ el.bull.classList.add('is-sweeping'); });
 
   var t0=Date.now();
   Promise.race([
