@@ -718,16 +718,32 @@
       '<div class="auth-lead">'+(crear
         ? "Con una cuenta podés ver tus pedidos anteriores y en qué van. No hace falta para comprar."
         : "Entrá con el teléfono y la contraseña que elegiste.")+'</div>'+
+      (crear?'<div class="field" id="w_anom"><label for="a_nom">Tu nombre</label>'+
+        '<input id="a_nom" type="text" placeholder="Ej: María López" autocomplete="name" maxlength="60"></div>':'')+
       '<div class="field" id="w_atel"><label for="a_tel">Tu celular</label>'+
         '<div class="telbox"><span class="telpre" aria-hidden="true">+504</span>'+
         '<input id="a_tel" type="tel" inputmode="numeric" placeholder="9999 9999" autocomplete="tel-national" value="'+pesc(authTel)+'" aria-label="Tu celular, 8 dígitos"></div></div>'+
       '<div class="field" id="w_apass"><label for="a_pass">Contraseña</label>'+
         '<input id="a_pass" type="password" placeholder="'+(crear?"Al menos 6 caracteres":"Tu contraseña")+'" autocomplete="'+(crear?"new-password":"current-password")+'"></div>'+
+      (crear?'':'<div class="auth-alt" style="text-align:left;margin-top:8px"><button type="button" id="aForgot">¿La olvidaste?</button></div>')+
       '<div class="auth-err" id="authErr"></div>';
     sFoot.innerHTML =
       '<button class="pay-wa" id="aGo" style="background:var(--red)">'+(crear?"Enviarme el código":"Entrar")+'</button>';
     sBody.querySelectorAll("[data-am]").forEach(function(b){
       b.onclick=function(){ if(b.dataset.am!==view){ view=b.dataset.am; renderSheet(); } }; });
+    var fg=document.getElementById("aForgot");
+    if(fg) fg.onclick=function(){
+      authClearErr();
+      var tel=telDigits(document.getElementById("a_tel").value);
+      if(!telValido(tel)){ authErr("Escribí tu celular arriba y tocá de nuevo."); return; }
+      authTel=tel; authFlow="reset";
+      fg.disabled=true; fg.textContent="Enviando código…";
+      authPost("otp",{phone:e164(tel),create_user:false}).then(function(r){
+        fg.disabled=false; fg.textContent="¿La olvidaste?";
+        if(!r.ok){ authErr(/not found|user/i.test((r.j&&r.j.msg)||"")?"Ese número no tiene cuenta todavía. Creala en la otra pestaña.":authMsg(r.j)); return; }
+        view="codigo"; renderSheet(); sBody.scrollTop=0;
+      });
+    };
     var go=document.getElementById("aGo");
     go.onclick=function(){
       authClearErr();
@@ -737,10 +753,12 @@
         ? "Ese es un teléfono fijo y no recibe mensajes. Necesitamos un celular."
         : "El celular lleva 8 dígitos y empieza con 3, 7, 8 o 9."); return; }
       if(pass.length<6){ authErr("La contraseña necesita al menos 6 caracteres."); return; }
-      authTel=tel; authPass=pass;
+      var nom=crear?(document.getElementById("a_nom").value||"").trim():"";
+      if(crear&&nom.length<2){ authErr("Contanos tu nombre, así te saludamos como se debe."); return; }
+      authTel=tel; authPass=pass; authFlow="alta";
       go.disabled=true; go.textContent=crear?"Enviando…":"Entrando…";
       if(crear){
-        authPost("signup",{phone:e164(tel),password:pass}).then(function(r){
+        authPost("signup",{phone:e164(tel),password:pass,data:{full_name:nom}}).then(function(r){
           go.disabled=false; go.textContent="Enviarme el código";
           if(!r.ok){ authErr(authMsg(r.j)); return; }
           view="codigo"; renderSheet(); sBody.scrollTop=0;
@@ -775,7 +793,7 @@
       authPost("verify",{type:"sms",phone:e164(authTel),token:code}).then(function(r){
         b.disabled=false; b.textContent="Confirmar";
         if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
-        view="pedidos"; renderSheet(); sBody.scrollTop=0;
+        view=(authFlow==="reset")?"nuevapass":"pedidos"; renderSheet(); sBody.scrollTop=0;
       });
     };
     document.getElementById("aResend").onclick=function(){
@@ -784,6 +802,31 @@
       authPost("otp",{phone:e164(authTel),create_user:false}).then(function(r){
         rb.disabled=false; rb.textContent="Mandalo de nuevo";
         if(!r.ok) authErr(authMsg(r.j)); else authErr("Listo, te lo mandamos otra vez.");
+      });
+    };
+  }
+
+  // ---- Pantalla: elegir contraseña nueva (tras verificar el código del reset) ----
+  function nuevaPassView(){
+    sTitle.textContent="Contraseña nueva"; setBack(false);
+    sBody.innerHTML =
+      '<div class="auth-lead">Listo, ya confirmamos que sos vos. Elegí tu contraseña nueva.</div>'+
+      '<div class="field"><label for="np1">Contraseña nueva</label><input id="np1" type="password" placeholder="Al menos 6 caracteres" autocomplete="new-password"></div>'+
+      '<div class="auth-err" id="authErr"></div>';
+    sFoot.innerHTML='<button class="pay-wa" id="npGo" style="background:var(--red)">Guardar y entrar</button>';
+    document.getElementById("npGo").onclick=function(){
+      authClearErr();
+      var p1=document.getElementById("np1").value;
+      if(p1.length<6){ authErr("La contraseña necesita al menos 6 caracteres."); return; }
+      var b=document.getElementById("npGo"); b.disabled=true; b.textContent="Guardando…";
+      fetch(SUPA_URL+"/auth/v1/user",{method:"PUT",
+        headers:{"Content-Type":"application/json",apikey:SUPA_KEY,Authorization:"Bearer "+(SESS&&SESS.at||"")},
+        body:JSON.stringify({password:p1})})
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};}); })
+      .then(function(r){
+        b.disabled=false; b.textContent="Guardar y entrar";
+        if(!r.ok){ authErr(authMsg(r.j)); return; }
+        authFlow="alta"; view="pedidos"; renderSheet(); sBody.scrollTop=0;
       });
     };
   }
@@ -873,7 +916,8 @@
   var ESTADOS={cotizar:["Confirmando disponibilidad",true],espera_pago:["Esperando tu pago",true],
     preparacion:["Preparando tu pedido",true],lista:["Lista para entregar",true],en_ruta:["En camino",true]};
   function pedidosView(){
-    sTitle.textContent="Mis pedidos"; setBack(true);
+    var _nom=(SESS&&SESS.nom)?SESS.nom.trim().split(/\s+/)[0]:"";
+    sTitle.textContent=_nom?("Hola, "+_nom):"Mis pedidos"; setBack(true);
     sBody.innerHTML='<div class="po-vacio">Buscando tus pedidos…</div>';
     sFoot.innerHTML='<button class="conf-back" id="aOut" style="width:100%">Cerrar sesión</button>';
     document.getElementById("aOut").onclick=function(){ saveSess(null); view="cart"; renderSheet(); };
@@ -1089,7 +1133,7 @@
   document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
   document.getElementById("sheetBack").onclick=function(){
     if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();sBody.scrollTop=0;}
-    else if(view==="codigo"){view="crear";renderSheet();sBody.scrollTop=0;}
+    else if(view==="codigo"){view=(authFlow==="reset")?"entrar":"crear";renderSheet();sBody.scrollTop=0;}
     else if(view==="track"){view="pedidos";renderSheet();sBody.scrollTop=0;}
     else if(view==="entrar"||view==="crear"||view==="pedidos"){closeSheet();}
     else { closeSheet(); }
@@ -1105,7 +1149,7 @@
   // que el cliente vea SUS pedidos anteriores; el negocio no depende de esto.
   // Se usa REST directo en vez del SDK de Supabase (~100KB): el peso de la página es
   // una restricción de producto, el cliente típico usa Android de gama baja.
-  var SESS=null, authTel="", authPass="", authModo="crear";
+  var SESS=null, authTel="", authPass="", authFlow="alta";
   try{ SESS=JSON.parse(localStorage.getItem("torito_sess_v1")||"null"); }catch(e){ SESS=null; }
   function saveSess(o){ SESS=o; try{ o?localStorage.setItem("torito_sess_v1",JSON.stringify(o))
     :localStorage.removeItem("torito_sess_v1"); }catch(e){} }
@@ -1117,9 +1161,12 @@
   }
   function guardarSesion(j){
     if(!j||!j.access_token) return false;
+    var nom=(j.user&&j.user.user_metadata&&j.user.user_metadata.full_name)||"";
     saveSess({at:j.access_token, rt:j.refresh_token||"",
       exp:Date.now()+(((j.expires_in||3600)-60)*1000),
-      tel:(j.user&&j.user.phone)||e164(authTel).replace(/^\+/,"")});
+      tel:(j.user&&j.user.phone)||e164(authTel).replace(/^\+/,""), nom:nom});
+    // si el perfil local no tiene nombre, lo sembramos con el de la cuenta
+    if(nom&&(!PROFILE||!PROFILE.name)){ PROFILE=PROFILE||{}; PROFILE.name=nom; try{saveProfile();}catch(e){} }
     return true;
   }
   // El token dura ~1h; si venció se renueva solo con el refresh_token (que no caduca
@@ -1154,6 +1201,7 @@
     if(view==="entrar"||view==="crear") return authView();
     if(view==="codigo") return codeView();
     if(view==="pedidos") return pedidosView();
+    if(view==="nuevapass") return nuevaPassView();
     if(view==="track") return trkView();
     return view==="cart"?cartView():checkoutView();
   }
