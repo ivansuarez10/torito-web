@@ -277,6 +277,15 @@
   .field select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
   .field select:focus{border-color:var(--red)}
   .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red)}
+  /* Teléfono: el +504 lo pone la tienda, el cliente solo escribe sus 8 dígitos.
+     Así el número queda SIEMPRE igual y desaparecen los 0504 / +504 / guiones. */
+  .telbox{display:flex;align-items:stretch;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;overflow:hidden;transition:border-color .2s}
+  .telbox:focus-within{border-color:var(--red)}
+  .telpre{display:flex;align-items:center;padding:0 13px;background:var(--card2);color:var(--gold);
+    font-size:15px;font-weight:800;letter-spacing:.02em;border-right:1px solid var(--line);flex:none}
+  .telbox input{border:0;border-radius:0;background:transparent;flex:1;min-width:0;letter-spacing:.04em}
+  .field.invalid .telbox{border-color:var(--red)}
   .co-grid{display:grid;gap:18px}
   .card-sum{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
   .card-sum h4{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:700}
@@ -827,7 +836,7 @@
       '<div class="co-grid">'+
         '<div class="co-form">'+
           '<div class="field" id="w_name"><label for="f_name">Nombre completo *</label><input id="f_name" placeholder="Tu nombre" autocomplete="name"></div>'+
-          '<div class="field" id="w_phone"><label for="f_phone">Teléfono / WhatsApp *</label><input id="f_phone" type="tel" placeholder="9999-9999" autocomplete="tel"></div>'+
+          '<div class="field" id="w_phone"><label for="f_phone">Teléfono / WhatsApp *</label><div class="telbox"><span class="telpre" aria-hidden="true">+504</span><input id="f_phone" type="tel" inputmode="numeric" placeholder="9999 9999" autocomplete="tel-national" aria-label="Tu celular, 8 dígitos, sin el código de país"></div></div>'+
           '<div class="field"><label>¿Cómo lo querés recibir?</label><div class="seg">'+
             '<label><input type="radio" name="deliv" value="retiro" checked><span class="opt">Retiro en local</span></label>'+
             '<label><input type="radio" name="deliv" value="domicilio"><span class="opt">A domicilio</span></label></div></div>'+
@@ -852,7 +861,7 @@
     // Autollenado desde el perfil local (sin login)
     if(PROFILE){
       var pv=function(id,v){var e=document.getElementById(id); if(e&&v)e.value=v;};
-      pv("f_name",PROFILE.name); pv("f_phone",PROFILE.phone); pv("f_addr",PROFILE.addr);
+      pv("f_name",PROFILE.name); pv("f_phone",telDigits(PROFILE.phone)); pv("f_addr",PROFILE.addr);
     }
     var startMode=(PROFILE&&PROFILE.mode==="domicilio")?"domicilio":"retiro";
     var rad=sBody.querySelector('input[name="deliv"][value="'+startMode+'"]'); if(rad)rad.checked=true;
@@ -1039,6 +1048,18 @@
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
   }
 
+  // Celulares de Honduras: 8 dígitos que empiezan con 3, 7, 8 o 9 (Claro, Hondutel,
+  // Digicel/Tigo y Tigo). Los que empiezan con 2 son FIJOS y no reciben mensajes.
+  function telDigits(v){ var d=String(v==null?"":v).replace(/\D/g,""); return d.length>8?d.slice(-8):d; }
+  function telValido(t){ return /^[3789]\d{7}$/.test(t); }
+  function telEsFijo(t){ return /^2/.test(t); }
+  // Mientras escribe o pega: solo dígitos y los ÚLTIMOS 8 (mismo criterio que telDigits,
+  // así "+504 9876 5432" y "9876-5432" terminan los dos en 98765432).
+  document.addEventListener("input",function(e){
+    var el=e.target; if(!el||el.id!=="f_phone") return;
+    var limpio=telDigits(el.value);
+    if(el.value!==limpio) el.value=limpio;
+  });
   function getForm(){return{name:(document.getElementById("f_name")||{}).value||"",phone:(document.getElementById("f_phone")||{}).value||"",addr:(document.getElementById("f_addr")||{}).value||"",note:(document.getElementById("f_note")||{}).value||"",pick:(document.getElementById("f_pick")||{}).value||""}}
   function folio(){return "W"+String(Date.now()).slice(-7)}
   function markInvalid(id,msg){var w=document.getElementById(id);if(w)w.classList.add("invalid");var e=document.getElementById("f_err");if(e){e.textContent=msg;e.style.display="block"}}
@@ -1049,7 +1070,11 @@
     if(out.length){ view="cart"; renderSheet(); sBody.scrollTop=0; return; } // se acabó mientras llenaba el checkout
     var bad=false;
     if(!f.name){markInvalid("w_name","Escribí tu nombre.");bad=true}
-    if(!f.phone){markInvalid("w_phone","Escribí tu teléfono / WhatsApp.");bad=true}
+    var tel=telDigits(f.phone);
+    if(!tel){ markInvalid("w_phone","Escribí tu teléfono / WhatsApp."); bad=true; }
+    else if(telEsFijo(tel)){ markInvalid("w_phone","Ese es un teléfono fijo y no recibe mensajes. Necesitamos un celular."); bad=true; }
+    else if(!telValido(tel)){ markInvalid("w_phone","El celular lleva 8 dígitos y empieza con 3, 7, 8 o 9."); bad=true; }
+    else { f.phone=tel; }
     if(ship.mode==="domicilio"){
       if(!f.addr){markInvalid("w_addr","Escribí tu dirección / referencia.");bad=true}
       if(ship.located&&!ship.ok){markInvalid("w_addr","Tu ubicación está fuera de zona (por ahora solo Tegucigalpa).");bad=true}
