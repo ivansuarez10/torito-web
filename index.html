@@ -291,6 +291,17 @@
   .auth-ok{margin-top:14px;background:rgba(46,125,82,.14);border:1px solid rgba(46,125,82,.5);border-radius:11px;
     padding:11px 13px;color:var(--cream);font-size:13.5px;display:none}
   .auth-ok.on{display:block}
+  .menurow{display:flex;align-items:center;gap:13px;width:100%;min-height:56px;padding:0 15px;margin-top:9px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--cream);
+    font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;text-align:left;transition:border-color .15s}
+  .menurow:hover{border-color:var(--red)}
+  .menurow svg{width:19px;height:19px;flex:none;stroke:var(--gold);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .menurow .fl{flex:1} .menurow .ar{color:var(--muted);font-weight:400}
+  .hub-activo{display:block;width:100%;text-align:left;border:1px solid var(--red);background:rgba(228,35,42,.09);
+    border-radius:14px;padding:13px 15px;margin-bottom:13px;cursor:pointer;font-family:inherit;color:var(--cream)}
+  .hub-activo .t1{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+  .hub-activo .t2{font-size:15px;font-weight:800;margin-top:4px}
+  .hub-activo .t3{font-size:12.5px;color:var(--muted);margin-top:3px}
   .perf-sec{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
   .perf-sec h4{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
   /* Resumen arriba de Mis pedidos: último pedido + favorito */
@@ -805,7 +816,7 @@
         authPost("token?grant_type=password",{phone:e164(tel),password:pass}).then(function(r){
           go.disabled=false; go.textContent="Entrar";
           if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
-          view="pedidos"; renderSheet(); sBody.scrollTop=0;
+          view="cuenta"; renderSheet(); sBody.scrollTop=0;
         });
       }
     };
@@ -831,7 +842,7 @@
       authPost("verify",{type:"sms",phone:e164(authTel),token:code}).then(function(r){
         b.disabled=false; b.textContent="Confirmar";
         if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
-        view=(authFlow==="reset")?"nuevapass":"pedidos"; renderSheet(); sBody.scrollTop=0;
+        view=(authFlow==="reset")?"nuevapass":"cuenta"; renderSheet(); sBody.scrollTop=0;
       });
     };
     document.getElementById("aResend").onclick=function(){
@@ -864,57 +875,126 @@
       .then(function(r){
         b.disabled=false; b.textContent="Guardar y entrar";
         if(!r.ok){ authErr(authMsg(r.j)); return; }
-        authFlow="alta"; view="pedidos"; renderSheet(); sBody.scrollTop=0;
+        authFlow="alta"; view="cuenta"; renderSheet(); sBody.scrollTop=0;
       });
     };
   }
 
+  // ---- Hub de la cuenta: lo vivo arriba, el menú abajo ----
+  var HUBROWS=null;
+  function cuentaView(){
+    var _n=(SESS&&SESS.nom)?SESS.nom.trim().split(/\s+/)[0]:"";
+    sTitle.textContent=_n?("Hola, "+_n):"Mi cuenta"; setBack(false);
+    sBody.innerHTML='<div class="po-vacio">Un momento…</div>';
+    sFoot.innerHTML='<button class="conf-back" id="aOut" style="width:100%">Cerrar sesión</button>';
+    document.getElementById("aOut").onclick=function(){ saveSess(null); closeSheet(); };
+    sesionValida().then(function(tok){
+      if(!tok){ view="entrar"; renderSheet(); return; }
+      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,archived,delivery&order=created_at.desc&limit=20",
+        {headers:{apikey:SUPA_KEY,Authorization:"Bearer "+tok}})
+        .then(function(r){return r.ok?r.json():[];})
+        .then(function(rows){
+          rows=rows||[]; HUBROWS=rows;
+          var h="";
+          // Pedido ACTIVO fijado arriba: lo que más le importa a quien abre su cuenta.
+          var act=rows.find(function(r){ return !r.archived&&r.status!=="cancelada"&&ESTADOS[r.status]&&ESTADOS[r.status][1]; });
+          if(act){ var e=ESTADOS[act.status];
+            h+='<button class="hub-activo" data-track="'+pesc(act.folio||"")+'"><span class="t1">Pedido en curso</span>'+
+               '<span class="t2" style="display:block">'+pesc(e[0])+'</span>'+
+               '<span class="t3" style="display:block">'+pesc(act.folio||"")+' · tocá para seguirlo →</span></button>'; }
+          // Resumen: último pedido + favorito (vive acá, no en la lista).
+          if(rows.length){
+            var dias=Math.floor((Date.now()-(Number(rows[0].created_at)||Date.now()))/86400000);
+            var cuando=dias<=0?"hoy":(dias===1?"ayer":(dias<30?("hace "+dias+" días"):("hace "+Math.round(dias/30)+(dias<60?" mes":" meses"))));
+            var cnt={}; rows.forEach(function(r){ if(r.status!=="cancelada") (r.items||[]).forEach(function(it){ if(it.name) cnt[it.name]=(cnt[it.name]||0)+1; }); });
+            var fav=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];})[0];
+            var favProd=fav&&PROD.find(function(x){return x.name.toLowerCase()===fav.toLowerCase()&&!x.soldout;});
+            h+='<div class="resu"><div class="l1">Tu último pedido fue <b>'+cuando+'</b>.'+(dias>=14?' ¿Repetimos?':'')+'</div>';
+            if(fav&&cnt[fav]>=2) h+='<div class="fav"><span class="t">Tu favorito: <b>'+pesc(fav)+'</b> · '+cnt[fav]+' veces</span>'+
+              (favProd?'<button data-favadd="'+pesc(favProd.id)+'">Agregar</button>':'')+'</div>';
+            h+='</div>';
+          }
+          h+='<button class="menurow" data-go="pedidos"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span class="fl">Mis pedidos</span><span class="ar">→</span></button>'+
+             '<button class="menurow" data-go="perfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="fl">Mi perfil</span><span class="ar">→</span></button>'+
+             '<button class="menurow" data-go="direcciones"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg><span class="fl">Mis direcciones</span><span class="ar">→</span></button>';
+          sBody.innerHTML=h;
+          var ab=sBody.querySelector("[data-track]");
+          if(ab) ab.onclick=function(){ abrirTrack(ab.dataset.track); };
+          var favb=sBody.querySelector("[data-favadd]");
+          if(favb) favb.onclick=function(){ var fp=prodById(favb.dataset.favadd);
+            if(fp){ cart[fp.id]=Math.min(hardCap(fp),(cart[fp.id]||0)+UNIT[fp.unit].def); save(); refreshCart();
+              favb.textContent="✓ Agregado"; setTimeout(function(){favb.textContent="Agregar";},1200); } };
+          sBody.querySelectorAll("[data-go]").forEach(function(b){
+            b.onclick=function(){ view=b.dataset.go; renderSheet(); sBody.scrollTop=0; }; });
+        });
+    }).catch(function(){ sBody.innerHTML='<div class="po-vacio">No pudimos cargar tu cuenta.<br>Probá de nuevo en un momento.</div>'; });
+  }
+
   // ---- Pantalla: editar mis datos (nombre, direcciones, RTN, contraseña) ----
   // Todo vive en los metadatos de la cuenta -> disponible en cualquier aparato.
+  // Guardado compartido: siempre manda TODOS los metadatos (lo editado + lo que ya había).
+  function guardarMeta(cambios,boton,despues){
+    authClearErr(); var okE=document.getElementById("authOk"); if(okE) okE.classList.remove("on");
+    var m=(SESS&&SESS.meta)||{};
+    var data={full_name:(cambios.nom!=null?cambios.nom:(SESS&&SESS.nom)||""),
+      rtn:(cambios.rtn!=null?cambios.rtn:m.rtn||""), fact_nombre:(cambios.fact!=null?cambios.fact:m.fact||""),
+      addr_casa:(cambios.casa!=null?cambios.casa:m.casa||""), addr_oficina:(cambios.ofi!=null?cambios.ofi:m.ofi||"")};
+    boton.disabled=true; var txt=boton.textContent; boton.textContent="Guardando…";
+    sesionValida().then(function(tok){
+      if(!tok){ view="entrar"; renderSheet(); return; }
+      return fetch(SUPA_URL+"/auth/v1/user",{method:"PUT",
+        headers:{"Content-Type":"application/json",apikey:SUPA_KEY,Authorization:"Bearer "+tok},
+        body:JSON.stringify({data:data})})
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};}); })
+      .then(function(r){
+        boton.disabled=false; boton.textContent=txt;
+        if(!r.ok){ authErr(authMsg(r.j)); return; }
+        SESS.nom=data.full_name; SESS.meta={rtn:data.rtn,fact:data.fact_nombre,casa:data.addr_casa,ofi:data.addr_oficina};
+        saveSess(SESS);
+        PROFILE=PROFILE||{}; PROFILE.name=data.full_name; if(data.addr_casa) PROFILE.addr=data.addr_casa;
+        try{ saveProfile(); }catch(e){}
+        if(okE){ okE.textContent="Listo, quedó guardado."; okE.classList.add("on"); }
+        if(despues) despues();
+      });
+    });
+  }
+
   function perfilView(){
-    sTitle.textContent="Mis datos"; setBack(true);
+    sTitle.textContent="Mi perfil"; setBack(true);
     var m=(SESS&&SESS.meta)||{};
     sBody.innerHTML =
       '<div class="field"><label for="pf_nom">Tu nombre</label><input id="pf_nom" type="text" maxlength="60" value="'+pesc(SESS&&SESS.nom||"")+'"></div>'+
-      '<div class="perf-sec"><h4>Direcciones guardadas</h4>'+
-      '<div class="field"><label for="pf_casa">Casa</label><input id="pf_casa" type="text" maxlength="160" placeholder="Colonia, calle, casa, referencia" value="'+pesc(m.casa||"")+'"></div>'+
-      '<div class="field"><label for="pf_ofi">Trabajo / otra</label><input id="pf_ofi" type="text" maxlength="160" placeholder="Opcional" value="'+pesc(m.ofi||"")+'"></div></div>'+
       '<div class="perf-sec"><h4>Factura con RTN (opcional)</h4>'+
+      '<div class="auth-lead" style="margin:6px 0 10px">Para negocios que necesitan factura. Se agrega a tus pedidos solo si vos lo marcás al pagar.</div>'+
       '<div class="field"><label for="pf_rtn">RTN</label><input id="pf_rtn" type="text" inputmode="numeric" maxlength="14" placeholder="08011999123456" value="'+pesc(m.rtn||"")+'"></div>'+
       '<div class="field"><label for="pf_fact">Nombre para la factura</label><input id="pf_fact" type="text" maxlength="80" placeholder="Comedor Doña María" value="'+pesc(m.fact||"")+'"></div></div>'+
-      '<div class="perf-sec"><h4>Cambiar contraseña</h4>'+
-      '<div class="field"><label for="pf_pass">Contraseña nueva</label><input id="pf_pass" type="password" placeholder="Dejalo vacío si no querés cambiarla" autocomplete="new-password"></div></div>'+
+      '<div class="perf-sec"><h4>Contraseña</h4>'+
+      '<div class="auth-lead" style="margin:6px 0 0">Para cambiarla, cerrá sesión y tocá "¿La olvidaste?" — te mandamos un código y elegís una nueva.</div></div>'+
       '<div class="auth-err" id="authErr"></div><div class="auth-ok" id="authOk"></div>';
     sFoot.innerHTML='<button class="pay-wa" id="pfSave" style="background:var(--red)">Guardar</button>';
     document.getElementById("pfSave").onclick=function(){
-      authClearErr(); var okE=document.getElementById("authOk"); okE.classList.remove("on");
       var nom=(document.getElementById("pf_nom").value||"").trim();
       var rtn=(document.getElementById("pf_rtn").value||"").replace(/\D/g,"");
-      var pass=document.getElementById("pf_pass").value;
       if(nom.length<2){ authErr("El nombre no puede quedar vacío."); return; }
       if(rtn&&rtn.length!==14){ authErr("El RTN lleva 14 dígitos (el tuyo tiene "+rtn.length+")."); return; }
-      if(pass&&pass.length<6){ authErr("La contraseña nueva necesita al menos 6 caracteres."); return; }
-      var body={data:{full_name:nom, rtn:rtn, fact_nombre:(document.getElementById("pf_fact").value||"").trim(),
-        addr_casa:(document.getElementById("pf_casa").value||"").trim(), addr_oficina:(document.getElementById("pf_ofi").value||"").trim()}};
-      if(pass) body.password=pass;
-      var b=document.getElementById("pfSave"); b.disabled=true; b.textContent="Guardando…";
-      sesionValida().then(function(tok){
-        if(!tok){ view="entrar"; renderSheet(); return; }
-        return fetch(SUPA_URL+"/auth/v1/user",{method:"PUT",
-          headers:{"Content-Type":"application/json",apikey:SUPA_KEY,Authorization:"Bearer "+tok},
-          body:JSON.stringify(body)})
-        .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};}); })
-        .then(function(r){
-          b.disabled=false; b.textContent="Guardar";
-          if(!r.ok){ authErr(authMsg(r.j)); return; }
-          SESS.nom=nom; SESS.meta={rtn:rtn, fact:body.data.fact_nombre, casa:body.data.addr_casa, ofi:body.data.addr_oficina};
-          saveSess(SESS);
-          PROFILE=PROFILE||{}; PROFILE.name=nom; if(body.data.addr_casa) PROFILE.addr=body.data.addr_casa;
-          try{ saveProfile(); }catch(e){}
-          document.getElementById("pf_pass").value="";
-          okE.textContent="Listo, quedó guardado."; okE.classList.add("on");
-        });
-      });
+      guardarMeta({nom:nom, rtn:rtn, fact:(document.getElementById("pf_fact").value||"").trim()},
+        document.getElementById("pfSave"));
+    };
+  }
+
+  // ---- Pantalla: mis direcciones ----
+  function direccionesView(){
+    sTitle.textContent="Mis direcciones"; setBack(true);
+    var m=(SESS&&SESS.meta)||{};
+    sBody.innerHTML =
+      '<div class="auth-lead">Guardalas una vez y al pedir las ponés con un toque.</div>'+
+      '<div class="field"><label for="pf_casa">Casa</label><input id="pf_casa" type="text" maxlength="160" placeholder="Colonia, calle, casa, referencia" value="'+pesc(m.casa||"")+'"></div>'+
+      '<div class="field"><label for="pf_ofi">Trabajo / otra</label><input id="pf_ofi" type="text" maxlength="160" placeholder="Opcional" value="'+pesc(m.ofi||"")+'"></div>'+
+      '<div class="auth-err" id="authErr"></div><div class="auth-ok" id="authOk"></div>';
+    sFoot.innerHTML='<button class="pay-wa" id="dirSave" style="background:var(--red)">Guardar</button>';
+    document.getElementById("dirSave").onclick=function(){
+      guardarMeta({casa:(document.getElementById("pf_casa").value||"").trim(),
+        ofi:(document.getElementById("pf_ofi").value||"").trim()}, document.getElementById("dirSave"));
     };
   }
 
@@ -1040,13 +1120,9 @@
   function pedidosView(){
     if(pedTimer) clearTimeout(pedTimer);
     pedTimer=setTimeout(function(){ if(sheetOpen&&view==="pedidos") pedidosView(); }, 30000);
-    var _nom=(SESS&&SESS.nom)?SESS.nom.trim().split(/\s+/)[0]:"";
-    sTitle.textContent=_nom?("Hola, "+_nom):"Mis pedidos"; setBack(true);
+    sTitle.textContent="Mis pedidos"; setBack(true);
     sBody.innerHTML='<div class="po-vacio">Buscando tus pedidos…</div>';
-    sFoot.innerHTML='<button class="pay-wa" id="aEdit" style="background:var(--card2);color:var(--cream)">Editar mis datos</button>'+
-      '<button class="conf-back" id="aOut" style="width:100%">Cerrar sesión</button>';
-    document.getElementById("aEdit").onclick=function(){ view="perfil"; renderSheet(); sBody.scrollTop=0; };
-    document.getElementById("aOut").onclick=function(){ saveSess(null); view="cart"; renderSheet(); };
+    sFoot.innerHTML="";
     sesionValida().then(function(tok){
       if(!tok){ view="entrar"; renderSheet(); return; }
       return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,shipping,archived,client_name,addr,delivery&order=created_at.desc&limit=20",
@@ -1069,9 +1145,8 @@
             sBody.innerHTML='<div class="po-vacio">Todavía no tenés pedidos con este número.<br>Cuando hagas uno, va a aparecer acá.</div>';
             return;
           }
-          // Resumen: hace cuánto fue el último pedido + el producto que más repite.
           var h="";
-          (function(){
+          (function(){ return; // resumen movido al hub
             var dias=Math.floor((Date.now()-(Number(rows[0].created_at)||Date.now()))/86400000);
             var cuando=dias<=0?"hoy":(dias===1?"ayer":(dias<30?("hace "+dias+" días"):("hace "+Math.round(dias/30)+(dias<60?" mes":" meses"))));
             var cnt={}; rows.forEach(function(r){ if(r.status!=="cancelada") (r.items||[]).forEach(function(it){ if(it.name) cnt[it.name]=(cnt[it.name]||0)+1; }); });
@@ -1294,14 +1369,15 @@
   document.getElementById("sheetBack").onclick=function(){
     if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();sBody.scrollTop=0;}
     else if(view==="codigo"){view=(authFlow==="reset")?"entrar":"crear";renderSheet();sBody.scrollTop=0;}
-    else if(view==="track"||view==="perfil"){view="pedidos";renderSheet();sBody.scrollTop=0;}
+    else if(view==="track"){view="pedidos";renderSheet();sBody.scrollTop=0;}
+    else if(view==="pedidos"||view==="perfil"||view==="direcciones"){view="cuenta";renderSheet();sBody.scrollTop=0;}
     else if(view==="entrar"||view==="crear"||view==="pedidos"){closeSheet();}
     else { closeSheet(); }
   };
   // Entrada a la cuenta. Si ya hay sesión va directo a los pedidos; si no, a entrar.
   document.getElementById("openAcct").onclick=function(){
     authTel = telDigits((PROFILE&&PROFILE.phone)||"");   // si ya pidió, le adelantamos el número
-    openSheetAt(SESS?"pedidos":"entrar");
+    openSheetAt(SESS?"cuenta":"entrar");
   };
   function setBack(show){var b=document.getElementById("sheetBack");if(b)b.style.display=show?"inline-flex":"none";}
   // ===== Cuenta del cliente =====
@@ -1365,7 +1441,9 @@
     if(view==="codigo") return codeView();
     if(view==="pedidos") return pedidosView();
     if(view==="nuevapass") return nuevaPassView();
+    if(view==="cuenta") return cuentaView();
     if(view==="perfil") return perfilView();
+    if(view==="direcciones") return direccionesView();
     if(view==="track") return trkView();
     return view==="cart"?cartView():checkoutView();
   }
