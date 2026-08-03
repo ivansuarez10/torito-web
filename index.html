@@ -291,17 +291,38 @@
   .auth-ok{margin-top:14px;background:rgba(46,125,82,.14);border:1px solid rgba(46,125,82,.5);border-radius:11px;
     padding:11px 13px;color:var(--cream);font-size:13.5px;display:none}
   .auth-ok.on{display:block}
-  .menurow{display:flex;align-items:center;gap:13px;width:100%;min-height:56px;padding:0 15px;margin-top:9px;
+  /* Sello de herencia: el mismo gesto del saludo de la home */
+  .hub-over{display:flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;margin:2px 0 14px}
+  .hub-over .ln{width:22px;height:1px;background:var(--red);flex:none}
+  /* Filas del menú: ícono en chip tenue, título + qué hay adentro, flecha */
+  .menurow{display:flex;align-items:center;gap:13px;width:100%;min-height:60px;padding:10px 15px;margin-top:9px;
     background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--cream);
-    font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;text-align:left;transition:border-color .15s}
-  .menurow:hover{border-color:var(--red)}
-  .menurow svg{width:19px;height:19px;flex:none;stroke:var(--gold);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .menurow .fl{flex:1} .menurow .ar{color:var(--muted);font-weight:400}
-  .hub-activo{display:block;width:100%;text-align:left;border:1px solid var(--red);background:rgba(228,35,42,.09);
-    border-radius:14px;padding:13px 15px;margin-bottom:13px;cursor:pointer;font-family:inherit;color:var(--cream)}
-  .hub-activo .t1{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
-  .hub-activo .t2{font-size:15px;font-weight:800;margin-top:4px}
+    font-family:inherit;cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+  .menurow:hover{border-color:#3a3a3a;background:#191919}
+  .menurow .ic{flex:none;width:40px;height:40px;border-radius:12px;background:rgba(228,35,42,.10);
+    display:flex;align-items:center;justify-content:center}
+  .menurow svg{width:19px;height:19px;stroke:var(--red);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .menurow .fl{flex:1;min-width:0}
+  .menurow .fl b{display:block;font-size:14.5px;font-weight:800}
+  .menurow .fl span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+  .menurow .ar{color:#4a4a4a;font-size:18px;font-weight:400}
+  /* Pedido en curso: la tarjeta viva del hub, con el anillo del tracking en miniatura */
+  .hub-activo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1px solid var(--red);
+    background:linear-gradient(135deg,rgba(228,35,42,.14),rgba(228,35,42,.05));
+    border-radius:16px;padding:14px 15px;margin-bottom:13px;cursor:pointer;font-family:inherit;color:var(--cream);
+    box-shadow:0 8px 26px rgba(228,35,42,.14)}
+  .hub-ring{position:relative;flex:none;width:52px;height:52px;border-radius:50%}
+  .hub-ring::before{content:"";position:absolute;inset:0;border-radius:50%;border:2.5px solid rgba(255,255,255,.14);
+    border-top-color:var(--red);animation:trkSpin 1.15s linear infinite}
+  @media (prefers-reduced-motion:reduce){.hub-ring::before{animation:none;border-color:var(--red)}}
+  .hub-ring i{position:absolute;inset:11px;display:block;background:var(--red);
+    -webkit-mask:url(img/logo.png) center/contain no-repeat;mask:url(img/logo.png) center/contain no-repeat}
+  .hub-activo .tx{flex:1;min-width:0}
+  .hub-activo .t1{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+  .hub-activo .t2{font-family:"Poppins",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:3px}
   .hub-activo .t3{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .hub-activo .ar{color:var(--red);font-size:20px;flex:none}
   .perf-sec{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
   .perf-sec h4{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
   /* Resumen arriba de Mis pedidos: último pedido + favorito */
@@ -895,13 +916,16 @@
         .then(function(r){return r.ok?r.json():[];})
         .then(function(rows){
           rows=rows||[]; HUBROWS=rows;
-          var h="";
+          var h='<div class="hub-over"><span class="ln"></span>El Torito · Desde 1970</div>';
           // Pedido ACTIVO fijado arriba: lo que más le importa a quien abre su cuenta.
           var act=rows.find(function(r){ return !r.archived&&r.status!=="cancelada"&&ESTADOS[r.status]&&ESTADOS[r.status][1]; });
           if(act){ var e=ESTADOS[act.status];
-            h+='<button class="hub-activo" data-track="'+pesc(act.folio||"")+'"><span class="t1">Pedido en curso</span>'+
+            h+='<button class="hub-activo" data-track="'+pesc(act.folio||"")+'">'+
+               '<span class="hub-ring" aria-hidden="true"><i></i></span>'+
+               '<span class="tx"><span class="t1" style="display:block">Pedido en curso</span>'+
                '<span class="t2" style="display:block">'+pesc(e[0])+'</span>'+
-               '<span class="t3" style="display:block">'+pesc(act.folio||"")+' · tocá para seguirlo →</span></button>'; }
+               '<span class="t3" style="display:block">'+pesc(act.folio||"")+' · tocá para seguirlo</span></span>'+
+               '<span class="ar">→</span></button>'; }
           // Resumen: último pedido + favorito (vive acá, no en la lista).
           if(rows.length){
             var dias=Math.floor((Date.now()-(Number(rows[0].created_at)||Date.now()))/86400000);
@@ -914,9 +938,9 @@
               (favProd?'<button data-favadd="'+pesc(favProd.id)+'">Agregar</button>':'')+'</div>';
             h+='</div>';
           }
-          h+='<button class="menurow" data-go="pedidos"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span class="fl">Mis pedidos</span><span class="ar">→</span></button>'+
-             '<button class="menurow" data-go="perfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="fl">Mi perfil</span><span class="ar">→</span></button>'+
-             '<button class="menurow" data-go="direcciones"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg><span class="fl">Mis direcciones</span><span class="ar">→</span></button>';
+          h+='<button class="menurow" data-go="pedidos"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span class="fl"><b>Mis pedidos</b><span>Historial, seguimiento y repetir</span></span><span class="ar">→</span></button>'+
+             '<button class="menurow" data-go="perfil"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg></span><span class="fl"><b>Mi perfil</b><span>Tu nombre y factura con RTN</span></span><span class="ar">→</span></button>'+
+             '<button class="menurow" data-go="direcciones"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span><span class="fl"><b>Mis direcciones</b><span>Casa y trabajo, listas al pedir</span></span><span class="ar">→</span></button>';
           sBody.innerHTML=h;
           var ab=sBody.querySelector("[data-track]");
           if(ab) ab.onclick=function(){ abrirTrack(ab.dataset.track); };
