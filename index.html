@@ -238,8 +238,16 @@
     font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:background .18s,color .18s}
   .authtabs button.on{background:var(--red);color:#fff}
   /* Check que se dibuja al confirmar el pedido */
-  .conf-ok svg .ok-circ{stroke-dasharray:151;stroke-dashoffset:151;animation:okCirc .5s ease-out forwards}
-  .conf-ok svg .ok-check{stroke-dasharray:36;stroke-dashoffset:36;animation:okCheck .35s ease-out .45s forwards}
+  .conf-ok svg .ok-circ{stroke-dasharray:151;stroke-dashoffset:151;animation:okCirc .95s cubic-bezier(.4,0,.2,1) forwards}
+  .conf-ok svg .ok-check{stroke-dasharray:36;stroke-dashoffset:36;animation:okCheck .55s ease-out .9s forwards}
+  /* Los textos del gracias entran escalonados, de arriba hacia abajo */
+  #confBody .conf-t,#confBody .conf-s,#confBody .conf-folio,#confBody .conf-acts,#confBody .conf-hint,#confBody .conf-back{
+    opacity:0;animation:confUp .5s cubic-bezier(.2,.7,.2,1) forwards}
+  #confBody .conf-t{animation-delay:1.15s} #confBody .conf-s{animation-delay:1.4s}
+  #confBody .conf-folio{animation-delay:1.65s} #confBody .conf-acts{animation-delay:1.9s}
+  #confBody .conf-hint{animation-delay:2.1s} #confBody .conf-back{animation-delay:2.25s}
+  @keyframes confUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){#confBody .conf-t,#confBody .conf-s,#confBody .conf-folio,#confBody .conf-acts,#confBody .conf-hint,#confBody .conf-back{animation:none;opacity:1}}
   @keyframes okCirc{to{stroke-dashoffset:0}}
   @keyframes okCheck{to{stroke-dashoffset:0}}
   @media (prefers-reduced-motion:reduce){.conf-ok svg .ok-circ,.conf-ok svg .ok-check{animation:none;stroke-dashoffset:0}}
@@ -288,6 +296,12 @@
   .po-est{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;letter-spacing:.04em;
     text-transform:uppercase;padding:6px 11px;border-radius:100px;border:1px solid #333;color:var(--gold)}
   .po-est.vivo{border-color:var(--red);color:#fff;background:rgba(228,35,42,.16)}
+  .po-est.muerto{border-color:#3a2a2a;color:#c88}
+  .po-again{margin-top:11px;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 15px;
+    background:transparent;border:1px solid #2b2b2b;border-radius:100px;color:var(--cream);font-family:inherit;
+    font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
+  .po-again:hover{border-color:var(--red)}
+  .po-again svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .po-items{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.45}
   .po-tot{margin-top:8px;font-weight:800;font-size:15px}
   .po-vacio{text-align:center;color:var(--muted);padding:40px 10px;font-size:14.5px;line-height:1.5}
@@ -851,6 +865,14 @@
     sTitle.textContent="Tu pedido "+(trkFolio||""); setBack(true);
     var o=trkOrden;
     if(!o){ sBody.innerHTML='<div class="po-vacio">Buscando tu pedido…</div>'; sFoot.innerHTML=""; return; }
+    if(o.status==="cancelada"){
+      sBody.innerHTML='<div class="trk-head"><div class="trk-ring done"><span class="trk-check" style="display:flex"><svg viewBox="0 0 24 24" style="stroke:#c88"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div>'+
+        '<div class="trk-tit">Pedido cancelado</div>'+
+        '<div class="trk-sub">Este pedido no se llegó a completar — no se confirmó o no pudimos cumplirlo. Podés volver a pedirlo cuando querás.</div></div>';
+      sFoot.innerHTML='<button class="pay-wa" id="trkBack" style="background:var(--card2);color:var(--cream)">Volver a mis pedidos</button>';
+      document.getElementById("trkBack").onclick=function(){ view="pedidos"; renderSheet(); };
+      return;
+    }
     var pasos=trkPasos(o);
     var idx=o.archived ? pasos.length-1 : Math.max(0, pasos.findIndex(function(pp){return pp.k===o.status;}));
     if(!o.archived && pasos.findIndex(function(pp){return pp.k===o.status;})<0) idx=0;
@@ -888,11 +910,18 @@
         });
     }).catch(function(){});
   }
+  // Al volver a la app (cambio de pestaña / desbloquear el cel), refrescar lo que esté abierto.
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden||!sheetOpen) return;
+    if(view==="track") trkCargar();
+    else if(view==="pedidos") pedidosView();
+  });
+  var pedTimer=null;
   function abrirTrack(folio){
     trkFolio=folio; trkOrden=null; view="track"; renderSheet(); sBody.scrollTop=0;
     trkCargar().then(function(){ if(view==="track") trkView(); });
     if(trkTimer) clearInterval(trkTimer);
-    trkTimer=setInterval(trkCargar, 25000);
+    trkTimer=setInterval(trkCargar, 10000);   // el tracking se siente "en vivo" sin websocket
   }
 
   // ---- Estrellas: calificar un pedido entregado ----
@@ -912,10 +941,32 @@
     });
   }
 
+  // Reconstruye el carrito con los items de un pedido viejo. Los items de la base llevan
+  // NOMBRE (no id), así que se matchea contra el catálogo actual; lo que ya no exista se
+  // salta y se avisa. Devuelve cuántos entraron.
+  var REPES={};
+  function repetirPedido(folio){
+    var its=REPES[folio]||[], puestos=0, faltan=[];
+    its.forEach(function(it){
+      var p=PROD.find(function(x){ return x.name.toLowerCase()===String(it.name||"").toLowerCase(); });
+      if(!p||p.soldout){ faltan.push(it.name); return; }
+      var q=Number(it.qty)||UNIT[p.unit].def;
+      cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+q);
+      if(it.corte) cutSel[p.id]=it.corte;
+      puestos++;
+    });
+    if(!puestos) return;
+    saveCuts(); save(); refreshCart();
+    view="cart"; renderSheet(); sBody.scrollTop=0;
+  }
+
   // ---- Pantalla: mis pedidos ----
   var ESTADOS={cotizar:["Confirmando disponibilidad",true],espera_pago:["Esperando tu pago",true],
-    preparacion:["Preparando tu pedido",true],lista:["Lista para entregar",true],en_ruta:["En camino",true]};
+    preparacion:["Preparando tu pedido",true],lista:["Lista para entregar",true],en_ruta:["En camino",true],
+    entregada:["Entregado",false],cancelada:["Cancelado",false]};
   function pedidosView(){
+    if(pedTimer) clearTimeout(pedTimer);
+    pedTimer=setTimeout(function(){ if(sheetOpen&&view==="pedidos") pedidosView(); }, 30000);
     var _nom=(SESS&&SESS.nom)?SESS.nom.trim().split(/\s+/)[0]:"";
     sTitle.textContent=_nom?("Hola, "+_nom):"Mis pedidos"; setBack(true);
     sBody.innerHTML='<div class="po-vacio">Buscando tus pedidos…</div>';
@@ -923,10 +974,22 @@
     document.getElementById("aOut").onclick=function(){ saveSess(null); view="cart"; renderSheet(); };
     sesionValida().then(function(tok){
       if(!tok){ view="entrar"; renderSheet(); return; }
-      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,shipping,archived&order=created_at.desc&limit=20",
+      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,shipping,archived,client_name,addr,delivery&order=created_at.desc&limit=20",
         {headers:{apikey:SUPA_KEY,Authorization:"Bearer "+tok}})
         .then(function(r){ return r.ok?r.json():[]; })
         .then(function(rows){
+          // Hidratar el perfil local desde el último pedido: en un teléfono nuevo el
+          // checkout queda lleno y la clienta solo confirma. El teléfono viene de la sesión.
+          if(rows&&rows.length){
+            var ult=rows[0]; PROFILE=PROFILE||{};
+            if(!PROFILE.name&&(SESS&&SESS.nom||ult.client_name)) PROFILE.name=(SESS&&SESS.nom)||ult.client_name;
+            if(!PROFILE.phone&&SESS&&SESS.tel) PROFILE.phone=telDigits(SESS.tel);
+            if(!PROFILE.addr){ var conDir=rows.find(function(r){return r.addr&&r.addr.length>3;});
+              if(conDir) PROFILE.addr=conDir.addr.replace(/\s*·\s*📍[^]*$/,"").trim(); }
+            if(PROFILE.mode==null&&ult.delivery!=null) PROFILE.mode=ult.delivery?"domicilio":"retiro";
+            try{ saveProfile(); }catch(e){}
+            REPES={}; rows.forEach(function(r){ if(r.folio) REPES[r.folio]=r.items||[]; });
+          }
           if(!rows||!rows.length){
             sBody.innerHTML='<div class="po-vacio">Todavía no tenés pedidos con este número.<br>Cuando hagas uno, va a aparecer acá.</div>';
             return;
@@ -937,14 +1000,16 @@
             var f=new Date(Number(o.created_at)||Date.now());
             var items=(o.items||[]).map(function(i){ return (i.qty||"")+" "+(i.unit==="paquete"?"paq":"lb")+" "+(i.name||""); }).join(" · ");
             var tot=(o.items||[]).reduce(function(a,i){ return a+(Number(i.total)||0); },0)+(Number(o.shipping)||0);
-            var vivo=est[1]&&!o.archived;
+            var vivo=est[1]&&!o.archived&&o.status!=="cancelada";
+            var cancelado=(o.status==="cancelada");
             h+='<div class="po" data-folio="'+pesc(o.folio||"")+'" role="button" tabindex="0" style="cursor:pointer">'+
                '<div class="po-top"><span class="po-folio">'+pesc(o.folio||"")+'</span>'+
                '<span class="po-fecha">'+f.toLocaleDateString("es-HN",{day:"2-digit",month:"short"})+'</span></div>'+
-               '<div class="po-est'+(vivo?" vivo":"")+'">'+pesc(o.archived?"Entregado":est[0])+(vivo?" · seguilo →":"")+'</div>'+
+               '<div class="po-est'+(vivo?" vivo":"")+(cancelado?" muerto":"")+'">'+pesc(cancelado?"Cancelado":(o.archived?"Entregado":est[0]))+(vivo?" · seguilo →":"")+'</div>'+
                '<div class="po-items">'+pesc(items)+'</div>'+
                (tot>0?'<div class="po-tot">'+money(tot)+'</div>':'')+
-               (o.archived&&o.folio?('<div class="rate-row" data-rate="'+pesc(o.folio)+'">'+
+               '<button class="po-again" data-again="'+pesc(o.folio||"")+'"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Pedir esto otra vez</button>'+
+               (o.archived&&!cancelado&&o.folio?('<div class="rate-row" data-rate="'+pesc(o.folio)+'">'+
                  (RATED[o.folio]
                    ?'<span class="rate-done">Lo calificaste con '+RATED[o.folio]+' de 5. ¡Gracias!</span>'
                    :'<span class="q">¿Cómo estuvo?</span>'+[1,2,3,4,5].map(function(n){
@@ -954,6 +1019,8 @@
           sBody.innerHTML=h;
           sBody.querySelectorAll(".po").forEach(function(card){
             card.addEventListener("click",function(e){
+              var again=e.target.closest(".po-again");
+              if(again){ repetirPedido(again.dataset.again); return; }
               var star=e.target.closest(".rate-star");
               if(star){
                 var row=e.target.closest(".rate-row"), fol=row.dataset.rate, n=+star.dataset.star;
@@ -1289,7 +1356,7 @@
     // Autollenado desde el perfil local (sin login)
     if(PROFILE){
       var pv=function(id,v){var e=document.getElementById(id); if(e&&v)e.value=v;};
-      pv("f_name",PROFILE.name); pv("f_phone",telDigits(PROFILE.phone)); pv("f_addr",PROFILE.addr);
+      pv("f_name",PROFILE.name||(SESS&&SESS.nom)||""); pv("f_phone",telDigits(PROFILE.phone||(SESS&&SESS.tel)||"")); pv("f_addr",PROFILE.addr);
     }
     var startMode=(PROFILE&&PROFILE.mode==="domicilio")?"domicilio":"retiro";
     var rad=sBody.querySelector('input[name="deliv"][value="'+startMode+'"]'); if(rad)rad.checked=true;
@@ -1546,8 +1613,8 @@
       '<div class="conf-t">Procesando tu pedido</div>'+
       '<div class="conf-s">Estamos avisándole a la carnicería.</div>';
     ov.classList.add("on");
-    var minimo=new Promise(function(r){setTimeout(r,700);});
-    var tope  =new Promise(function(r){setTimeout(r,1600);});
+    var minimo=new Promise(function(r){setTimeout(r,1500);});   // Ivan la quiere pausada, que respire
+    var tope  =new Promise(function(r){setTimeout(r,2800);});
     Promise.all([minimo, Promise.race([enviado||Promise.resolve(), tope])]).then(function(){
       body.innerHTML='<div class="conf-ok"><svg viewBox="0 0 56 56"><circle class="ok-circ" cx="28" cy="28" r="24" fill="none" stroke="var(--red)" stroke-width="2.4"/><path class="ok-check" d="M18 29.5 25 36.5 39 21" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
         '<div class="conf-t">¡Gracias por confiar en El Torito!</div>'+
