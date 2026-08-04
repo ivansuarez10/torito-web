@@ -291,22 +291,9 @@
   .auth-ok{margin-top:14px;background:rgba(46,125,82,.14);border:1px solid rgba(46,125,82,.5);border-radius:11px;
     padding:11px 13px;color:var(--cream);font-size:13.5px;display:none}
   .auth-ok.on{display:block}
-  /* Sello de herencia: el mismo gesto del saludo de la home */
-  .hub-over{display:flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--gold);font-weight:700;margin:2px 0 14px}
-  .hub-over .ln{width:22px;height:1px;background:var(--red);flex:none}
-  /* Menú tipográfico: sin cajas, líneas de pelo, como el resto de la casa */
-  .menurow{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:4px 2px;
-    background:none;border:none;border-bottom:1px solid #1d1d1d;color:var(--cream);
-    font-family:inherit;cursor:pointer;text-align:left;transition:color .15s}
-  .menurow:first-of-type{border-top:1px solid #1d1d1d;margin-top:20px}
-  .menurow .fl{flex:1;min-width:0}
-  .menurow .fl b{font-family:"Poppins",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em}
-  .menurow .ar{color:#4a4a4a;font-size:19px;font-weight:400;transition:color .15s,transform .15s}
-  .menurow:hover .ar{color:var(--red);transform:translateX(3px)}
   /* Pedido en curso: lo único con presencia — el anillo ya hace el trabajo */
   .hub-activo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
-    border:1px solid #2b2b2b;background:none;border-radius:16px;padding:14px 15px;margin-bottom:18px;
+    border:1px solid #2b2b2b;background:none;border-radius:16px;padding:14px 15px;margin:2px 0 22px;
     cursor:pointer;font-family:inherit;color:var(--cream);transition:border-color .15s}
   .hub-activo:hover{border-color:var(--red)}
   .hub-ring{position:relative;flex:none;width:52px;height:52px;border-radius:50%}
@@ -316,26 +303,41 @@
   .hub-ring i{position:absolute;inset:11px;display:block;background:var(--red);
     -webkit-mask:url(img/logo.png) center/contain no-repeat;mask:url(img/logo.png) center/contain no-repeat}
   .hub-activo .tx{flex:1;min-width:0}
-  .hub-activo .t1{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
-  .hub-activo .t2{font-family:"Poppins",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:3px}
+  .hub-activo .t2{font-family:"Poppins",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em}
   .hub-activo .t3{font-size:12.5px;color:var(--muted);margin-top:3px}
   .hub-activo .ar{color:var(--red);font-size:20px;flex:none}
-  .hub-resu{margin:2px 0 4px}
-  .hub-resu .l1{font-size:14px;color:var(--muted);line-height:1.5} .hub-resu .l1 b{color:var(--cream)}
-  .hub-resu .fav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
-  .hub-resu .fav .t{font-size:14px;color:var(--muted)} .hub-resu .fav .t b{color:var(--cream);font-weight:800}
-  .hub-resu .fav button{flex:none;min-height:44px;padding:0 16px;background:transparent;border:1px solid #2b2b2b;
-    border-radius:100px;color:var(--cream);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
-  .hub-resu .fav button:hover{border-color:var(--red)}
+  /* Lo de siempre: la cuenta se abre sobre la carne que compra, no sobre un menú */
+  .hub-h{font-family:"Poppins",sans-serif;font-size:15px;font-weight:800;letter-spacing:-.01em;margin-bottom:11px}
+  .usual{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1d1d1d}
+  .usual:first-of-type{border-top:1px solid #1d1d1d}
+  .usual .ph{flex:none;width:54px;height:54px;border-radius:10px;overflow:hidden;background:#151515}
+  .usual .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .usual .tx{flex:1;min-width:0}
+  .usual .n{font-family:"Poppins",sans-serif;font-size:14.5px;font-weight:800;letter-spacing:-.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .usual .p{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .usual .ad{flex:none;min-height:44px;padding:0 16px;background:transparent;border:1px solid #2b2b2b;
+    border-radius:100px;color:var(--cream);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    transition:border-color .15s,color .15s}
+  .usual .ad:hover{border-color:var(--red)}
+  .usual .ad.ok{border-color:var(--red);color:var(--red)}
+  .usual.out .ph img{filter:grayscale(1);opacity:.45}
+  .usual.out .n{color:var(--muted)}
+  .usual .agot{flex:none;font-size:12px;color:var(--muted)}
+  /* Sin historial todavía: la salida es el catálogo, no una pantalla vacía */
+  /* Sin historial no hay lista, así que el separador de abajo lo pone este bloque:
+     con filas, la línea inferior de la última fila ya cumple ese papel. */
+  .hub-nada{padding:2px 0 22px;border-bottom:1px solid #1d1d1d;color:var(--muted);font-size:14px;line-height:1.55}
+  .hub-nada button{margin-top:15px;min-height:44px;padding:0 20px;background:var(--cream);color:#17140f;
+    border:none;border-radius:100px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer}
+  /* Lo demás de la cuenta: navegación, en su sitio y sin protagonismo */
+  .hub-mas{display:flex;gap:8px;margin-top:20px}
+  .hub-mas button{flex:1;min-height:44px;padding:0 6px;background:none;border:1px solid #2b2b2b;border-radius:10px;
+    color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+    transition:border-color .15s,color .15s}
+  .hub-mas button:hover{border-color:var(--red);color:var(--cream)}
   .perf-sec{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
   .perf-sec h4{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-  /* Resumen arriba de Mis pedidos: último pedido + favorito */
-  .resu{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:13px 14px;margin-bottom:14px}
-  .resu .l1{font-size:13.5px;color:var(--muted)} .resu .l1 b{color:var(--cream)}
-  .resu .fav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
-  .resu .fav .t{font-size:13.5px} .resu .fav .t b{font-weight:800}
-  .resu .fav button{flex:none;min-height:40px;padding:0 14px;background:var(--cream);color:#17140f;border:none;border-radius:100px;
-    font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
   /* Chips de dirección guardada en el checkout */
   .addrpick{display:flex;gap:7px;margin:0 0 8px;flex-wrap:wrap}
   .addrpick button{min-height:40px;padding:0 14px;background:var(--card);border:1px solid var(--line);border-radius:100px;
@@ -920,42 +922,92 @@
         .then(function(r){return r.ok?r.json():[];})
         .then(function(rows){
           rows=rows||[]; HUBROWS=rows;
-          var h='<div class="hub-over"><span class="ln"></span>El Torito · Desde 1970</div>';
+          var h="";
           // Pedido ACTIVO fijado arriba: lo que más le importa a quien abre su cuenta.
           var act=rows.find(function(r){ return !r.archived&&r.status!=="cancelada"&&ESTADOS[r.status]&&ESTADOS[r.status][1]; });
           if(act){ var e=ESTADOS[act.status];
             h+='<button class="hub-activo" data-track="'+pesc(act.folio||"")+'">'+
                '<span class="hub-ring" aria-hidden="true"><i></i></span>'+
-               '<span class="tx"><span class="t1" style="display:block">Pedido en curso</span>'+
-               '<span class="t2" style="display:block">'+pesc(e[0])+'</span>'+
-               '<span class="t3" style="display:block">'+pesc(act.folio||"")+' · tocá para seguirlo</span></span>'+
+               '<span class="tx"><span class="t2" style="display:block">'+pesc(e[0])+'</span>'+
+               '<span class="t3" style="display:block">Pedido '+pesc(act.folio||"")+'</span></span>'+
                '<span class="ar">→</span></button>'; }
-          // Resumen: último pedido + favorito (vive acá, no en la lista).
-          if(rows.length){
-            var dias=Math.floor((Date.now()-(Number(rows[0].created_at)||Date.now()))/86400000);
-            var cuando=dias<=0?"hoy":(dias===1?"ayer":(dias<30?("hace "+dias+" días"):("hace "+Math.round(dias/30)+(dias<60?" mes":" meses"))));
-            var cnt={}; rows.forEach(function(r){ if(r.status!=="cancelada") (r.items||[]).forEach(function(it){ if(it.name) cnt[it.name]=(cnt[it.name]||0)+1; }); });
-            var fav=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];})[0];
-            var favProd=fav&&PROD.find(function(x){return x.name.toLowerCase()===fav.toLowerCase()&&!x.soldout;});
-            h+='<div class="hub-resu"><div class="l1">Tu último pedido fue <b>'+cuando+'</b>.'+(dias>=14?' ¿Repetimos?':'')+'</div>';
-            if(fav&&cnt[fav]>=2) h+='<div class="fav"><span class="t">Tu favorito: <b>'+pesc(fav)+'</b> · '+cnt[fav]+' veces</span>'+
-              (favProd?'<button data-favadd="'+pesc(favProd.id)+'">Agregar</button>':'')+'</div>';
-            h+='</div>';
+          // "Lo de siempre": la carne que esta clienta compra de verdad, sacada del
+          // historial del SERVIDOR (o sea, la misma en cualquier aparato). El corte que
+          // eligió la última vez se recuerda acá, así Agregar queda en un solo toque.
+          var cnt={}, cutHist={};
+          rows.forEach(function(r){ if(r.status==="cancelada") return;
+            (r.items||[]).forEach(function(it){ if(!it.name) return;
+              var k=it.name.toLowerCase(); cnt[k]=(cnt[k]||0)+1;
+              if(it.corte&&!cutHist[k]) cutHist[k]=it.corte; }); });
+          var usual=Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a]; })
+            .map(function(k){ var p=PROD.find(function(x){ return x.name.toLowerCase()===k; }); return p?{p:p,k:k}:null; })
+            .filter(Boolean).slice(0,5);
+          var sembrados=[];
+          usual.forEach(function(u){ var p=u.p;
+            // Solo se siembra un corte que HOY siga existiendo: si se le cambió el nombre
+            // en el catálogo, se prefiere que la clienta lo vuelva a elegir.
+            if(p.cuts&&p.cuts.length&&!cutSel[p.id]&&cutHist[u.k]&&p.cuts.indexOf(cutHist[u.k])>=0){
+              cutSel[p.id]=cutHist[u.k]; sembrados.push(p.id); } });
+          if(sembrados.length){ saveCuts();
+            // Las tarjetas del catálogo ya se pintaron: marcar el chip para que la
+            // tarjeta no diga una cosa y el carrito otra.
+            sembrados.forEach(function(id){
+              var card=document.querySelector('.prod[data-pid="'+id+'"]'); if(!card) return;
+              card.querySelectorAll("[data-cutopt]").forEach(function(c){
+                var on=(c.dataset.cutopt===cutSel[id]);
+                c.classList.toggle("on",on); c.setAttribute("aria-pressed",on?"true":"false"); });
+            });
           }
-          h+='<button class="menurow" data-go="pedidos"><span class="fl"><b>Mis pedidos</b></span><span class="ar">→</span></button>'+
-             '<button class="menurow" data-go="perfil"><span class="fl"><b>Mi perfil</b></span><span class="ar">→</span></button>'+
-             '<button class="menurow" data-go="direcciones"><span class="fl"><b>Mis direcciones</b></span><span class="ar">→</span></button>';
+          if(usual.length){
+            h+='<div class="hub-h">Lo de siempre</div>';
+            usual.forEach(function(u){ var p=u.p, U=UNIT[p.unit]||UNIT.libra;
+              h+='<div class="usual'+(p.soldout?" out":"")+'">'+
+                 '<span class="ph"><img src="'+pesc(imgpath(p))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/></span>'+
+                 '<span class="tx"><span class="n" style="display:block">'+pesc(p.name)+'</span>'+
+                 '<span class="p" style="display:block">'+((p.quote||p.price==null)?"A cotizar":pesc(money(p.price)+" "+U.each))+'</span></span>'+
+                 (p.soldout ? '<span class="agot">Se acabó por hoy</span>'
+                            : '<button class="ad" data-add2="'+pesc(p.id)+'">Agregar</button>')+
+                 '</div>';
+            });
+          } else {
+            h+='<div class="hub-nada">Todavía no hay pedidos en tu cuenta. Cuando hagás el primero, acá vas a tener lo que comprás siempre, listo para volver a pedirlo.'+
+               '<br><button data-vercat>Ver el catálogo</button></div>';
+          }
+          h+='<div class="hub-mas">'+
+             '<button data-go="pedidos">Mis pedidos</button>'+
+             '<button data-go="perfil">Mi perfil</button>'+
+             '<button data-go="direcciones">Direcciones</button></div>';
           sBody.innerHTML=h;
           var ab=sBody.querySelector("[data-track]");
           if(ab) ab.onclick=function(){ abrirTrack(ab.dataset.track); };
-          var favb=sBody.querySelector("[data-favadd]");
-          if(favb) favb.onclick=function(){ var fp=prodById(favb.dataset.favadd);
-            if(fp){ cart[fp.id]=Math.min(hardCap(fp),(cart[fp.id]||0)+UNIT[fp.unit].def); save(); refreshCart();
-              favb.textContent="✓ Agregado"; setTimeout(function(){favb.textContent="Agregar";},1200); } };
+          var vc=sBody.querySelector("[data-vercat]");
+          if(vc) vc.onclick=function(){ closeSheet(); };
+          sBody.querySelectorAll("[data-add2]").forEach(function(b){
+            b.onclick=function(){ agregarDeSiempre(prodById(b.dataset.add2),b); }; });
           sBody.querySelectorAll("[data-go]").forEach(function(b){
             b.onclick=function(){ view=b.dataset.go; renderSheet(); sBody.scrollTop=0; }; });
         });
     }).catch(function(){ sBody.innerHTML='<div class="po-vacio">No pudimos cargar tu cuenta.<br>Probá de nuevo en un momento.</div>'; });
+  }
+
+  // Agregar desde "Lo de siempre". Si el producto lleva corte y nunca eligió uno
+  // (ni lo trae el historial), NO se adivina: se cierra la cuenta y se le lleva a la
+  // tarjeta con el selector marcado, igual que cuando toca Agregar en el catálogo.
+  function agregarDeSiempre(p,btn){
+    if(!p||p.soldout) return;
+    if(p.cuts&&p.cuts.length&&!cutSel[p.id]){
+      closeSheet(); showCat(p.cat);
+      setTimeout(function(){
+        var card=document.querySelector('.prod[data-pid="'+p.id+'"]'); if(!card) return;
+        var cw=card.querySelector(".cutsel"); if(cw) cw.classList.add("warn");
+        try{ card.scrollIntoView({block:"center",behavior:"smooth"}); }catch(_){}
+      },60);
+      return;
+    }
+    var U=UNIT[p.unit]||UNIT.libra;
+    cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+U.def); save(); refreshCart();
+    btn.classList.add("ok"); btn.textContent="Agregado";
+    setTimeout(function(){ btn.classList.remove("ok"); btn.textContent="Agregar"; },1200);
   }
 
   // ---- Pantalla: editar mis datos (nombre, direcciones, RTN, contraseña) ----
@@ -1174,17 +1226,6 @@
             return;
           }
           var h="";
-          (function(){ return; // resumen movido al hub
-            var dias=Math.floor((Date.now()-(Number(rows[0].created_at)||Date.now()))/86400000);
-            var cuando=dias<=0?"hoy":(dias===1?"ayer":(dias<30?("hace "+dias+" días"):("hace "+Math.round(dias/30)+(dias<60?" mes":" meses"))));
-            var cnt={}; rows.forEach(function(r){ if(r.status!=="cancelada") (r.items||[]).forEach(function(it){ if(it.name) cnt[it.name]=(cnt[it.name]||0)+1; }); });
-            var fav=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];})[0];
-            var favProd=fav&&PROD.find(function(x){return x.name.toLowerCase()===fav.toLowerCase()&&!x.soldout;});
-            h+='<div class="hub-resu"><div class="l1">Tu último pedido fue <b>'+cuando+'</b>.'+(dias>=14?' ¿Repetimos?':'')+'</div>';
-            if(fav&&cnt[fav]>=2) h+='<div class="fav"><span class="t">Tu favorito: <b>'+pesc(fav)+'</b> · '+cnt[fav]+' veces</span>'+
-              (favProd?'<button data-favadd="'+pesc(favProd.id)+'">Agregar</button>':'')+'</div>';
-            h+='</div>';
-          })();
           rows.forEach(function(o){
             var est=ESTADOS[o.status]||[o.archived?"Entregado":"Recibido",false];
             var f=new Date(Number(o.created_at)||Date.now());
@@ -1208,10 +1249,6 @@
                  '</div>'):'')+'</div>';
           });
           sBody.innerHTML=h;
-          var favb=sBody.querySelector("[data-favadd]");
-          if(favb) favb.onclick=function(){ var fp=prodById(favb.dataset.favadd);
-            if(fp){ cart[fp.id]=Math.min(hardCap(fp),(cart[fp.id]||0)+UNIT[fp.unit].def); save(); refreshCart();
-              favb.textContent="✓ Agregado"; setTimeout(function(){favb.textContent="Agregar";},1200); } };
           sBody.querySelectorAll(".po").forEach(function(card){
             card.addEventListener("click",function(e){
               if(e.target.closest(".po-wa")) return;   // el link de WhatsApp navega solo
@@ -1383,7 +1420,10 @@
     document.getElementById("cartCount").textContent=n; document.getElementById("fabCount").textContent=n;
     document.getElementById("fabTotal").textContent=money(t);
     document.getElementById("fab").classList.toggle("show",n>0&&!sheetOpen);
-    if(sheetOpen) renderSheet();
+    // El hub de la cuenta no muestra nada del carrito, y repintarlo cuesta otra
+    // consulta del historial al servidor: agregar desde "Lo de siempre" borraría el
+    // "Agregado" y gastaría datos en cada toque. Las demás vistas sí se repintan.
+    if(sheetOpen&&view!=="cuenta") renderSheet();
   }
 
   var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null,located:false};
