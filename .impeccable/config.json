@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "helvetica",
+        "createdAt": "2026-08-01T14:13:48.910Z",
+        "reason": "Decision deliberada de Ivan: commit 8e87b2c (Rediseno: negro solido + charcoal + Helvetica) reemplazo -apple-system a proposito. Poppins para titulares, Helvetica para cuerpo y cifras. Confirmado por Ivan el 1 ago 2026."
+      }
+    ]
+  }
+}

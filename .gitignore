@@ -1,2 +1,5 @@
 .DS_Store
 index.backup-*.html
+# Caché de sesión del detector: rutas locales y ids de sesión, distinto en cada
+# máquina y en cada clon. La configuración (config.json) sí viaja.
+.impeccable/hook.cache.json
