@@ -1,0 +1,11 @@
+# GitHub Pages publica este repo con Jekyll. Este archivo existe SOLO para que la
+# documentación interna no quede servida en el dominio de la tienda: los archivos
+# de abajo siguen en el repo y viajan con el código, pero dejan de responder en
+# carniceriaeltorito.com/<archivo>.
+#
+# ⚠️ NO agregar acá nada que el sitio necesite en vivo. Tienen que seguir
+# publicándose: index.html, catalog.json, img/, panel/ y CNAME. Excluir
+# catalog.json por error deja la tienda sin catálogo.
+exclude:
+  - CLAUDE.md
+  - PRODUCT.md
