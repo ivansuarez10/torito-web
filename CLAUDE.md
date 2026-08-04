@@ -24,7 +24,20 @@ git fetch origin && git log --oneline -1 origin/main origin/staging
 
 **Hay otra sesión trabajando en este repo en paralelo.** Durante una sola conversación del 1 ago, `origin/staging` avanzó tres veces. Por eso: `git fetch origin` antes de cada operación, y `git checkout -B main origin/main` para partir del tip más reciente. **Nunca `--force` ni `reset` sobre `main`.**
 
-**Hay DOS clones completos del repo en disco** (`INDCAN/Torito SO/TiendaTorito` y `Capsula - Tienda Torito/02-CODIGO/TiendaTorito`), los dos en `staging`, a veces en commits distintos y con cambios sin commitear. Antes de editar, confirmar en cuál se está trabajando.
+### Hay DOS clones del repo en disco, y uno NO es para trabajar
+
+- **`INDCAN/Torito SO/TiendaTorito` — este es el clon de trabajo.** Editar acá.
+- **`Capsula - Tienda Torito/02-CODIGO/TiendaTorito` — es una copia de entrega.** La Cápsula es un paquete autosuficiente (generado el 31 jul 2026) que incluye los `.git` a propósito, para conservar historial y ramas. **No es un segundo puesto de trabajo: es un respaldo con fecha.**
+
+**Por qué importa:** al 4 ago la copia de la Cápsula estaba 14 commits atrás, con un `submit-order` sin commitear y con un `CLAUDE.md` propio que afirmaba lo contrario de este ("Netlify publica producción desde `main`", que es falso). Un archivo suelto y duplicado no es documentación: es dos versiones de la verdad.
+
+**Regla:** no editar dentro de la Cápsula. Para ponerla al día antes de entregarla:
+
+```bash
+git -C "…/Capsula - Tienda Torito/02-CODIGO/TiendaTorito" fetch origin && git -C "…/Capsula - Tienda Torito/02-CODIGO/TiendaTorito" reset --hard origin/staging
+```
+
+Antes de resetear, comprobar que no haya trabajo propio ahí (`git status`), porque el reset lo borra.
 
 ### Lo que está en `staging` a propósito y NO va a producción
 
