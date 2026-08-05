@@ -24,6 +24,23 @@ window.montar = function(){
   })));
 };
 
+// El catálogo llega por fetch DESPUÉS del onload del iframe. Sin esperarlo, el carrito
+// se ve vacío, no aparece "Continuar" y el checkout nunca se mide: la auditoría da
+// verde sin haber probado nada. Siempre esperar antes de medir.
+window.esperarCatalogo = function(){
+  return new Promise(res => {
+    const t0 = Date.now();
+    (function chk(){
+      const listos = Object.keys(window.frames_).every(w => {
+        try { return window.frames_[w].contentDocument.querySelectorAll('.prod').length > 0; }
+        catch(e){ return false; }
+      });
+      if(listos || Date.now() - t0 > 15000) return res(listos);
+      setTimeout(chk, 300);
+    })();
+  });
+};
+
 // Apaga el cine (canvas) y la intro, que tapan y ralentizan la medición.
 window.limpiar = function(){
   ANCHOS.forEach(w => {

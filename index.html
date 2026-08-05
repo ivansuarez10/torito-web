@@ -541,7 +541,9 @@
        navegación de sitio: texto legible, no un glifo suelto. Y NO se parecen entre
        sí a propósito — hacen cosas distintas: uno retrocede un paso, el otro sale.
        Dos pastillas iguales lado a lado obligan a leerlas para saber cuál es cuál. */
-    .sheet .close,.sheet .sheetback{width:auto;height:auto;min-height:40px;font-family:inherit;
+    /* 44px es el estándar de área táctil que ya fijó la auditoría de accesibilidad
+       del sitio; estos controles nuevos lo respetan igual que el resto. */
+    .sheet .close,.sheet .sheetback{width:auto;height:auto;min-height:44px;font-family:inherit;
       font-size:13px;font-weight:700;gap:8px;transition:border-color .15s,color .15s}
     .sheet .sheetback{padding:0 16px;border-radius:100px;background:none;border:1px solid #2b2b2b;color:var(--cream)}
     .sheet .sheetback:hover{border-color:var(--red)}
@@ -583,6 +585,17 @@
      especificidad, gana la última regla. */
   @media (min-width:1600px){ .sheet{--col:820px} .sheet.wide{--col:1080px} }
   @media (min-width:1900px){ .sheet{--col:880px} .sheet.wide{--col:1160px} }
+  /* Pantalla ANCHA pero BAJA: teléfono en horizontal (844x390) y laptops chicas.
+     Entra en modo página (el corte es por ancho), pero el ritmo vertical está pensado
+     para pantallas altas: medido a 844x390 se gastaba el 48% de la pantalla antes de
+     que empezara el contenido. Acá se aprieta el aire, no el contenido. */
+  @media (min-width:768px) and (max-height:640px){
+    .sheet{padding-bottom:32px}
+    .sheet .head{padding-top:14px;row-gap:12px}
+    .sheet .head h3{font-size:clamp(22px,2.4vw,30px)}
+    .sheet .body{padding-top:16px}
+    .sheet .foot{margin-top:18px}
+  }
   /* ===== Foco visible por teclado (WCAG 2.4.7) =====
      Va al final a propósito: los campos traen outline:none y con la misma
      especificidad gana la última regla. :focus-visible solo se muestra a quien
