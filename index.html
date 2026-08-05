@@ -86,7 +86,13 @@
   /* Top bar */
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));
-    background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    /* Fondo SÓLIDO. Antes era rgba(0,0,0,.82) + backdrop-filter: el desenfoque suaviza
+       lo que pasa por debajo pero no lo oculta, así que al scrollear se leía el buscador
+       a través de la cabecera (visto en el navegador de WhatsApp en iPhone). Un efecto
+       decorativo no puede ser lo que sostiene la legibilidad.
+       De paso: el sitio es negro, así que sólido se ve igual, y quitar el backdrop-filter
+       le saca al Android de gama baja un recomposite por cuadro mientras scrollea. */
+    background:var(--bg);border-bottom:1px solid var(--line)}
   .topbar .brand{display:flex;align-items:center;gap:9px}
   .topbar .brand img{height:34px}
   .topbar .brand span{font-size:15px;letter-spacing:.14em;font-weight:700}
