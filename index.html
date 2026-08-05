@@ -298,6 +298,40 @@
   .auth-ok{margin-top:14px;background:rgba(46,125,82,.14);border:1px solid rgba(46,125,82,.5);border-radius:11px;
     padding:11px 13px;color:var(--cream);font-size:13.5px;display:none}
   .auth-ok.on{display:block}
+  /* Aviso flotante. Reemplaza a la caja verde que aparecía al pie del formulario: ahí
+     abajo, después del botón, la clienta ni la veía. Este aparece sobre todo y se va solo. */
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:9998;
+    display:flex;align-items:center;gap:11px;padding:10px 20px 10px 10px;background:var(--card);
+    border:1px solid #2b2b2b;border-radius:100px;color:var(--cream);font-size:14px;font-weight:700;
+    box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;pointer-events:none;
+    transform:translate(-50%,14px);transition:opacity .2s ease,transform .2s cubic-bezier(.2,.7,.2,1)}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .toast i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--red);
+    display:flex;align-items:center;justify-content:center}
+  .toast svg{width:15px;height:15px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  @media (prefers-reduced-motion:reduce){ .toast{transition:none} }
+  /* Botón sin nada que guardar: no se esconde, se apaga — así se ve que existe y por qué no responde. */
+  .pay-wa:disabled{opacity:.4;cursor:default}
+  /* Último pedido: la pieza con peso del hub. Las fotos se montan una sobre otra para
+     que se lea como UN pedido y no como una lista de productos sueltos. */
+  .ult{border:1px solid #2b2b2b;border-radius:18px;padding:18px;margin:2px 0 4px}
+  .ult-top{display:flex;align-items:center;gap:13px}
+  .ult-ph{display:flex;flex:none}
+  .ult-ph img{width:46px;height:46px;border-radius:11px;object-fit:cover;background:#151515;
+    border:2px solid var(--bg);margin-left:-14px}
+  .ult-ph img:first-child{margin-left:0}
+  .ult-meta{flex:1;min-width:0}
+  .ult-meta .d{font-size:12.5px;color:var(--muted)}
+  .ult-meta .n{font-family:"Poppins",sans-serif;font-size:15px;font-weight:800;letter-spacing:-.01em;
+    margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ult-tot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin-top:16px;padding-top:14px;border-top:1px solid #1d1d1d}
+  .ult-tot .l{font-size:13px;color:var(--muted)}
+  .ult-tot .v{font-family:"Poppins",sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .ult-cta{width:100%;min-height:48px;margin-top:15px;background:var(--red);border:none;border-radius:100px;
+    color:#fff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:background .15s}
+  .ult-cta:hover{background:var(--red-d)}
+  .ult-note{margin-top:11px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.5}
   /* Pedido en curso: lo único con presencia — el anillo ya hace el trabajo */
   .hub-activo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
     border:1px solid #2b2b2b;background:none;border-radius:16px;padding:14px 15px;margin:2px 0 22px;
@@ -313,27 +347,8 @@
   .hub-activo .t2{font-family:"Poppins",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em}
   .hub-activo .t3{font-size:12.5px;color:var(--muted);margin-top:3px}
   .hub-activo .ar{color:var(--red);font-size:20px;flex:none}
-  /* Lo de siempre: la cuenta se abre sobre la carne que compra, no sobre un menú */
   .hub-h{font-family:"Poppins",sans-serif;font-size:15px;font-weight:800;letter-spacing:-.01em;margin-bottom:11px}
-  .usual{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1d1d1d}
-  .usual:first-of-type{border-top:1px solid #1d1d1d}
-  .usual .ph{flex:none;width:54px;height:54px;border-radius:10px;overflow:hidden;background:#151515}
-  .usual .ph img{width:100%;height:100%;object-fit:cover;display:block}
-  .usual .tx{flex:1;min-width:0}
-  .usual .n{font-family:"Poppins",sans-serif;font-size:14.5px;font-weight:800;letter-spacing:-.01em;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .usual .p{font-size:12.5px;color:var(--muted);margin-top:2px}
-  .usual .ad{flex:none;min-height:44px;padding:0 16px;background:transparent;border:1px solid #2b2b2b;
-    border-radius:100px;color:var(--cream);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
-    transition:border-color .15s,color .15s}
-  .usual .ad:hover{border-color:var(--red)}
-  .usual .ad.ok{border-color:var(--red);color:var(--red)}
-  .usual.out .ph img{filter:grayscale(1);opacity:.45}
-  .usual.out .n{color:var(--muted)}
-  .usual .agot{flex:none;font-size:12px;color:var(--muted)}
-  /* Sin historial todavía: la salida es el catálogo, no una pantalla vacía */
-  /* Sin historial no hay lista, así que el separador de abajo lo pone este bloque:
-     con filas, la línea inferior de la última fila ya cumple ese papel. */
+  /* Sin historial no hay tarjeta, así que el separador de abajo lo pone este bloque. */
   .hub-nada{padding:2px 0 22px;border-bottom:1px solid #1d1d1d;color:var(--muted);font-size:14px;line-height:1.55}
   .hub-nada button{margin-top:15px;min-height:44px;padding:0 20px;background:var(--cream);color:#17140f;
     border:none;border-radius:100px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer}
@@ -805,6 +820,7 @@
 
 <div class="fab" id="fab"><button id="fabBtn"><span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span><span class="tot" id="fabTotal">L 0</span></button></div>
 <div class="scrim" id="scrim"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></i><span></span></div>
 <!-- Popup: elegir otra dirección de entrega con pin arrastrable -->
 <div class="conf" id="confOv" role="dialog" aria-modal="true" aria-live="polite"><div class="conf-in"><div id="confBody"></div></div></div>
 
@@ -1012,7 +1028,7 @@
     document.getElementById("aOut").onclick=function(){ saveSess(null); closeSheet(); };
     sesionValida().then(function(tok){
       if(!tok){ view="entrar"; renderSheet(); return; }
-      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,archived,delivery&order=created_at.desc&limit=20",
+      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,archived,delivery,shipping&order=created_at.desc&limit=20",
         {headers:{apikey:SUPA_KEY,Authorization:"Bearer "+tok}})
         .then(function(r){return r.ok?r.json():[];})
         .then(function(rows){
@@ -1026,46 +1042,37 @@
                '<span class="tx"><span class="t2" style="display:block">'+pesc(e[0])+'</span>'+
                '<span class="t3" style="display:block">Pedido '+pesc(act.folio||"")+'</span></span>'+
                '<span class="ar">→</span></button>'; }
-          // "Lo de siempre": la carne que esta clienta compra de verdad, sacada del
-          // historial del SERVIDOR (o sea, la misma en cualquier aparato). El corte que
-          // eligió la última vez se recuerda acá, así Agregar queda en un solo toque.
-          var cnt={}, cutHist={};
-          rows.forEach(function(r){ if(r.status==="cancelada") return;
-            (r.items||[]).forEach(function(it){ if(!it.name) return;
-              var k=it.name.toLowerCase(); cnt[k]=(cnt[k]||0)+1;
-              if(it.corte&&!cutHist[k]) cutHist[k]=it.corte; }); });
-          var usual=Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a]; })
-            .map(function(k){ var p=PROD.find(function(x){ return x.name.toLowerCase()===k; }); return p?{p:p,k:k}:null; })
-            .filter(Boolean).slice(0,5);
-          var sembrados=[];
-          usual.forEach(function(u){ var p=u.p;
-            // Solo se siembra un corte que HOY siga existiendo: si se le cambió el nombre
-            // en el catálogo, se prefiere que la clienta lo vuelva a elegir.
-            if(p.cuts&&p.cuts.length&&!cutSel[p.id]&&cutHist[u.k]&&p.cuts.indexOf(cutHist[u.k])>=0){
-              cutSel[p.id]=cutHist[u.k]; sembrados.push(p.id); } });
-          if(sembrados.length){ saveCuts();
-            // Las tarjetas del catálogo ya se pintaron: marcar el chip para que la
-            // tarjeta no diga una cosa y el carrito otra.
-            sembrados.forEach(function(id){
-              var card=document.querySelector('.prod[data-pid="'+id+'"]'); if(!card) return;
-              card.querySelectorAll("[data-cutopt]").forEach(function(c){
-                var on=(c.dataset.cutopt===cutSel[id]);
-                c.classList.toggle("on",on); c.setAttribute("aria-pressed",on?"true":"false"); });
-            });
-          }
-          if(usual.length){
-            h+='<div class="hub-h">Lo de siempre</div>';
-            usual.forEach(function(u){ var p=u.p, U=UNIT[p.unit]||UNIT.libra;
-              h+='<div class="usual'+(p.soldout?" out":"")+'">'+
-                 '<span class="ph"><img src="'+pesc(imgpath(p))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/></span>'+
-                 '<span class="tx"><span class="n" style="display:block">'+pesc(p.name)+'</span>'+
-                 '<span class="p" style="display:block">'+((p.quote||p.price==null)?"A cotizar":pesc(money(p.price)+" "+U.each))+'</span></span>'+
-                 (p.soldout ? '<span class="agot">Se acabó por hoy</span>'
-                            : '<button class="ad" data-add2="'+pesc(p.id)+'">Agregar</button>')+
-                 '</div>';
-            });
+          // "Tu último pedido": UNA sola pieza, no una lista. La clienta abre su cuenta
+          // para volver a pedir lo mismo, y casi siempre lo mismo es el pedido anterior.
+          // El botón NO reenvía: deja el pedido armado en el carrito para que lo edite
+          // antes de mandarlo (cantidades, quitar, agregar).
+          REPES=REPES||{};
+          rows.forEach(function(r){ if(r.folio) REPES[r.folio]=r.items||[]; });
+          var ult=rows.find(function(r){ return r.status!=="cancelada"&&(r.items||[]).length; });
+          if(ult){
+            var its=ult.items||[];
+            var f=new Date(Number(ult.created_at)||Date.now());
+            var dias=Math.floor((Date.now()-(Number(ult.created_at)||Date.now()))/86400000);
+            var cuando=dias<=0?"hoy":(dias===1?"ayer":(dias<30?("hace "+dias+" días")
+              :("hace "+Math.round(dias/30)+(dias<60?" mes":" meses"))));
+            var tot=its.reduce(function(a,i){ return a+(Number(i.total)||0); },0)+(Number(ult.shipping)||0);
+            var resumen=its.map(function(i){
+              return (i.qty||"")+" "+(i.unit==="paquete"?"paq":"lb")+" "+(i.name||""); }).join(" · ");
+            var fotos=its.map(function(i){
+              return PROD.find(function(x){ return x.name.toLowerCase()===String(i.name||"").toLowerCase(); }); })
+              .filter(Boolean).slice(0,4);
+            h+='<div class="hub-h">Tu último pedido</div><div class="ult"><div class="ult-top">'+
+               (fotos.length?'<span class="ult-ph">'+fotos.map(function(p){
+                 return '<img src="'+pesc(imgpath(p))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/>';
+               }).join("")+'</span>':'')+
+               '<span class="ult-meta"><span class="d" style="display:block">'+pesc(cuando)+' · '+pesc(ult.folio||"")+'</span>'+
+               '<span class="n" style="display:block">'+pesc(resumen)+'</span></span></div>'+
+               (tot>0?'<div class="ult-tot"><span class="l">Lo que pagaste</span><span class="v">'+pesc(money(tot))+'</span></div>':'')+
+               '<button class="ult-cta" data-again="'+pesc(ult.folio||"")+'">Pedir de nuevo</button>'+
+               '<div class="ult-note">Te lo dejamos armado en el carrito. Podés cambiar cantidades, quitar o agregar antes de enviarlo.</div>'+
+               '</div>';
           } else {
-            h+='<div class="hub-nada">Todavía no hay pedidos en tu cuenta. Cuando hagás el primero, acá vas a tener lo que comprás siempre, listo para volver a pedirlo.'+
+            h+='<div class="hub-nada">Todavía no hay pedidos en tu cuenta. Cuando hagás el primero, acá lo vas a tener listo para volver a pedirlo con un toque.'+
                '<br><button data-vercat>Ver el catálogo</button></div>';
           }
           h+='<div class="hub-mas">'+
@@ -1077,39 +1084,42 @@
           if(ab) ab.onclick=function(){ abrirTrack(ab.dataset.track); };
           var vc=sBody.querySelector("[data-vercat]");
           if(vc) vc.onclick=function(){ closeSheet(); };
-          sBody.querySelectorAll("[data-add2]").forEach(function(b){
-            b.onclick=function(){ agregarDeSiempre(prodById(b.dataset.add2),b); }; });
+          var ag=sBody.querySelector("[data-again]");
+          if(ag) ag.onclick=function(){ repetirPedido(ag.dataset.again); };
           sBody.querySelectorAll("[data-go]").forEach(function(b){
             b.onclick=function(){ view=b.dataset.go; renderSheet(); topShell(); }; });
         });
     }).catch(function(){ sBody.innerHTML='<div class="po-vacio">No pudimos cargar tu cuenta.<br>Probá de nuevo en un momento.</div>'; });
   }
 
-  // Agregar desde "Lo de siempre". Si el producto lleva corte y nunca eligió uno
-  // (ni lo trae el historial), NO se adivina: se cierra la cuenta y se le lleva a la
-  // tarjeta con el selector marcado, igual que cuando toca Agregar en el catálogo.
-  function agregarDeSiempre(p,btn){
-    if(!p||p.soldout) return;
-    if(p.cuts&&p.cuts.length&&!cutSel[p.id]){
-      closeSheet(); showCat(p.cat);
-      setTimeout(function(){
-        var card=document.querySelector('.prod[data-pid="'+p.id+'"]'); if(!card) return;
-        var cw=card.querySelector(".cutsel"); if(cw) cw.classList.add("warn");
-        try{ card.scrollIntoView({block:"center",behavior:"smooth"}); }catch(_){}
-      },60);
-      return;
-    }
-    var U=UNIT[p.unit]||UNIT.libra;
-    cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+U.def); save(); refreshCart();
-    btn.classList.add("ok"); btn.textContent="Agregado";
-    setTimeout(function(){ btn.classList.remove("ok"); btn.textContent="Agregar"; },1200);
-  }
-
   // ---- Pantalla: editar mis datos (nombre, direcciones, RTN, contraseña) ----
   // Todo vive en los metadatos de la cuenta -> disponible en cualquier aparato.
   // Guardado compartido: siempre manda TODOS los metadatos (lo editado + lo que ya había).
+  // Aviso flotante, se va solo. No usa emoji: el check es un SVG de línea, como el resto.
+  var _toastT=null;
+  function toast(msg){
+    var t=document.getElementById("toast"); if(!t) return;
+    t.querySelector("span").textContent=msg;
+    t.classList.add("on"); clearTimeout(_toastT);
+    _toastT=setTimeout(function(){ t.classList.remove("on"); },2400);
+  }
+
+  // "Guardar" se enciende SOLO si algo cambió de verdad. Antes, tocarlo sin haber
+  // editado nada mandaba igual una escritura al servidor y respondía "listo, quedó
+  // guardado" — le decía a la clienta que pasó algo que no pasó.
+  // Devuelve una función para volver a tomar la foto de los valores tras guardar.
+  function vigilarCambios(ids, boton){
+    function leer(){ return ids.map(function(id){ var e=document.getElementById(id); return e?e.value:""; }); }
+    var base=leer();
+    function sync(){ boton.disabled = leer().every(function(v,i){ return v===base[i]; }); }
+    ids.forEach(function(id){ var e=document.getElementById(id);
+      if(e){ e.addEventListener("input",sync); e.addEventListener("change",sync); } });
+    sync();
+    return function(){ base=leer(); sync(); };
+  }
+
   function guardarMeta(cambios,boton,despues){
-    authClearErr(); var okE=document.getElementById("authOk"); if(okE) okE.classList.remove("on");
+    authClearErr();
     var m=(SESS&&SESS.meta)||{};
     var data={full_name:(cambios.nom!=null?cambios.nom:(SESS&&SESS.nom)||""),
       rtn:(cambios.rtn!=null?cambios.rtn:m.rtn||""), fact_nombre:(cambios.fact!=null?cambios.fact:m.fact||""),
@@ -1128,7 +1138,7 @@
         saveSess(SESS);
         PROFILE=PROFILE||{}; PROFILE.name=data.full_name; if(data.addr_casa) PROFILE.addr=data.addr_casa;
         try{ saveProfile(); }catch(e){}
-        if(okE){ okE.textContent="Listo, quedó guardado."; okE.classList.add("on"); }
+        toast("Cambios guardados");
         if(despues) despues();
       });
     });
@@ -1145,15 +1155,16 @@
       '<div class="field"><label for="pf_fact">Nombre para la factura</label><input id="pf_fact" type="text" maxlength="80" placeholder="Comedor Doña María" value="'+pesc(m.fact||"")+'"></div></div>'+
       '<div class="perf-sec"><h4>Contraseña</h4>'+
       '<div class="auth-lead" style="margin:6px 0 0">Para cambiarla, cerrá sesión y tocá "¿La olvidaste?" — te mandamos un código y elegís una nueva.</div></div>'+
-      '<div class="auth-err" id="authErr"></div><div class="auth-ok" id="authOk"></div>';
+      '<div class="auth-err" id="authErr"></div>';
     sFoot.innerHTML='<button class="pay-wa" id="pfSave" style="background:var(--red)">Guardar</button>';
-    document.getElementById("pfSave").onclick=function(){
+    var bt=document.getElementById("pfSave");
+    var rearmar=vigilarCambios(["pf_nom","pf_rtn","pf_fact"],bt);
+    bt.onclick=function(){
       var nom=(document.getElementById("pf_nom").value||"").trim();
       var rtn=(document.getElementById("pf_rtn").value||"").replace(/\D/g,"");
       if(nom.length<2){ authErr("El nombre no puede quedar vacío."); return; }
       if(rtn&&rtn.length!==14){ authErr("El RTN lleva 14 dígitos (el tuyo tiene "+rtn.length+")."); return; }
-      guardarMeta({nom:nom, rtn:rtn, fact:(document.getElementById("pf_fact").value||"").trim()},
-        document.getElementById("pfSave"));
+      guardarMeta({nom:nom, rtn:rtn, fact:(document.getElementById("pf_fact").value||"").trim()}, bt, rearmar);
     };
   }
 
@@ -1165,11 +1176,13 @@
       '<div class="auth-lead">Guardalas una vez y al pedir las ponés con un toque.</div>'+
       '<div class="field"><label for="pf_casa">Casa</label><input id="pf_casa" type="text" maxlength="160" placeholder="Colonia, calle, casa, referencia" value="'+pesc(m.casa||"")+'"></div>'+
       '<div class="field"><label for="pf_ofi">Trabajo / otra</label><input id="pf_ofi" type="text" maxlength="160" placeholder="Opcional" value="'+pesc(m.ofi||"")+'"></div>'+
-      '<div class="auth-err" id="authErr"></div><div class="auth-ok" id="authOk"></div>';
+      '<div class="auth-err" id="authErr"></div>';
     sFoot.innerHTML='<button class="pay-wa" id="dirSave" style="background:var(--red)">Guardar</button>';
-    document.getElementById("dirSave").onclick=function(){
+    var bt=document.getElementById("dirSave");
+    var rearmar=vigilarCambios(["pf_casa","pf_ofi"],bt);
+    bt.onclick=function(){
       guardarMeta({casa:(document.getElementById("pf_casa").value||"").trim(),
-        ofi:(document.getElementById("pf_ofi").value||"").trim()}, document.getElementById("dirSave"));
+        ofi:(document.getElementById("pf_ofi").value||"").trim()}, bt, rearmar);
     };
   }
 
@@ -1283,9 +1296,13 @@
       if(it.corte) cutSel[p.id]=it.corte;
       puestos++;
     });
-    if(!puestos) return;
+    // Antes esto se caía en silencio: si nada del pedido estaba disponible, tocar el
+    // botón no hacía absolutamente nada y parecía roto. Y si faltaba UN producto, se
+    // armaba el carrito incompleto sin avisar.
+    if(!puestos){ toast("Hoy no tenemos nada de ese pedido"); return; }
     saveCuts(); save(); refreshCart();
     view="cart"; renderSheet(); topShell();
+    if(faltan.length) toast(faltan.length===1 ? ("Hoy no hay "+faltan[0]) : ("Faltan "+faltan.length+" productos de ese pedido"));
   }
 
   // ---- Pantalla: mis pedidos ----
