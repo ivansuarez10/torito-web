@@ -1,0 +1,91 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Banco de anchos — Tienda Torito</title>
+<style>body{margin:0;background:#111;color:#eee;font:13px/1.4 monospace} iframe{border:0;display:block}</style>
+<div id="host"></div>
+<script>
+// Banco de pruebas: carga la tienda en iframes de distintos anchos y mide el layout
+// en cada uno. Las media queries responden al ancho del iframe, así que esto equivale
+// a abrirla en pantallas distintas. Archivo de trabajo: NO se publica.
+const ANCHOS = [320,360,375,390,414,600,768,820,912,1024,1180,1280,1366,1440,1512,1600,1728,1920,2560];
+const ALTO = 900;
+window.frames_ = {};
+
+window.montar = function(){
+  const host = document.getElementById('host');
+  host.innerHTML = '';
+  return Promise.all(ANCHOS.map(w => new Promise(res => {
+    const f = document.createElement('iframe');
+    // rompe-caché: sin esto el iframe reusa la versión anterior de index.html y se
+    // audita código viejo sin darse cuenta.
+    f.width = w; f.height = ALTO; f.src = 'index.html?w=' + w + '&cb=' + Date.now() + Math.random();
+    f.onload = () => { window.frames_[w] = f; res(w); };
+    host.appendChild(f);
+  })));
+};
+
+// Apaga el cine (canvas) y la intro, que tapan y ralentizan la medición.
+window.limpiar = function(){
+  ANCHOS.forEach(w => {
+    const d = window.frames_[w].contentDocument;
+    const c = d.querySelector('.cine'); if(c) c.style.display='none';
+    d.querySelectorAll('canvas').forEach(x => x.style.display='none');
+    const i = d.getElementById('intro'); if(i) i.style.display='none';
+  });
+  return 'ok';
+};
+
+function medir(d, w){
+  const V = d.documentElement.clientWidth;
+  const box = sel => { const e = d.querySelector(sel); if(!e) return null;
+    const r = e.getBoundingClientRect();
+    return {l:Math.round(r.left), r:Math.round(r.right), w:Math.round(r.width), c:Math.round((r.left+r.right)/2)}; };
+  const out = {ancho:w, V, desborde: d.documentElement.scrollWidth > V + 1};
+  const tb = box('.topbar'), wr = box('.wrap');
+  out.topbarLlenaAncho = tb ? (tb.l === 0 && tb.r === V) : null;
+  out.wrap = wr ? wr.w : null;
+  // desbordes concretos
+  out.culpables = [];
+  if(out.desborde){
+    d.querySelectorAll('body *').forEach(el => {
+      const s = d.defaultView.getComputedStyle(el);
+      if(s.display === 'none' || s.visibility === 'hidden') return;
+      const r = el.getBoundingClientRect();
+      if(r.width > 0 && r.right > V + 1)
+        out.culpables.push(el.tagName + '.' + String(el.className).slice(0,28) + ' →' + Math.round(r.right));
+    });
+    out.culpables = out.culpables.slice(0,4);
+  }
+  return out;
+}
+
+window.auditar = function(vista){
+  return ANCHOS.map(w => {
+    const f = window.frames_[w], d = f.contentDocument, win = f.contentWindow;
+    if(vista === 'carrito' || vista === 'checkout'){
+      try{ d.getElementById('openCart').click(); }catch(e){}
+      if(vista === 'checkout'){ try{ d.getElementById('toCheckout').click(); }catch(e){} }
+    }
+    if(vista === 'cuenta'){ try{ d.getElementById('openAcct').click(); }catch(e){} }
+    const o = medir(d, w);
+    if(vista !== 'home'){
+      const V = d.documentElement.clientWidth;
+      const b = d.getElementById('sheetBody'), t = d.getElementById('sheetTitle');
+      if(b && t){
+        const rb = b.getBoundingClientRect(), rt = t.getBoundingClientRect();
+        o.colAncho = Math.round(rb.width);
+        o.desviacionCentro = Math.round((rb.left+rb.right)/2 - V/2);
+        o.tituloAlineado = Math.abs(rt.left-rb.left) < 2 && Math.abs(rt.right-rb.right) < 2;
+      }
+    }
+    return o;
+  });
+};
+
+window.sembrarCarrito = function(){
+  ANCHOS.forEach(w => { try{
+    window.frames_[w].contentWindow.localStorage.setItem('torito_cart_v2', JSON.stringify({'res-bolita':1,'res-falda':1}));
+  }catch(e){} });
+  return 'sembrado';
+};
+</script>

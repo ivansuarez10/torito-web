@@ -29,7 +29,14 @@
     --bg:#000000; --bg2:#0d0d0d; --card:#161616; --card2:#232323;
     --cream:#f2f2f2; --muted:#8f8f8f; --line:#242424;
     --red:#E4232A; --red-d:#c11c22; --wa:#17853F; --wa-d:#0F7B3D; --gold:#cfcfcf;
+    /* Ancho del sitio. UNA sola fuente de verdad: de acá dependen el contenedor y el
+       padding de la cabecera, así que nunca se desalinean. Crece en pantallas grandes
+       — congelarlo en 1160 dejaba la tienda como una tira en el medio de un monitor
+       de 1920 o 2560. */
+    --site:1160px;
   }
+  @media (min-width:1600px){ :root{ --site:1320px } }
+  @media (min-width:1900px){ :root{ --site:1480px } }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{scroll-behavior:auto}
   body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -547,9 +554,10 @@
        se quedan: son lo que hace que esto se lea como un sitio y no como un overlay. */
     body.pagemode #cine,body.pagemode .ticker,body.pagemode #welcomeHost,
     body.pagemode .searchbar,body.pagemode #catalogo,body.pagemode #catalog{display:none}
-    .co-grid{grid-template-columns:1fr 344px;align-items:start;gap:26px}
-    .co-side{position:sticky;top:0}
-    .wrap{max-width:1160px}
+    /* El checkout NO parte en dos columnas acá: a 768 el formulario quedaba en 310px,
+       más angosto que el resumen de 344, y ese formulario lleva mapa y direcciones.
+       Se parte cuando de verdad hay lugar (ver el bloque de 1024). */
+    .wrap{max-width:var(--site)}
     .hero{flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:0;padding:64px 44px;min-height:560px}
     .heroText{max-width:560px}
     .hero h1{font-size:clamp(62px,6.4vw,100px)}
@@ -561,9 +569,20 @@
     /* La barra ocupa todo el ancho; su CONTENIDO se alinea con la columna de 1160.
        El padding va en % (no en vw) para que el cálculo excluya la barra de scroll y
        no aparezca un desborde horizontal en Windows. */
-    .topbar{padding-left:max(24px,calc((100% - 1160px)/2));padding-right:max(24px,calc((100% - 1160px)/2))}
+    .topbar{padding-left:max(24px,calc((100% - var(--site))/2));padding-right:max(24px,calc((100% - var(--site))/2))}
+  }
+  /* Checkout a dos columnas SOLO cuando hay lugar de verdad: el resumen se lleva 344px
+     fijos, así que por debajo de esto el formulario quedaba más angosto que el resumen. */
+  @media (min-width:1024px){
+    .co-grid{grid-template-columns:minmax(420px,1fr) 344px;align-items:start;gap:26px}
+    .co-side{position:sticky;top:0}
   }
   @media (min-width:1040px){ .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))} }
+  /* La columna de lectura crece un poco con el sitio, sin llegar a ser incómoda de leer.
+     Va DESPUÉS del bloque de 768 a propósito: ahí se define el valor base y, a igual
+     especificidad, gana la última regla. */
+  @media (min-width:1600px){ .sheet{--col:820px} .sheet.wide{--col:1080px} }
+  @media (min-width:1900px){ .sheet{--col:880px} .sheet.wide{--col:1160px} }
   /* ===== Foco visible por teclado (WCAG 2.4.7) =====
      Va al final a propósito: los campos traen outline:none y con la misma
      especificidad gana la última regla. :focus-visible solo se muestra a quien
