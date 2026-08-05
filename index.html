@@ -322,8 +322,11 @@
   .ult-ph img:first-child{margin-left:0}
   .ult-meta{flex:1;min-width:0}
   .ult-meta .d{font-size:12.5px;color:var(--muted)}
+  /* Dos líneas, no una con puntos suspensivos: en celular "3 lb Molida · 2 lb Bolit…"
+     escondía justo lo que la clienta necesita reconocer para decidir si repetirlo. */
   .ult-meta .n{font-family:"Poppins",sans-serif;font-size:15px;font-weight:800;letter-spacing:-.01em;
-    margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    margin-top:3px;line-height:1.32;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    line-clamp:2;overflow:hidden}
   .ult-tot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
     margin-top:16px;padding-top:14px;border-top:1px solid #1d1d1d}
   .ult-tot .l{font-size:13px;color:var(--muted)}
@@ -352,12 +355,29 @@
   .hub-nada{padding:2px 0 22px;border-bottom:1px solid #1d1d1d;color:var(--muted);font-size:14px;line-height:1.55}
   .hub-nada button{margin-top:15px;min-height:44px;padding:0 20px;background:var(--cream);color:#17140f;
     border:none;border-radius:100px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer}
-  /* Lo demás de la cuenta: navegación, en su sitio y sin protagonismo */
-  .hub-mas{display:flex;gap:8px;margin-top:20px}
-  .hub-mas button{flex:1;min-height:44px;padding:0 6px;background:none;border:1px solid #2b2b2b;border-radius:10px;
-    color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
-    transition:border-color .15s,color .15s}
-  .hub-mas button:hover{border-color:var(--red);color:var(--cream)}
+  /* Lo demás de la cuenta. Eran tres cajas iguales y anónimas: no decían qué había
+     adentro, así que entrar era adivinar. Ahora cada destino dice lo suyo en una línea
+     y se lee como la cuenta de un sitio, no como tres pastillas sueltas. */
+  .hub-nav{margin-top:26px;border-top:1px solid #1d1d1d}
+  .hub-nav button{display:flex;align-items:center;gap:14px;width:100%;min-height:66px;padding:12px 2px;
+    background:none;border:none;border-bottom:1px solid #1d1d1d;color:var(--cream);
+    font-family:inherit;text-align:left;cursor:pointer}
+  .hub-nav .ic{flex:none;width:38px;height:38px;border-radius:11px;border:1px solid #2b2b2b;
+    display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+  .hub-nav svg{width:17px;height:17px;stroke:var(--muted);stroke-width:1.8;fill:none;
+    stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
+  .hub-nav button:hover .ic{border-color:var(--red)}
+  .hub-nav button:hover svg{stroke:var(--red)}
+  .hub-nav .tx{flex:1;min-width:0}
+  .hub-nav .t{font-family:"Poppins",sans-serif;font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .hub-nav .s{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .hub-nav .ch{flex:none;color:#4a4a4a;font-size:19px;transition:color .15s,transform .15s}
+  .hub-nav button:hover .ch{color:var(--red);transform:translateX(3px)}
+  /* Cerrar sesión sale del pie fijo: en una página flotaba lejos del contenido. */
+  .hub-out{display:block;margin:26px auto 0;background:none;border:none;color:var(--muted);
+    font-family:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;
+    cursor:pointer;min-height:44px;padding:0 10px}
+  .hub-out:hover{color:var(--cream)}
   .perf-sec{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
   .perf-sec h4{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
   /* Chips de dirección guardada en el checkout */
@@ -1024,8 +1044,7 @@
     var _n=(SESS&&SESS.nom)?SESS.nom.trim().split(/\s+/)[0]:"";
     sTitle.textContent=_n?("Hola, "+_n):"Mi cuenta"; setBack(false);
     sBody.innerHTML='<div class="po-vacio">Un momento…</div>';
-    sFoot.innerHTML='<button class="conf-back" id="aOut" style="width:100%">Cerrar sesión</button>';
-    document.getElementById("aOut").onclick=function(){ saveSess(null); closeSheet(); };
+    sFoot.innerHTML="";   // "Cerrar sesión" ahora va al final del contenido, no en el pie fijo
     sesionValida().then(function(tok){
       if(!tok){ view="entrar"; renderSheet(); return; }
       return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items,archived,delivery,shipping&order=created_at.desc&limit=20",
@@ -1075,11 +1094,26 @@
             h+='<div class="hub-nada">Todavía no hay pedidos en tu cuenta. Cuando hagás el primero, acá lo vas a tener listo para volver a pedirlo con un toque.'+
                '<br><button data-vercat>Ver el catálogo</button></div>';
           }
-          h+='<div class="hub-mas">'+
-             '<button data-go="pedidos">Mis pedidos</button>'+
-             '<button data-go="perfil">Mi perfil</button>'+
-             '<button data-go="direcciones">Direcciones</button></div>';
+          var ICO={
+            pedidos:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/>',
+            direcciones:'<path d="M12 21s7-5.7 7-11a7 7 0 10-14 0c0 5.3 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+            perfil:'<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/>'
+          };
+          var DEST=[
+            ["pedidos","Mis pedidos","Seguí uno en curso o mirá los anteriores"],
+            ["direcciones","Mis direcciones","Casa y trabajo, listas para el checkout"],
+            ["perfil","Mi perfil","Tu nombre y los datos de factura"]
+          ];
+          h+='<div class="hub-nav">'+DEST.map(function(d){
+            return '<button data-go="'+d[0]+'"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24">'+ICO[d[0]]+'</svg></span>'+
+                   '<span class="tx"><span class="t" style="display:block">'+d[1]+'</span>'+
+                   '<span class="s" style="display:block">'+d[2]+'</span></span>'+
+                   '<span class="ch" aria-hidden="true">›</span></button>';
+          }).join("")+'</div>'+
+          '<button class="hub-out" id="aOut2">Cerrar sesión</button>';
           sBody.innerHTML=h;
+          sFoot.innerHTML="";
+          document.getElementById("aOut2").onclick=function(){ saveSess(null); closeSheet(); };
           var ab=sBody.querySelector("[data-track]");
           if(ab) ab.onclick=function(){ abrirTrack(ab.dataset.track); };
           var vc=sBody.querySelector("[data-vercat]");
