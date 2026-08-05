@@ -1186,7 +1186,7 @@
       '<div class="perf-sec"><h4>Factura con RTN (opcional)</h4>'+
       '<div class="auth-lead" style="margin:6px 0 10px">Para negocios que necesitan factura. Se agrega a tus pedidos solo si vos lo marcás al pagar.</div>'+
       '<div class="field"><label for="pf_rtn">RTN</label><input id="pf_rtn" type="text" inputmode="numeric" maxlength="14" placeholder="08011999123456" value="'+pesc(m.rtn||"")+'"></div>'+
-      '<div class="field"><label for="pf_fact">Nombre para la factura</label><input id="pf_fact" type="text" maxlength="80" placeholder="Comedor Doña María" value="'+pesc(m.fact||"")+'"></div></div>'+
+      '<div class="field"><label for="pf_fact">Nombre para la factura</label><input id="pf_fact" type="text" maxlength="80" value="'+pesc(m.fact||"")+'"></div></div>'+
       '<div class="perf-sec"><h4>Contraseña</h4>'+
       '<div class="auth-lead" style="margin:6px 0 0">Para cambiarla, cerrá sesión y tocá "¿La olvidaste?" — te mandamos un código y elegís una nueva.</div></div>'+
       '<div class="auth-err" id="authErr"></div>';
@@ -1492,8 +1492,8 @@
         draft[p.id]=UNIT[p.unit].def;
         var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><div class="cuts" role="group" aria-label="Eleg\u00ed el corte">'+p.cuts.map(function(c){var on=cutSel[p.id]===c;return '<button type="button" class="cutchip'+(on?" on":"")+'" data-cutopt="'+c.replace(/"/g,"&quot;")+'" aria-pressed="'+(on?"true":"false")+'">'+c+'</button>'}).join("")+'</div></div>':"";
         var card=document.createElement("div"); card.className="prod reveal"+(p.soldout?" soldout":""); card.dataset.pid=p.id;
-        var badge=p.soldout?'<span class="badge out">Agotado</span>':(p.validate?'<span class="badge">Se pesa · se confirma</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':'')));
-        var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se pesa y se confirma el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
+        var badge=p.soldout?'<span class="badge out">Agotado</span>':(p.validate?'<span class="badge">Se confirma peso</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':'')));
+        var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se confirma el peso y el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
         card.innerHTML=
           '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
           '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
@@ -1990,7 +1990,7 @@
       (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> o elegila en el mapa, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
-      '<button class="pay-bac" disabled>Pagar en línea con BAC<small>'+(hasWhats()?"Este pedido se confirma por WhatsApp":"Próximamente")+'</small></button>'+
+      '<button class="pay-bac" disabled>Pago en línea<small>Próximamente</small></button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
     document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
