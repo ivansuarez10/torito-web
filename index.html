@@ -504,10 +504,17 @@
        'static', y un elemento estático ignora su z-index — con el velo puesto quedaría
        encima de la página y nada sería clicable. */
     .scrim{display:none}
-    .sheet{position:static;transform:none;opacity:1;transition:none;
+    /* UNA sola columna de contenido, centrada, y TODO alineado a ella: el título, el
+       cuerpo y el pie. Antes cada parte tenía su propio ancho y la columna quedaba
+       pegada a la izquierda — el contenido caía 156px a la izquierda del centro de la
+       pantalla y el título se extendía más allá del contenido. Eso es lo que hacía
+       que no se leyera como un sitio de verdad. */
+    .sheet{--col:760px;position:static;transform:none;opacity:1;transition:none;
       width:auto;max-width:none;margin:0;border-radius:0;background:none;
       max-height:none;display:none;padding:0 44px 64px}
+    .sheet.wide{--col:1000px}
     .sheet.open{display:flex}
+    .sheet .head,.sheet .body,.sheet .foot{max-width:var(--col);width:100%;margin-left:auto;margin-right:auto}
     /* Rejilla de 2 filas: arriba la navegación (volver), abajo el título grande.
        .head-l se disuelve con display:contents para que el botón "volver" y el
        título se puedan colocar por separado sin tocar el HTML (que en celular
@@ -518,12 +525,10 @@
     .sheet .head-l{display:contents}
     .sheet .sheetback{grid-area:back} .sheet .close{grid-area:close;justify-self:start}
     .sheet .head h3{grid-area:title;font-size:clamp(30px,3.2vw,42px);letter-spacing:-.02em;line-height:1.06}
-    /* Columna de lectura para las vistas de una sola columna. El checkout ya se marca
-       con .wide (viene del modal ancho): ahí el resumen se lleva 344px fijos, y con 760
-       el formulario quedaba apretado. */
-    .sheet .body{overflow:visible;padding:26px 0 0;max-width:760px;width:100%}
-    .sheet.wide .body,.sheet.wide .foot{max-width:1000px}
-    .sheet .foot{position:sticky;bottom:0;padding:16px 0;margin-top:30px;max-width:760px;width:100%;
+    /* El ancho de la columna lo pone --col (760, y 1000 en el checkout, que lleva el
+       resumen al lado y con 760 dejaba el formulario apretado). */
+    .sheet .body{overflow:visible;padding:26px 0 0}
+    .sheet .foot{position:sticky;bottom:0;padding:16px 0;margin-top:30px;
       background:var(--bg);border-top:1px solid var(--line)}
     /* Los dos "volver" dejan de ser botones redondos de modal y pasan a ser
        navegación de sitio: texto legible, no un glifo suelto. Y NO se parecen entre
@@ -553,7 +558,10 @@
     .hero-scrim{background:linear-gradient(to right,#000 0%,rgba(0,0,0,.86) 30%,rgba(0,0,0,.4) 58%,rgba(0,0,0,.08) 100%)}
     .steps{padding:22px 44px} .searchbar{padding:10px 44px 0} .nav .scroll{padding:0 44px}
     .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px} footer{padding-left:44px;padding-right:44px}
-    .topbar{padding-left:24px;padding-right:24px}
+    /* La barra ocupa todo el ancho; su CONTENIDO se alinea con la columna de 1160.
+       El padding va en % (no en vw) para que el cálculo excluya la barra de scroll y
+       no aparezca un desborde horizontal en Windows. */
+    .topbar{padding-left:max(24px,calc((100% - 1160px)/2));padding-right:max(24px,calc((100% - 1160px)/2))}
   }
   @media (min-width:1040px){ .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))} }
   /* ===== Foco visible por teclado (WCAG 2.4.7) =====
@@ -707,13 +715,18 @@
 </div>
 
 
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand" id="brand"><img id="brandBull" src="img/torito-bull.webp" alt="El Torito" /><span>EL TORITO</span></div>
+<!-- La cabecera va FUERA de .wrap a propósito: así su fondo y su línea inferior llegan
+     de borde a borde de la pantalla, como el header de cualquier sitio. El contenido de
+     adentro (logo, cuenta, carrito) se alinea con la misma columna del resto por padding,
+     no por un ancho fijo — ver la regla .topbar de escritorio. Dentro de .wrap, la barra
+     se cortaba a 1160px y en una pantalla grande parecía una tira flotante. -->
+<div class="topbar">
+  <div class="brand" id="brand"><img id="brandBull" src="img/torito-bull.webp" alt="El Torito" /><span>EL TORITO</span></div>
     <button class="acctbtn" id="openAcct" aria-label="Mi cuenta"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="lbl">Mi cuenta</span></button>
     <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount">0</span></button>
-  </div>
+</div>
 
+<div class="wrap">
   <section class="cine" id="cine">
     <div class="cine-sticky">
       <canvas id="cineCv"></canvas>
