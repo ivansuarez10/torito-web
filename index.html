@@ -117,10 +117,14 @@
   /* Ticker en loop — cada frase ocupa un "slot" fijo bien espaciado (se lee con calma), sin cajas */
   .ticker{--slot:min(86vw,460px);overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0;background:#000;
     -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-  .ticker-track{display:flex;width:max-content;animation:tickerMove 11s linear infinite}
+  /* Tres mensajes distintos, no ocho veces el mismo. El bucle es sin costura porque la
+     secuencia se repite cada 3 slots y la animación desplaza EXACTAMENTE 3 slots: al
+     terminar, el cuarto grupo está donde estaba el primero. Si se cambia la cantidad de
+     mensajes hay que cambiar también el 3 de la animación, o se nota el salto. */
+  .ticker-track{display:flex;width:max-content;animation:tickerMove 33s linear infinite}
   .ticker:hover .ticker-track{animation-play-state:paused}
   .ti{flex:none;width:var(--slot);display:flex;align-items:center;justify-content:center;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap}
-  @keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--slot)))}}
+  @keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(calc(-3 * var(--slot)))}}
   @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
 
   /* Promo banner (editable desde el panel) */
@@ -158,7 +162,11 @@
   .cat h2::after{content:"";flex:1;height:3px;background:var(--red);border-radius:2px;opacity:.5}
   .cat .m{color:var(--muted);font-size:12.5px;margin-top:6px}
   .grid{padding:12px 16px 0;display:grid;gap:14px}
-  .prod{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+  /* Fondo y borde propios, más claros que el resto de tarjetas del sitio. El TEXTO ya
+     pasaba AA de sobra (descripción 5.6:1, nombre 16:1); lo que fallaba era que la
+     tarjeta se separara del fondo: #161616 sobre negro da 1.16:1, o sea casi nada, y
+     el catálogo se leía como una mancha oscura en vez de como productos. */
+  .prod{background:#1c1c1c;border:1px solid #333;border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
   .prod .ph{position:relative;aspect-ratio:16/10;background:#0d0d0d;overflow:hidden}
   .prod .ph img{width:100%;height:100%;object-fit:cover;display:block}
   .prod .ph .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:linear-gradient(135deg,#1e1e1e,#141414);color:var(--muted)}
@@ -859,14 +867,18 @@
   </section>
 
   <div class="ticker" aria-hidden="true"><div class="ticker-track">
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
-    <span class="ti">Armá tu pedido a tu gusto</span>
+    <span class="ti">1 · Armá tu pedido</span>
+    <span class="ti">2 · Confirmamos el total</span>
+    <span class="ti">3 · Pagás al recibir</span>
+    <span class="ti">1 · Armá tu pedido</span>
+    <span class="ti">2 · Confirmamos el total</span>
+    <span class="ti">3 · Pagás al recibir</span>
+    <span class="ti">1 · Armá tu pedido</span>
+    <span class="ti">2 · Confirmamos el total</span>
+    <span class="ti">3 · Pagás al recibir</span>
+    <span class="ti">1 · Armá tu pedido</span>
+    <span class="ti">2 · Confirmamos el total</span>
+    <span class="ti">3 · Pagás al recibir</span>
   </div></div>
 
   <div id="welcomeHost"></div>
