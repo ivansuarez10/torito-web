@@ -9,3 +9,7 @@
 exclude:
   - CLAUDE.md
   - PRODUCT.md
+  # Los .sql son de administración de la base: describen tablas, políticas de
+  # seguridad y notas internas. No los necesita nadie que entre a comprar.
+  - "*.sql"
+  - SQL_cart_events.sql
