@@ -998,6 +998,32 @@
 (function(){
   "use strict";
   var WA_PHONE="50493785051", SUPA_URL="https://dnyzokgmjuvbrcxxdatr.supabase.co", SUPA_KEY="sb_publishable_jO4pGdkTBporf_cndos9OA_K_8tVn3A";
+
+  // ---- Medición del carrito ----
+  // Para qué: saber QUÉ producto se agrega mucho y se pide poco. Eso no se puede
+  // deducir de la tabla `orders`, que solo guarda lo que SÍ se compró.
+  // Identidad: por defecto anónimo. `sid` es un id de navegador que no dice quién es
+  // nadie; el teléfono se manda SOLO si la clienta inició sesión. Al 7 ago hay 4
+  // cuentas (2 del personal), así que hoy casi todo va a ser anónimo — la columna
+  // queda lista para cuando haya más.
+  // A prueba de fallos: fire-and-forget. Si la tabla no existe, si la red falla o si
+  // Supabase responde error, NADA se rompe y la clienta ni se entera. Medir jamás
+  // puede estorbarle a quien está comprando.
+  var SID=(function(){ try{ var k="torito_sid_v1", v=localStorage.getItem(k);
+    if(!v){ v=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem(k,v); }
+    return v; }catch(e){ return null; } })();
+  function track(action,p,qty,extra){
+    try{
+      var row={sid:SID, action:action,
+        product_id:p?p.id:null, product_name:p?p.name:null, qty:(qty==null?null:qty),
+        phone:(typeof SESS!=="undefined"&&SESS&&SESS.tel)?telDigits(SESS.tel):null};
+      if(extra) for(var k in extra) row[k]=extra[k];
+      fetch(SUPA_URL+"/rest/v1/cart_events",{method:"POST",keepalive:true,
+        headers:{"Content-Type":"application/json",apikey:SUPA_KEY,
+                 Authorization:"Bearer "+SUPA_KEY,Prefer:"return=minimal"},
+        body:JSON.stringify(row)}).catch(function(){});
+    }catch(e){}
+  }
   var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.0985,lng:-87.2075}, SHIP_BASE=50, SHIP_PER_KM=9, SHIP_STREET=1.3;
   var cart=load(), draft={}, cutSel=loadCuts();
   function load(){try{return JSON.parse(localStorage.getItem("torito_cart_v2")||"{}")}catch(e){return {}}}
@@ -1667,6 +1693,7 @@
     else if(e.target.closest("[data-add]")){
       if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cw=card.querySelector(".cutsel");if(cw){cw.classList.add("warn");try{cw.scrollIntoView({block:"center",behavior:"smooth"})}catch(_){}}return;}
       cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+draft[p.id]); save(); refreshCart();
+      track("add",p,draft[p.id]);
       var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
       setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
     }
@@ -1857,7 +1884,9 @@
     sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva cortes que se <b>venden por pieza</b>: hay que pesarlos para darte el <b>total exacto</b>, así que lo coordinamos y confirmamos por <b>WhatsApp</b>. Lo demás ya va con precio exacto.</div>':'')+
       '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
       '<button class="pay-wa" id="toCheckout" style="margin-top:14px'+(out.length?';opacity:.45;cursor:not-allowed':'')+'"'+(out.length?' disabled':'')+'>Continuar →</button>';
-    document.getElementById("toCheckout").onclick=function(){ if(soldLines().length){topShell();return;} view="checkout";renderSheet();topShell()}
+    document.getElementById("toCheckout").onclick=function(){ if(soldLines().length){topShell();return;}
+      track("checkout",null,null,{n_items:cartLines().length});
+      view="checkout";renderSheet();topShell()}
   }
   sBody.addEventListener("click",function(e){
     var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.unit];
@@ -2182,6 +2211,7 @@
       items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote,over:!!l.big}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
     var enviado=null;
+    track("sent",null,null,{folio:fol,n_items:lines.length});
     try{ enviado=fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){}); }catch(e){}
 
     // ---- Mensaje de WhatsApp: SOLO la lista de productos. Datos/envío/totales/ubicación/folio van a Comandas (submit-order), NO al cliente. El total con cuenta de pago se le envía después desde Comandas (espera de pago). ----
