@@ -443,7 +443,12 @@
   /* ===== Preguntas frecuentes =====
      <details> nativo: cero JS, accesible de fábrica y funciona en WebViews viejos.
      El +/− se dibuja con CSS (no es un glifo ni un emoji, que la marca no usa). */
-  .faq{max-width:720px;margin-inline:auto;padding:54px 22px 6px}
+  /* UNA sola columna para todo el cierre de la página: el FAQ y el pie comparten
+     ancho y padding, así que sus líneas y su contenido caen en los mismos bordes.
+     Antes cada bloque tenía el suyo (720 / 676 / 1320 / 760 / 1232 / 520 apilados)
+     y por eso se veía desalineado: no era que algo estuviera corrido, era que no
+     había columna. Si se cambia este ancho, cambiarlo también en footer. */
+  .faq{max-width:var(--cierre,760px);margin-inline:auto;padding:54px 22px 6px}
   .faq-t{font-size:clamp(24px,4.6vw,32px);text-align:center;letter-spacing:-.02em;margin-bottom:24px}
   .faq-i{border-bottom:1px solid var(--line)}
   .faq-i:first-of-type{border-top:1px solid var(--line)}
@@ -462,18 +467,22 @@
   @media (prefers-reduced-motion:reduce){ .faq-i .pm::before,.faq-i .pm::after{transition:none} }
 
   /* ===== Pie ===== */
-  footer{padding:44px 22px calc(120px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:13px;
-    border-top:1px solid var(--line);margin-top:48px}
+  /* Mismo ancho y mismo padding que .faq: su línea de arriba cae exactamente donde
+     terminan las líneas de las preguntas, y todo lo de adentro comparte esos bordes. */
+  /* SIN línea propia: la de la última pregunta ya separa las dos secciones, y como
+     va en el borde del contenido (716) mientras esta iba en el del contenedor (760),
+     quedaban dos rayas casi juntas con anchos distintos. Una sola, y alineada. */
+  footer{max-width:var(--cierre,760px);margin:14px auto 0;
+    padding:44px 22px calc(120px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:13px}
   footer img.badge{height:96px;opacity:.96;margin-bottom:22px}
   footer .since{font-weight:700;letter-spacing:.2em;font-size:11px;color:var(--cream);margin-top:6px}
-  .foot-cols{display:grid;gap:26px;max-width:760px;margin:0 auto 30px}
+  .foot-cols{display:grid;gap:26px;margin:0 0 30px}
   .foot-c h3{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
   .foot-c{font-size:13.5px;line-height:1.65}
   .foot-c a{color:var(--cream);font-weight:700;text-decoration:none;border-bottom:1px solid #2b2b2b;transition:border-color .15s}
   .foot-c a:hover{border-color:var(--red)}
   .foot-c .nota{display:block;font-size:12px;margin-top:4px}
-  /* Redes en cuadritos. WhatsApp lleva su verde propio: es el canal por el que
-     realmente se cierra el pedido, no una red social más. */
+  /* Redes en cuadritos, los tres iguales. */
   .foot-soc{display:flex;justify-content:center;gap:11px;margin-bottom:26px}
   .foot-soc a{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
     border:1px solid #2b2b2b;background:var(--card);transition:border-color .15s,background .15s,transform .15s}
@@ -484,7 +493,7 @@
   .foot-soc svg{width:21px;height:21px;fill:var(--cream);transition:fill .15s}
   .foot-soc a:hover svg{fill:var(--red)}
   .foot-addr{color:var(--cream);font-size:13.5px;font-weight:700}
-  footer .disc{font-size:11.5px;margin-top:16px;max-width:520px;margin-inline:auto;line-height:1.55}
+  footer .disc{font-size:11.5px;margin-top:16px;line-height:1.55}
   @media (min-width:700px){ .foot-cols{grid-template-columns:repeat(3,1fr);gap:20px} }
 
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:45;width:min(648px,calc(100% - 24px));display:none}
@@ -661,7 +670,7 @@
     .hero-bg{background-position:right center}
     .hero-scrim{background:linear-gradient(to right,#000 0%,rgba(0,0,0,.86) 30%,rgba(0,0,0,.4) 58%,rgba(0,0,0,.08) 100%)}
     .steps{padding:22px 44px} .searchbar{padding:10px 44px 0} .nav .scroll{padding:0 44px}
-    .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px} footer{padding-left:44px;padding-right:44px}
+    .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px}
     /* La barra ocupa todo el ancho; su CONTENIDO se alinea con la columna de 1160.
        El padding va en % (no en vw) para que el cálculo excluya la barra de scroll y
        no aparezca un desborde horizontal en Windows. */
