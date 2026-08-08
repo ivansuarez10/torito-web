@@ -6,9 +6,14 @@
 // Esta función ES PÚBLICA (la clienta anónima la llama desde la tienda), así que
 // NO puede exigir login. La protección contra abuso (un competidor inundando el
 // kanban con pedidos falsos) son TRES capas:
-//   1) Rate-limit por IP (memoria del proceso): frena ráfagas de un mismo atacante.
+//   1) Rate-limit por IP (base de datos): frena ráfagas de un mismo atacante.
 //   2) Rate-limit por teléfono (base de datos): frena spam distribuido con el mismo número.
 //   3) Validación estricta del payload (ya existía; se refuerza el teléfono).
+//
+// ⚠️ REQUISITO: la capa 1 necesita `public.rl_hit()` y `public.rate_limits` en la
+// base. Están en `supabase/SETUP_rate_limit.sql` (correr una vez en el SQL Editor).
+// Si no existen, la capa 1 se desactiva sola y deja pasar — nunca bloquea a una
+// clienta legítima por un problema del servidor.
 //
 // Deploy:
 //   supabase functions deploy submit-order --no-verify-jwt
@@ -33,26 +38,56 @@ function json(body: unknown, status = 200) {
   });
 }
 
-// ---- Capa 1: Rate-limit por IP (ventana deslizante en memoria del proceso) ----
-// No es infalible (las Edge Functions pueden correr en varias instancias y la
-// memoria se reinicia), pero corta en seco al script que martillea desde una IP.
-// La capa 2 (por teléfono, en DB) cubre lo que esta deje pasar.
-const IP_WINDOW_MS = 60_000;   // ventana de 1 minuto
-const IP_MAX_HITS = 8;         // máx. 8 pedidos por IP por minuto
-const ipHits = new Map<string, number[]>();
-function ipRateLimited(ip: string, now: number): boolean {
-  const arr = (ipHits.get(ip) || []).filter((t) => now - t < IP_WINDOW_MS);
-  arr.push(now);
-  ipHits.set(ip, arr);
-  if (ipHits.size > 5000) { // higiene: no dejar crecer el mapa sin límite
-    for (const [k, v] of ipHits) { if (!v.length || now - v[v.length - 1] > IP_WINDOW_MS) ipHits.delete(k); }
+// ---- Capa 1: Rate-limit por IP (ventana fija, EN LA BASE) ----
+// Antes este contador vivía en memoria del proceso y MEDIDO NO SERVÍA: 25
+// llamadas seguidas desde la misma IP, cero 429. Con poco tráfico las Edge
+// Functions levantan proceso nuevo casi por llamada, así que la memoria se
+// borra antes de acumular. Ahora el conteo lo guarda Postgres (`rl_hit`), que
+// sobrevive reinicios y es el mismo patrón del freno por teléfono, que sí anda.
+// LOS NÚMEROS SON GENEROSOS A PROPÓSITO, y esta es la razón: la tienda dispara
+// `submit-order` con `keepalive` y NO mira la respuesta — al cliente le dice "tu
+// pedido ya nos llegó" pase lo que pase. O sea que un 429 a una clienta real es
+// un pedido perdido EN SILENCIO. Además, en Honduras los datos móviles van por
+// CGNAT: muchas clientas distintas pueden salir por LA MISMA IP pública, así que
+// el límite no se puede pensar como "una persona". Un ataque hace cientos de
+// llamadas por minuto; una ráfaga legítima no llega ni cerca de estos topes.
+// Dos ventanas: la corta corta el martilleo, la larga corta el goteo sostenido.
+const IP_RULES = [
+  { secs: 60, max: 20, tag: "m" },     // 20 por minuto
+  { secs: 3600, max: 120, tag: "h" },  // 120 por hora
+];
+async function ipRateLimited(supa: any, ip: string): Promise<boolean> {
+  if (!ip || ip === "unknown") return false; // sin IP no se castiga a nadie
+  for (const rule of IP_RULES) {
+    const { data, error } = await supa.rpc("rl_hit", {
+      p_key: "ip:" + rule.tag + ":" + ip,
+      p_window_secs: rule.secs,
+      p_max: rule.max,
+    });
+    if (error) { // falta la función, o la base no responde
+      console.error("rl_hit error:", error.message);
+      return false; // ante duda, no bloquear a una clienta legítima
+    }
+    if (data === true) return true;
   }
-  return arr.length > IP_MAX_HITS;
+  return false;
 }
+
+// De dónde sale la IP. IMPORTA EL ORDEN, no es cosmético:
+//   - `cf-connecting-ip` lo escribe Cloudflare, que está delante de Supabase, y
+//     PISA lo que mande el cliente. Es el dato confiable.
+//   - En `x-forwarded-for` se toma la ÚLTIMA entrada, no la primera. La cadena
+//     se lee "cliente, proxy1, proxy2…", así que cualquiera puede mandar
+//     `X-Forwarded-For: 1.2.3.4` y el proxy solo le AGREGA la IP real detrás.
+//     Quedarse con la primera es dejar que el atacante elija su propia clave de
+//     rate-limit — o sea, no tener rate-limit. La última la pone el proxy.
 function clientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for") || "";
-  return (xff.split(",")[0] || "").trim() ||
-    req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
+  const cf = (req.headers.get("cf-connecting-ip") || "").trim();
+  if (cf) return cf;
+  const hops = (req.headers.get("x-forwarded-for") || "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  if (hops.length) return hops[hops.length - 1];
+  return (req.headers.get("x-real-ip") || "").trim() || "unknown";
 }
 
 // ---- Capa 2: Rate-limit por teléfono (persistente, vía la tabla orders) ----
@@ -76,9 +111,17 @@ Deno.serve(async (req) => {
 
   const now = Date.now();
 
+  const supa = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
   // ---- Capa 1: por IP (antes de leer el body, para gastar lo mínimo en un ataque) ----
   const ip = clientIp(req);
-  if (ipRateLimited(ip, now)) return json({ error: "rate_limited" }, 429);
+  if (await ipRateLimited(supa, ip)) {
+    console.warn("rate_limited por IP"); // sin la IP: no hace falta guardarla en el log
+    return json({ error: "rate_limited" }, 429);
+  }
 
   let payload: any;
   try {
@@ -112,11 +155,6 @@ Deno.serve(async (req) => {
     weigh: !!it?.validate,
     available: true,
   }));
-
-  const supa = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
 
   // ---- Capa 2: por teléfono (consulta la DB con la service role) ----
   if (await phoneRateLimited(supa, phone, now)) return json({ error: "rate_limited" }, 429);
