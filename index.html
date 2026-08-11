@@ -228,6 +228,15 @@
   .bull-fill i{top:auto;bottom:0;background:var(--red)}
   @keyframes bullFill{0%{height:0}60%{height:97px}100%{height:97px;opacity:.2}}
   @media (prefers-reduced-motion:reduce){.bull-fill{animation:none;height:97px}}
+  /* Espera del login: EL MISMO toro que el cierre del pedido. La tienda tiene un solo
+     modo de decir "estamos trabajando"; un segundo cargador sería otro idioma para
+     decir lo mismo. Cubre una espera REAL (el viaje del SMS o la verificación) con un
+     piso de 700 ms para que no parpadee — nunca tiempo inventado. Va tapando la hoja
+     entera, así el formulario de abajo conserva lo que ella escribió. */
+  .authwait{display:none;position:absolute;inset:0;z-index:2;background:var(--bg2);
+    flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+  .authwait.on{display:flex}
+  .authwait .conf-t{font-size:clamp(18px,4.6vw,22px);margin:0}
   .conf-t{font-family:"Poppins",sans-serif;font-weight:800;letter-spacing:-.015em;font-size:clamp(21px,5.4vw,27px);line-height:1.15;margin-bottom:9px;text-wrap:balance}
   .conf-s{color:var(--muted);font-size:14.5px;line-height:1.5;max-width:32ch;margin:0 auto}
   .conf-folio{display:inline-block;margin-top:16px;border:1px dashed #333;border-radius:10px;padding:9px 15px;font-size:13px;color:var(--gold);letter-spacing:.04em}
@@ -618,9 +627,17 @@
        pegada a la izquierda — el contenido caía 156px a la izquierda del centro de la
        pantalla y el título se extendía más allá del contenido. Eso es lo que hacía
        que no se leyera como un sitio de verdad. */
-    .sheet{--col:760px;position:static;transform:none;opacity:1;transition:none;
+    /* `relative`, no `static`: sigue en el flujo de la página igual que antes, pero
+       vuelve a ser el contenedor de sus descendientes absolutos (la capa de espera).
+       Con `static` esa capa treparía hasta `.wrap` y taparía media pantalla — es el
+       mismo agujero que en su momento estiró el radio de "A domicilio" a 1160px.
+       `z-index:auto` porque `static` lo ignoraba y no queremos que ahora se active. */
+    .sheet{--col:760px;position:relative;z-index:auto;transform:none;opacity:1;transition:none;
       width:auto;max-width:none;margin:0;border-radius:0;background:none;
       max-height:none;display:none;padding:0 44px 64px}
+    /* En página el fondo es el negro del sitio, no el gris de la hoja: si no, la capa
+       de espera se ve como un recuadro más claro pegado encima. */
+    .authwait{background:var(--bg);min-height:60vh}
     .sheet.wide{--col:1000px}
     .sheet.open{display:flex}
     .sheet .head,.sheet .body,.sheet .foot{max-width:var(--col);width:100%;margin-left:auto;margin-right:auto}
@@ -906,7 +923,7 @@
        En ESCRITORIO deja de ser modal y pasa a ser el contenido de la página: por eso vive
        DENTRO de .wrap y ANTES del footer — así, con el catálogo oculto, queda entre la
        cabecera y el pie como cualquier página del sitio. No moverlo fuera de .wrap. -->
-  <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div></div>
+  <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div><div class="authwait" id="authWait" aria-hidden="true"><div class="bullload" aria-hidden="true"><i class="b-gris"></i><div class="bull-fill"><i></i></div></div><div class="conf-t" id="authWaitT" role="status"></div></div></div>
 
   <section class="faq" id="faq" aria-labelledby="faqTitle">
     <h2 class="faq-t slab" id="faqTitle">Preguntas frecuentes</h2>
@@ -1108,11 +1125,12 @@
       if(!telValido(tel)){ authErr("Escribí tu celular arriba y tocá de nuevo."); return; }
       authTel=tel; authFlow="reset";
       fg.disabled=true; fg.textContent="Enviando código…";
-      authPost("otp",{phone:e164(tel),create_user:false}).then(function(r){
+      var listo=authWait("Mandando tu código");
+      authPost("otp",{phone:e164(tel),create_user:false}).then(function(r){ listo(function(){
         fg.disabled=false; fg.textContent="¿La olvidaste?";
-        if(!r.ok){ authErr(/not found|user/i.test((r.j&&r.j.msg)||"")?"Ese número no tiene cuenta todavía. Creala en la otra pestaña.":authMsg(r.j)); return; }
+        if(!r.ok){ authErr(/not found|user/i.test((r.j&&r.j.msg)||"")?"Ese número no tiene cuenta todavía. Creala en la otra pestaña.":authFail(r)); return; }
         view="codigo"; renderSheet(); topShell();
-      });
+      }); });
     };
     var go=document.getElementById("aGo");
     go.onclick=function(){
@@ -1127,18 +1145,19 @@
       if(crear&&nom.length<2){ authErr("Contanos tu nombre, así te saludamos como se debe."); return; }
       authTel=tel; authPass=pass; authFlow="alta";
       go.disabled=true; go.textContent=crear?"Enviando…":"Entrando…";
+      var listo=authWait(crear?"Mandando tu código":"Entrando");
       if(crear){
-        authPost("signup",{phone:e164(tel),password:pass,data:{full_name:nom}}).then(function(r){
+        authPost("signup",{phone:e164(tel),password:pass,data:{full_name:nom}}).then(function(r){ listo(function(){
           go.disabled=false; go.textContent="Enviarme el código";
-          if(!r.ok){ authErr(authMsg(r.j)); return; }
+          if(!r.ok){ authErr(authFail(r)); return; }
           view="codigo"; renderSheet(); topShell();
-        });
+        }); });
       }else{
-        authPost("token?grant_type=password",{phone:e164(tel),password:pass}).then(function(r){
+        authPost("token?grant_type=password",{phone:e164(tel),password:pass}).then(function(r){ listo(function(){
           go.disabled=false; go.textContent="Entrar";
-          if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
+          if(!r.ok||!guardarSesion(r.j)){ authErr(authFail(r)); return; }
           view="cuenta"; renderSheet(); topShell();
-        });
+        }); });
       }
     };
   }
@@ -1160,19 +1179,27 @@
       var code=inp.value.replace(/\D/g,"");
       if(code.length!==6){ authErr("El código tiene 6 dígitos."); return; }
       var b=document.getElementById("aOk"); b.disabled=true; b.textContent="Confirmando…";
-      authPost("verify",{type:"sms",phone:e164(authTel),token:code}).then(function(r){
+      var listo=authWait("Confirmando tu código");
+      authPost("verify",{type:"sms",phone:e164(authTel),token:code}).then(function(r){ listo(function(){
         b.disabled=false; b.textContent="Confirmar";
-        if(!r.ok||!guardarSesion(r.j)){ authErr(authMsg(r.j)); return; }
+        if(!r.ok||!guardarSesion(r.j)){
+          authErr(authFail(r));
+          // Vaciar lo que escribió mal: si no, tiene que borrar 6 dígitos a mano
+          // antes de reintentar, con el teclado abajo.
+          inp.value=""; try{ inp.focus(); }catch(e){}
+          return;
+        }
         view=(authFlow==="reset")?"nuevapass":"cuenta"; renderSheet(); topShell();
-      });
+      }); });
     };
     document.getElementById("aResend").onclick=function(){
       authClearErr();
       var rb=document.getElementById("aResend"); rb.disabled=true; rb.textContent="Enviando…";
-      authPost("otp",{phone:e164(authTel),create_user:false}).then(function(r){
+      var listo=authWait("Mandando tu código");
+      authPost("otp",{phone:e164(authTel),create_user:false}).then(function(r){ listo(function(){
         rb.disabled=false; rb.textContent="Mandalo de nuevo";
-        if(!r.ok) authErr(authMsg(r.j)); else authErr("Listo, te lo mandamos otra vez.");
-      });
+        if(!r.ok) authErr(authFail(r)); else authErr("Listo, te lo mandamos otra vez.");
+      }); });
     };
   }
 
@@ -1782,7 +1809,11 @@
   }
   function openSheetAt(v){sheetOpen=true;view=v;lockScroll();enterShell();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
   function openSheet(){sheetOpen=true;view="cart";lockScroll();enterShell();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
-  function closeSheet(){if(trkTimer){clearInterval(trkTimer);trkTimer=null;}sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");unlockScroll();exitShell();refreshCart()}
+  function closeSheet(){if(trkTimer){clearInterval(trkTimer);trkTimer=null;}sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");
+    // Si se cerró con una espera puesta (Esc, atrás del navegador), que no quede pegada
+    // esperando a la próxima vez que abra.
+    var _w=document.getElementById("authWait"); if(_w){_w.classList.remove("on");_w.setAttribute("aria-hidden","true");}
+    unlockScroll();exitShell();refreshCart()}
   // Cruzar el umbral con una vista abierta (girar una tablet) cambiaría de envase sin
   // que la lógica se entere: el scroll quedaría bloqueado en una página, o la tienda
   // visible detrás del panel.
@@ -1818,9 +1849,39 @@
     :localStorage.removeItem("torito_sess_v1"); }catch(e){} }
   function e164(t){ return "+504"+telDigits(t); }
   function authPost(path,body){
-    return fetch(SUPA_URL+"/auth/v1/"+path,{method:"POST",
+    // Corte a los 15 s. Una conexión que no responde NUNCA rechaza sola: sin esto, la
+    // pantalla de espera se queda puesta indefinidamente y la clienta no puede ni volver.
+    var ctl=null, corte=null;
+    try{ ctl=new AbortController(); corte=setTimeout(function(){ ctl.abort(); },15000); }catch(e){}
+    return fetch(SUPA_URL+"/auth/v1/"+path,{method:"POST",signal:ctl?ctl.signal:undefined,
       headers:{"Content-Type":"application/json","apikey":SUPA_KEY},body:JSON.stringify(body)})
-      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,j:j}; }); });
+      .then(function(r){ if(corte) clearTimeout(corte); return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,j:j}; }); })
+      // Sin esto, si se cae el internet la promesa se rompe, el .then nunca corre y el
+      // botón se queda "Confirmando…" apagado PARA SIEMPRE, sin mensaje ni salida.
+      // Con datos móviles de gama baja eso pasa. Acá se responde igual y cada pantalla
+      // decide qué decir; nadie queda colgado.
+      .catch(function(){ if(corte) clearTimeout(corte); return {ok:false,net:true,j:{}}; });
+  }
+  // Qué decirle cuando algo falla. La red caída no es lo mismo que un código malo.
+  function authFail(r){
+    return (r&&r.net) ? "No pudimos conectarnos. Revisá tu internet y probá de nuevo." : authMsg(r&&r.j);
+  }
+  // ---- La espera del login, con el toro de la marca ----
+  // La usan los momentos que de verdad esperan al servidor: mandar el código,
+  // confirmarlo y entrar. Devuelve una función que corre el siguiente paso recién
+  // cuando pasó el mínimo visible: así no parpadea, pero tampoco se inventan segundos
+  // (la espera dura lo que dura la llamada, no más).
+  var AUTH_WAIT_MIN=700;
+  function authWait(txt){
+    var w=document.getElementById("authWait"), t=document.getElementById("authWaitT"), t0=Date.now();
+    if(t) t.textContent=txt;
+    if(w){ w.classList.add("on"); w.setAttribute("aria-hidden","false"); }
+    return function(sigue){
+      setTimeout(function(){
+        if(w){ w.classList.remove("on"); w.setAttribute("aria-hidden","true"); }
+        sigue();
+      }, Math.max(0, AUTH_WAIT_MIN-(Date.now()-t0)));
+    };
   }
   function guardarSesion(j){
     if(!j||!j.access_token) return false;
