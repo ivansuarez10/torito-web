@@ -228,11 +228,21 @@
   .bull-fill i{top:auto;bottom:0;background:var(--red)}
   @keyframes bullFill{0%{height:0}60%{height:97px}100%{height:97px;opacity:.2}}
   @media (prefers-reduced-motion:reduce){.bull-fill{animation:none;height:97px}}
-  /* Espera del login: EL MISMO toro que el cierre del pedido. La tienda tiene un solo
-     modo de decir "estamos trabajando"; un segundo cargador sería otro idioma para
-     decir lo mismo. Cubre una espera REAL (el viaje del SMS o la verificación) con un
+  /* Espera del login. Cubre una espera REAL (el viaje del SMS o la verificación) con un
      piso de 700 ms para que no parpadee — nunca tiempo inventado. Va tapando la hoja
-     entera, así el formulario de abajo conserva lo que ella escribió. */
+     entera, así el formulario de abajo conserva lo que ella escribió.
+     Los puntitos los eligió Ivan (referencia que trajo el 8 ago 2026): cinco puntos en
+     ola, cada uno con su retraso. Solo animan `transform`, así que no reflowean nada;
+     son 5 elementos de 11px, barato hasta en el Android de gama baja. */
+  .dots{display:flex;justify-content:center;align-items:flex-end;gap:9px;height:30px;margin:0 auto 22px}
+  .dots i{display:block;width:11px;height:11px;border-radius:50%;animation:dotWave 1.15s ease-in-out infinite}
+  .dots i:nth-child(1){background:#E4232A}
+  .dots i:nth-child(2){background:#2F6FE4;animation-delay:.1s}
+  .dots i:nth-child(3){background:#1F9D55;animation-delay:.2s}
+  .dots i:nth-child(4){background:#E4B52A;animation-delay:.3s}
+  .dots i:nth-child(5){background:#E4772A;animation-delay:.4s}
+  @keyframes dotWave{0%,100%{transform:translateY(0)}45%{transform:translateY(-14px)}}
+  @media (prefers-reduced-motion:reduce){.dots i{animation:none}}
   .authwait{display:none;position:absolute;inset:0;z-index:2;background:var(--bg2);
     flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
   .authwait.on{display:flex}
@@ -923,7 +933,7 @@
        En ESCRITORIO deja de ser modal y pasa a ser el contenido de la página: por eso vive
        DENTRO de .wrap y ANTES del footer — así, con el catálogo oculto, queda entre la
        cabecera y el pie como cualquier página del sitio. No moverlo fuera de .wrap. -->
-  <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div><div class="authwait" id="authWait" aria-hidden="true"><div class="bullload" aria-hidden="true"><i class="b-gris"></i><div class="bull-fill"><i></i></div></div><div class="conf-t" id="authWaitT" role="status"></div></div></div>
+  <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div><div class="authwait" id="authWait" aria-hidden="true"><div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="conf-t" id="authWaitT" role="status"></div></div></div>
 
   <section class="faq" id="faq" aria-labelledby="faqTitle">
     <h2 class="faq-t slab" id="faqTitle">Preguntas frecuentes</h2>
