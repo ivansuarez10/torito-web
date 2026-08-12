@@ -235,12 +235,11 @@
      ola, cada uno con su retraso. Solo animan `transform`, así que no reflowean nada;
      son 5 elementos de 11px, barato hasta en el Android de gama baja. */
   .dots{display:flex;justify-content:center;align-items:flex-end;gap:9px;height:30px;margin:0 auto 22px}
-  .dots i{display:block;width:11px;height:11px;border-radius:50%;animation:dotWave 1.15s ease-in-out infinite}
-  .dots i:nth-child(1){background:#E4232A}
-  .dots i:nth-child(2){background:#2F6FE4;animation-delay:.1s}
-  .dots i:nth-child(3){background:#1F9D55;animation-delay:.2s}
-  .dots i:nth-child(4){background:#E4B52A;animation-delay:.3s}
-  .dots i:nth-child(5){background:#E4772A;animation-delay:.4s}
+  .dots i{display:block;width:11px;height:11px;border-radius:50%;background:var(--red);animation:dotWave 1.15s ease-in-out infinite}
+  .dots i:nth-child(2){animation-delay:.1s}
+  .dots i:nth-child(3){animation-delay:.2s}
+  .dots i:nth-child(4){animation-delay:.3s}
+  .dots i:nth-child(5){animation-delay:.4s}
   @keyframes dotWave{0%,100%{transform:translateY(0)}45%{transform:translateY(-14px)}}
   @media (prefers-reduced-motion:reduce){.dots i{animation:none}}
   .authwait{display:none;position:absolute;inset:0;z-index:2;background:var(--bg2);
