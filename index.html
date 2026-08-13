@@ -1088,12 +1088,20 @@
   function renderWelcome(){
     var host=document.getElementById("welcomeHost"); if(!host) return;
     var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
-    if(!PROFILE && !lastValid.length){ host.innerHTML=""; return; }
-    var name=PROFILE?firstName(PROFILE.name):"";
+    // Tener CUENTA también cuenta para saludar. Antes el saludo dependía solo del perfil
+    // local, que se escribe al CONCRETAR un pedido: la clienta que se registraba y todavía
+    // no había comprado entraba a un home anónimo, como si no la conociéramos.
+    var conCuenta=!!(SESS&&SESS.at);
+    if(!PROFILE && !lastValid.length && !conCuenta){ host.innerHTML=""; return; }
+    var name=firstName((PROFILE&&PROFILE.name)||(SESS&&SESS.nom)||"");
     var hasLast=lastValid.length>0;
+    // "De nuevo" solo si de verdad hubo una vez anterior. A quien se acaba de registrar se
+    // le dice "Buenas" a secas: saludar con "de nuevo" a alguien que nunca compró suena a
+    // que el sitio no sabe quién es.
+    var yaCompro=!!LASTORDER;
     var h='<div class="welcome">'+
       '<div class="welcome-over"><span class="ln"></span>El Torito · Desde 1970</div>'+
-      '<div class="welcome-hi">'+(name?'Buenas de nuevo, '+pesc(name)+'.':'Buenas de nuevo.')+'</div>'+
+      '<div class="welcome-hi">'+(yaCompro?'Buenas de nuevo':'Buenas')+(name?', '+pesc(name)+'.':'.')+'</div>'+
       '<div class="welcome-sub">'+(hasLast?'Tu carnicería de siempre. ¿Repetimos lo de la otra vez?':'Tu carnicería de siempre, lista cuando vos.')+'</div>';
     if(hasLast){
       h+='<div class="welcome-actions"><button class="btn-repeat" id="btnRepeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Repetir mi pedido ('+lastValid.length+')</button></div>';
@@ -1371,6 +1379,7 @@
         saveSess(SESS);
         PROFILE=PROFILE||{}; PROFILE.name=data.full_name; if(data.addr_casa) PROFILE.addr=data.addr_casa;
         try{ saveProfile(); }catch(e){}
+        try{ renderWelcome(); }catch(e){}   // si se cambió el nombre, que el saludo lo diga ya
         toast("Cambios guardados");
         if(despues) despues();
       });
@@ -1855,7 +1864,12 @@
   var SESS=null, authTel="", authPass="", authFlow="alta";
   try{ SESS=JSON.parse(localStorage.getItem("torito_sess_v1")||"null"); }catch(e){ SESS=null; }
   function saveSess(o){ SESS=o; try{ o?localStorage.setItem("torito_sess_v1",JSON.stringify(o))
-    :localStorage.removeItem("torito_sess_v1"); }catch(e){} }
+    :localStorage.removeItem("torito_sess_v1"); }catch(e){}
+    // El home se pintaba UNA sola vez al arrancar, así que al registrarse el saludo no
+    // aparecía hasta recargar la página. Acá está el único punto por el que pasan entrar,
+    // crear cuenta y cerrar sesión, así que repintarlo acá los cubre a los tres.
+    try{ renderWelcome(); }catch(e){}
+  }
   function e164(t){ return "+504"+telDigits(t); }
   function authPost(path,body){
     // Corte a los 15 s. Una conexión que no responde NUNCA rechaza sola: sin esto, la
