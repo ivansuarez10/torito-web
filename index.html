@@ -1561,6 +1561,20 @@
   var ESTADOS={cotizar:["Confirmando disponibilidad",true],espera_pago:["Esperando tu pago",true],
     preparacion:["Preparando tu pedido",true],lista:["Lista para entregar",true],en_ruta:["En camino",true],
     entregada:["Entregado",false],cancelada:["Cancelado",false]};
+  // Cuándo se hizo el pedido, en el idioma de una clienta y no en el de una base
+  // de datos: "Hoy · 2:45 p. m." / "Ayer · 6:10 p. m." / "12 ago · 2:45 p. m.".
+  // El día se compara por FECHA, no por horas transcurridas: un pedido de anoche a
+  // las 11 sigue siendo "Ayer" aunque hayan pasado 9 horas. El año solo aparece si
+  // el pedido es de otro año — si no, estorba en el 99% de los casos.
+  function fechaHora(ts){
+    var d=new Date(Number(ts)||Date.now()), hoy=new Date();
+    var ayer=new Date(hoy.getTime()-86400000);
+    var mismoDia=function(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); };
+    var dia = mismoDia(d,hoy) ? "Hoy"
+            : mismoDia(d,ayer) ? "Ayer"
+            : d.toLocaleDateString("es-HN",{day:"numeric",month:"short"})+(d.getFullYear()!==hoy.getFullYear()?" "+d.getFullYear():"");
+    return dia+" · "+d.toLocaleTimeString("es-HN",{hour:"numeric",minute:"2-digit"});
+  }
   function pedidosView(){
     if(pedTimer) clearTimeout(pedTimer);
     pedTimer=setTimeout(function(){ if(sheetOpen&&view==="pedidos") pedidosView(); }, 30000);
@@ -1592,14 +1606,13 @@
           var h="";
           rows.forEach(function(o){
             var est=ESTADOS[o.status]||[o.archived?"Entregado":"Recibido",false];
-            var f=new Date(Number(o.created_at)||Date.now());
             var items=(o.items||[]).map(function(i){ return (i.qty||"")+" "+(i.unit==="paquete"?"paq":"lb")+" "+(i.name||""); }).join(" · ");
             var tot=(o.items||[]).reduce(function(a,i){ return a+(Number(i.total)||0); },0)+(Number(o.shipping)||0);
             var vivo=est[1]&&!o.archived&&o.status!=="cancelada";
             var cancelado=(o.status==="cancelada");
             h+='<div class="po" data-folio="'+pesc(o.folio||"")+'" role="button" tabindex="0" style="cursor:pointer">'+
                '<div class="po-top"><span class="po-folio">'+pesc(o.folio||"")+'</span>'+
-               '<span class="po-fecha">'+f.toLocaleDateString("es-HN",{day:"2-digit",month:"short"})+'</span></div>'+
+               '<span class="po-fecha">'+pesc(fechaHora(o.created_at))+'</span></div>'+
                '<div class="po-est'+(vivo?" vivo":"")+(cancelado?" muerto":"")+'">'+pesc(cancelado?"Cancelado":(o.archived?"Entregado":est[0]))+(vivo?" · seguilo →":"")+'</div>'+
                '<div class="po-items">'+pesc(items)+'</div>'+
                (tot>0?'<div class="po-tot">'+money(tot)+'</div>':'')+
