@@ -24,6 +24,9 @@
 // La tienda llama a: {SUPABASE_URL}/functions/v1/submit-order  (POST)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// Los precios viven aparte para poder probarlos sin levantar el servidor.
+// El porqué del diseño está en la cabecera de precios.ts.
+import { precioDeLinea, preciosDeConfianza } from "./precios.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -144,17 +147,29 @@ Deno.serve(async (req) => {
   // Se mapea al shape que Comandas espera: corte elegido, weigh (=se pesa),
   // available:true por defecto (el carnicero lo ajusta; sin esto el mensaje
   // al cliente filtra por disponibles y saldría vacío).
-  const cleanItems = items.slice(0, 100).map((it: any) => ({
-    name: String(it?.name ?? "").slice(0, 80),
-    cat: String(it?.cat ?? "").slice(0, 24),
-    qty: Number(it?.qty) || 0,
-    unit: String(it?.unit ?? "").slice(0, 10),
-    price: Number(it?.price) || 0,
-    total: Number(it?.total) || 0,
-    corte: it?.corte ? String(it.corte).slice(0, 60) : null,
-    weigh: !!it?.validate,
-    available: true,
-  }));
+  const precios = await preciosDeConfianza(supa);
+  let corregidos = 0;
+
+  const cleanItems = items.slice(0, 100).map((it: any) => {
+    const nombre = String(it?.name ?? "").slice(0, 80);
+    const qty = Number(it?.qty) || 0;
+    // El precio SIEMPRE sale del catálogo, nunca del pedido. Un producto que no
+    // esté en el catálogo de la nube entra en 0 y lo pone el carnicero al cotizar:
+    // así son los tres de vísceras, que se cotizan por WhatsApp y no viven ahí.
+    const { price, total } = precioDeLinea(precios, nombre, qty);
+    if (Number(it?.price) !== price) corregidos++;
+    return {
+      name: nombre,
+      cat: String(it?.cat ?? "").slice(0, 24),
+      qty,
+      unit: String(it?.unit ?? "").slice(0, 10),
+      price,
+      total,
+      corte: it?.corte ? String(it.corte).slice(0, 60) : null,
+      weigh: !!it?.validate,
+      available: true,
+    };
+  });
 
   // ---- Capa 2: por teléfono (consulta la DB con la service role) ----
   if (await phoneRateLimited(supa, phone, now)) return json({ error: "rate_limited" }, 429);
@@ -175,13 +190,27 @@ Deno.serve(async (req) => {
     zone: String(payload?.zone ?? "").slice(0, 80),
     addr: String(payload?.addr ?? "").slice(0, 200),
     delivery: !!payload?.delivery,
-    shipping: Number(payload?.shipping) || 0,
+    // El envío también lo manda el navegador. Recalcularlo exigiría geocodificar
+    // acá dentro, así que por ahora solo se acota: sin domicilio va en 0, y con
+    // domicilio no puede bajar del mínimo publicado (50) ni dispararse. La fórmula
+    // tope a 25 km no pasa de ~275, así que 400 deja margen sin dejar pasar basura.
+    shipping: !payload?.delivery
+      ? 0
+      : Math.min(400, Math.max(50, Number(payload?.shipping) || 0)),
     note: String(payload?.note ?? "").slice(0, 400),
     status: "cotizar", // entra a la columna "Por cotizar" para validar peso
     paid: false,
     created_at: now,
     items: cleanItems,
-    hist: [{ at: now, ev: "Pedido creado desde la tienda web" }],
+    // Si algún precio no coincidió con el catálogo, queda constancia VISIBLE en la
+    // comanda. En operación normal esto no aparece nunca; si aparece, o alguien
+    // manipuló el pedido, o hay un producto que falta en el catálogo de la nube.
+    hist: corregidos
+      ? [
+        { at: now, ev: "Pedido creado desde la tienda web" },
+        { at: now, ev: `Ojo: ${corregidos} precio(s) no coincidían con el catálogo. Se usó el del catálogo.` },
+      ]
+      : [{ at: now, ev: "Pedido creado desde la tienda web" }],
   };
 
   const { error } = await supa.from("orders").insert(row);
