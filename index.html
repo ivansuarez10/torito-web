@@ -84,13 +84,19 @@
   @media (prefers-reduced-motion:reduce){.cine{height:100vh}.cine-hint{animation:none}.cine-beat{transition:none}}
 
   /* Top bar */
-  /* La franja de la isla dinámica / notch, SIEMPRE negra, pase lo que pase con la cabecera.
-     La cabecera ya reserva esa altura con env(safe-area-inset-top), pero es `sticky`: en iOS,
-     durante el scroll con inercia se despega un instante y por esa rendija se ve pasar el
-     catálogo (lo vio Ivan en su iPhone, 13 ago 2026). Esto no depende del sticky — es `fixed`,
-     así que no se mueve nunca. En un teléfono sin notch la altura es 0 y no existe. */
-  .notchguard{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);
-    background:var(--bg);z-index:50;pointer-events:none}
+  /* LA RENDIJA DE ARRIBA (iPhone con isla dinámica, visto por Ivan el 13 ago 2026):
+     al scrollear con inercia se alcanzaba a ver pasar el catálogo por encima de la cabecera.
+     En iOS el elemento `sticky` se despega un instante durante el scroll con impulso y por
+     ese hueco se ve lo que va debajo.
+     PRIMER INTENTO FALLIDO (y por qué): una franja `fixed` de alto env(safe-area-inset-top).
+     En Safari con la barra de direcciones abajo ese valor suele ser 0, así que la franja
+     medía cero y no tapaba nada.
+     ESTO NO DEPENDE DE NADA DE ESO: le colgamos a la propia cabecera una prolongación de su
+     mismo fondo HACIA ARRIBA, fuera de la pantalla. Si la cabecera se despega y baja, lo que
+     aparece en el hueco es esa prolongación, o sea más negro. Cuando está bien pegada, vive
+     fuera de la vista y no se nota. Sin `env`, sin `fixed`, sin z-index nuevos. */
+  .topbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;
+    background:var(--bg);pointer-events:none}
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));
     /* Fondo SÓLIDO. Antes era rgba(0,0,0,.82) + backdrop-filter: el desenfoque suaviza
@@ -888,7 +894,6 @@
      adentro (logo, cuenta, carrito) se alinea con la misma columna del resto por padding,
      no por un ancho fijo — ver la regla .topbar de escritorio. Dentro de .wrap, la barra
      se cortaba a 1160px y en una pantalla grande parecía una tira flotante. -->
-<div class="notchguard" aria-hidden="true"></div>
 <div class="topbar">
   <div class="brand" id="brand"><img id="brandBull" src="img/torito-bull.webp" alt="El Torito" /><span>EL TORITO</span></div>
     <button class="acctbtn" id="openAcct" aria-label="Mi cuenta"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="lbl">Mi cuenta</span></button>
