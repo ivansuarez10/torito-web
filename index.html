@@ -84,6 +84,13 @@
   @media (prefers-reduced-motion:reduce){.cine{height:100vh}.cine-hint{animation:none}.cine-beat{transition:none}}
 
   /* Top bar */
+  /* La franja de la isla dinámica / notch, SIEMPRE negra, pase lo que pase con la cabecera.
+     La cabecera ya reserva esa altura con env(safe-area-inset-top), pero es `sticky`: en iOS,
+     durante el scroll con inercia se despega un instante y por esa rendija se ve pasar el
+     catálogo (lo vio Ivan en su iPhone, 13 ago 2026). Esto no depende del sticky — es `fixed`,
+     así que no se mueve nunca. En un teléfono sin notch la altura es 0 y no existe. */
+  .notchguard{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);
+    background:var(--bg);z-index:50;pointer-events:none}
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));
     /* Fondo SÓLIDO. Antes era rgba(0,0,0,.82) + backdrop-filter: el desenfoque suaviza
@@ -881,6 +888,7 @@
      adentro (logo, cuenta, carrito) se alinea con la misma columna del resto por padding,
      no por un ancho fijo — ver la regla .topbar de escritorio. Dentro de .wrap, la barra
      se cortaba a 1160px y en una pantalla grande parecía una tira flotante. -->
+<div class="notchguard" aria-hidden="true"></div>
 <div class="topbar">
   <div class="brand" id="brand"><img id="brandBull" src="img/torito-bull.webp" alt="El Torito" /><span>EL TORITO</span></div>
     <button class="acctbtn" id="openAcct" aria-label="Mi cuenta"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="lbl">Mi cuenta</span></button>
