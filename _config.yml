@@ -9,6 +9,9 @@
 exclude:
   - CLAUDE.md
   - PRODUCT.md
+  # Checklist interno de SEO (datos para pegar en Google Business y Search
+  # Console). Es documentación para Ivan, no una página de la tienda.
+  - SEO_PENDIENTES_IVAN.md
   # Los .sql son de administración de la base: describen tablas, políticas de
   # seguridad y notas internas. No los necesita nadie que entre a comprar.
   - "*.sql"
