@@ -1,0 +1,10 @@
+# Carnicería El Torito · carniceriaeltorito.com
+# El sitio entero es público y se puede indexar. Lo único que se deja fuera es el
+# panel de administración: es la pantalla con la que se edita el catálogo, no tiene
+# nada que buscar una clienta y exige login igual.
+
+User-agent: *
+Allow: /
+Disallow: /panel/
+
+Sitemap: https://carniceriaeltorito.com/sitemap.xml

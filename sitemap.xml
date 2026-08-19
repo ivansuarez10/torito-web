@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- La tienda es UNA sola página: el catálogo, el carrito y la cuenta son vistas
+     dentro de la misma URL, no direcciones distintas. Por eso el sitemap tiene una
+     sola entrada, y eso es correcto, no un olvido. Si algún día hay páginas por
+     categoría, se agregan acá. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://carniceriaeltorito.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

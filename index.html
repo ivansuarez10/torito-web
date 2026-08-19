@@ -19,7 +19,64 @@
 <meta name="twitter:title" content="Carnicería El Torito · Pedí en línea" />
 <meta name="twitter:description" content="Carne fresca cortada al peso que pedís, entregada en tu puerta en Tegucigalpa." />
 <meta name="twitter:image" content="https://carniceriaeltorito.com/img/og-image.jpg" />
+<meta property="og:locale" content="es_HN" />
+<link rel="canonical" href="https://carniceriaeltorito.com/" />
 <link rel="icon" href="img/logo.png" />
+<!-- Ficha del negocio para buscadores. TODO acá es dato verificado del local; si algo
+     cambia (horario, teléfono, dirección) hay que cambiarlo también en el pie de la
+     página: dos versiones de la verdad es peor que ninguna.
+     Coordenadas y dirección salen de catalog.json (meta.origin, confirmed:true). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Butcher",
+  "@id": "https://carniceriaeltorito.com/#negocio",
+  "name": "Carnicería El Torito",
+  "url": "https://carniceriaeltorito.com/",
+  "logo": "https://carniceriaeltorito.com/img/logo.png",
+  "image": "https://carniceriaeltorito.com/img/og-image.jpg",
+  "description": "Carnicería en Tegucigalpa desde 1970. Carne de res, cerdo, pollo, embutidos y vísceras cortada al peso, con entrega a domicilio en la ciudad.",
+  "foundingDate": "1970",
+  "telephone": "+504-9378-5051",
+  "priceRange": "$",
+  "currenciesAccepted": "HNL",
+  "paymentAccepted": "Efectivo, transferencia",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Mercado San Pablo, Barrio El Manchén",
+    "addressLocality": "Tegucigalpa",
+    "addressRegion": "Francisco Morazán",
+    "addressCountry": "HN"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 14.1091381, "longitude": -87.1916749 },
+  "hasMap": "https://maps.google.com/?q=14.1091381,-87.1916749",
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "opens": "06:00", "closes": "15:00" },
+    { "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday","Sunday"],
+      "opens": "06:00", "closes": "13:00" }
+  ],
+  "areaServed": { "@type": "City", "name": "Tegucigalpa" },
+  "sameAs": [
+    "https://www.facebook.com/profile.php?id=61567059916910",
+    "https://www.instagram.com/eltorito_carniceriahn/"
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Cortes y productos",
+    "itemListElement": [
+      { "@type": "OfferCatalog", "name": "Res" },
+      { "@type": "OfferCatalog", "name": "Cerdo" },
+      { "@type": "OfferCatalog", "name": "Pollo" },
+      { "@type": "OfferCatalog", "name": "Embutidos" },
+      { "@type": "OfferCatalog", "name": "Vísceras" },
+      { "@type": "OfferCatalog", "name": "Extras" }
+    ]
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
 <!-- Mapa (pin arrastrable para elegir otra dirección de entrega) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -479,6 +536,19 @@
      Antes cada bloque tenía el suyo (720 / 676 / 1320 / 760 / 1232 / 520 apilados)
      y por eso se veía desalineado: no era que algo estuviera corrido, era que no
      había columna. Si se cambia este ancho, cambiarlo también en footer. */
+  /* "Qué cortamos": el catálogo lo pinta el JavaScript, así que hasta ahora la página
+     que sirve el dominio no tenía NI UNA vez las palabras "chorizo", "milanesa" o
+     "costilla" — ni para un buscador ni para quien llega con el internet lento y el
+     catálogo todavía no cargó. Este bloque va en el HTML, se lee solo y no lleva
+     precios: los precios cambian y quedarían viejos. */
+  .corta{max-width:var(--cierre,760px);margin-inline:auto;padding:54px 22px 0}
+  .corta-t{font-size:clamp(24px,4.6vw,32px);text-align:center;letter-spacing:-.02em;margin-bottom:8px}
+  .corta-s{color:var(--muted);font-size:14.5px;line-height:1.55;text-align:center;max-width:52ch;margin:0 auto 26px}
+  .corta-l{display:grid;gap:16px}
+  .corta-i{border-top:1px solid var(--line);padding-top:14px}
+  .corta-i h3{font-family:"Poppins",sans-serif;font-weight:700;font-size:14px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--cream);margin:0 0 5px}
+  .corta-i p{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0}
   .faq{max-width:var(--cierre,760px);margin-inline:auto;padding:54px 22px 6px}
   .faq-t{font-size:clamp(24px,4.6vw,32px);text-align:center;letter-spacing:-.02em;margin-bottom:24px}
   .faq-i{border-bottom:1px solid var(--line)}
@@ -906,7 +976,7 @@
       <canvas id="cineCv"></canvas>
       <div class="cine-vig"></div>
       <div class="cine-beats">
-        <div class="cine-beat cb1" id="cb1"><div class="over"><span class="ln"></span>Desde 1970</div><h1 class="slab">El Torito</h1><p>Carnicería</p></div>
+        <div class="cine-beat cb1" id="cb1"><div class="over"><span class="ln"></span>Desde 1970</div><h1 class="slab">El Torito</h1><p>Carnicería en Tegucigalpa</p></div>
         <div class="cine-beat cb2" id="cb2"><h2 class="slab">Cada corte,<br><em>un ritual.</em></h2></div>
         <div class="cine-beat cb3" id="cb3"><button class="cine-cta slab" id="cineCta">Realizá tu pedido →</button></div>
       </div>
@@ -946,6 +1016,35 @@
        DENTRO de .wrap y ANTES del footer — así, con el catálogo oculto, queda entre la
        cabecera y el pie como cualquier página del sitio. No moverlo fuera de .wrap. -->
   <div class="sheet" id="sheet"><div class="head"><div class="head-l"><button class="sheetback" id="sheetBack" aria-label="Volver" style="display:none">←</button><h3 class="slab" id="sheetTitle">Tu pedido</h3></div><button class="close" id="closeSheet" aria-label="Cerrar">✕</button></div><div class="body" id="sheetBody"></div><div class="foot" id="sheetFoot"></div><div class="authwait" id="authWait" aria-hidden="true"><div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="conf-t" id="authWaitT" role="status"></div></div></div>
+
+  <!-- Los nombres de acá son los cortes que la carnicería trabaja, no el inventario del
+       día: lo que hay hoy lo dice el catálogo de arriba, que se marca "Agotado" solo.
+       Sin precios A PROPÓSITO (cambian). Si algún día se deja de trabajar una categoría
+       entera, hay que actualizar este texto a mano. -->
+  <section class="corta" aria-labelledby="cortaTitle">
+    <h2 class="corta-t slab" id="cortaTitle">Qué cortamos</h2>
+    <p class="corta-s">Todo se corta al peso que pidás, el mismo día. Somos carnicería de mercado desde 1970,
+      en el Mercado San Pablo de Tegucigalpa, y llevamos el pedido a tu casa.</p>
+    <div class="corta-l">
+      <div class="corta-i"><h3>Res</h3>
+        <p>Bistec, fajitas, carne para asar, milanesa, costilla, carne molida, estofado, puyaso,
+          New York, rib eye, entraña, falda, filete, lomo limpio, mano de piedra, bolita,
+          cabeza de lomo, tajo negro y carne salada.</p></div>
+      <div class="corta-i"><h3>Cerdo</h3>
+        <p>Chuleta y chuleta ahumada, lomo, costilla, carne para asar, molida, fajitas, bistec,
+          estofado, lonja carnuda y patas.</p></div>
+      <div class="corta-i"><h3>Pollo</h3>
+        <p>Entero, en pieza, pechuga con y sin hueso, pechuguitas, pierna y muslo, alas,
+          medallones, chicken finger, hot dog de pollo, menudos y patas.</p></div>
+      <div class="corta-i"><h3>Embutidos</h3>
+        <p>Chorizo suelto, indio, criollo, parrillero, cervecero y barbacoa.</p></div>
+      <div class="corta-i"><h3>Vísceras</h3>
+        <p>Hígado, corazón, lengua, mondongo, pulmón y vaso.</p></div>
+      <div class="corta-i"><h3>Para acompañar</h3>
+        <p>Camarón, bacon, manteca de cerdo, papas congeladas, papas sazonadas
+          y papas tornillo.</p></div>
+    </div>
+  </section>
 
   <section class="faq" id="faq" aria-labelledby="faqTitle">
     <h2 class="faq-t slab" id="faqTitle">Preguntas frecuentes</h2>
