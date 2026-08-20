@@ -625,6 +625,17 @@
   .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
   .loading{text-align:center;color:var(--muted);padding:60px 20px}
+  /* El catálogo en texto que viaja en el HTML (lo escribe build-catalogo.py). Se ve solo
+     el instante que tarda el JavaScript en reemplazarlo por el catálogo de verdad — o un
+     rato largo, si la señal está mala, y de eso se trata: que algo se pueda leer. */
+  .preload{padding:8px 20px 30px;max-width:680px;margin-inline:auto}
+  .preload section{margin-bottom:22px}
+  .preload h2{font-family:"Poppins",sans-serif;font-weight:800;font-size:15px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--cream);margin:0 0 8px}
+  .preload ul{list-style:none;padding:0;margin:0}
+  .preload li{color:var(--muted);font-size:14px;line-height:1.55;padding:5px 0;border-bottom:1px solid var(--line)}
+  .preload li b{color:var(--cream);font-weight:600}
+  .preload-n{text-align:center;color:var(--muted-2,#6f6f6f);font-size:13px;padding-top:10px}
 
   /* Checkout: campos select, dos columnas, validación */
   .sheet .foot:empty{display:none;padding:0;border:0}
@@ -995,7 +1006,84 @@
        y al pie dejan de flotar encima. Sin esto tapaban el título de las preguntas. -->
   <div class="shop">
     <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
-    <main id="catalog"><div class="loading">Cargando el catálogo…</div></main>
+    <!-- Lo de adentro lo GENERA build-catalogo.py desde catalog.json: es el catálogo en
+         texto, para que el HTML que descarga un buscador (y quien tiene señal mala) traiga
+         los nombres de los cortes. El JavaScript lo reemplaza por el catálogo de verdad
+         apenas carga, así que nadie ve dos catálogos. NO editar a mano: se pisa. -->
+    <main id="catalog"><!-- CATALOGO-SEO:INICIO · generado por build-catalogo.py · NO editar a mano -->
+    <div class="preload" id="preloadCat">
+      <section><h2>Res</h2><ul>
+        <li><b>Bistec</b> — Fino y tierno, listo para el sartén.</li>
+        <li><b>Fajitas</b> — Tiras jugosas para tacos y fajitas.</li>
+        <li><b>Asar</b> — El corte de siempre para el asado dominguero.</li>
+        <li><b>Milanesa</b> — Lámina delgada, perfecta empanizada.</li>
+        <li><b>Costilla</b> — Con hueso, ideal para sopa o a la brasa.</li>
+        <li><b>Molida</b> — Molida fresca del día, para todo.</li>
+        <li><b>Estofado</b> — En cubos, se deshace en el guiso.</li>
+        <li><b>Puyaso</b> — Corte premium, suave y de sabor intenso.</li>
+        <li><b>New York</b> — Clásico de parrilla, jugoso y bien marcado.</li>
+        <li><b>Rib eye</b> — El rey del marmoleo, jugoso en cada bocado.</li>
+        <li><b>Entraña</b> — Fibra fina y mucho sabor, hecha para la brasa.</li>
+        <li><b>Mano de piedra</b> — Magro y rendidor para los bistecs del diario.</li>
+        <li><b>Cabeza de lomo</b> — Versátil y tierno, cortado como lo pidás.</li>
+        <li><b>Bolita</b> — Magro y parejo, ideal en bistec o cubos.</li>
+        <li><b>Falda</b> — Sabrosa y jugosa, reina de la desmenuzada.</li>
+        <li><b>Tajo negro</b> — Corte noble para guisos con cuerpo.</li>
+        <li><b>Lomo limpio</b> — Sin grasa y suave, para comer liviano.</li>
+        <li><b>Filete</b> — El corte más tierno de la res.</li>
+        <li><b>Carne salada</b> — Tradicionalmete cocida con sal ideal para tapado Olanchano</li>
+      </ul></section>
+      <section><h2>Cerdo</h2><ul>
+        <li><b>Asar de cerdo</b> — Jugoso para el asado</li>
+        <li><b>Molida de cerdo</b> — Molida fresca, sabrosa para rellenos.</li>
+        <li><b>Costilla de cerdo</b> — Carnosa, pedila a la barbacoa.</li>
+        <li><b>Estofado de cerdo</b> — En cubos, perfecta para tu guiso.</li>
+        <li><b>Lomo de cerdo</b> — Magro y tierno, para hornear o filetear.</li>
+        <li><b>Fajitas de cerdo</b> — Tiras listas para el sartén.</li>
+        <li><b>Bistec de cerdo</b> — Fino y jugoso, listo para dorar.</li>
+        <li><b>Patas de cerdo</b> — Para el mondongo y sopas.</li>
+        <li><b>Chuleta Ahumada</b> — Ahumada en la casa, solo calentar.</li>
+        <li><b>Chuleta</b> — Con hueso, jugosa a la plancha.</li>
+        <li><b>Lonja carnuda</b> — Ideal para chicharrones</li>
+      </ul></section>
+      <section><h2>Pollo</h2><ul>
+        <li><b>Menudo</b> — Mollejas, hígado y corazón</li>
+        <li><b>Entero</b> — Pollo entero congelado</li>
+        <li><b>Pollo en pieza</b> — Piezas surtidas, listas para descongelar y  cocinar.</li>
+        <li><b>Patas</b> — Para un caldo con cuerpo y sabor.</li>
+        <li><b>Pechuga/ala</b> — Pechuga con ala congelada</li>
+        <li><b>Pechugas sin hueso</b> — Limpia y magra, la más práctica.</li>
+        <li><b>Pierna/muslo</b> — Pierna/muslo  la favorita para guisar.</li>
+        <li><b>Medallones</b> — Empanizados, del congelador al sartén.</li>
+        <li><b>Pechuguitas</b> — Bocaditos crocantes que aman los niños.</li>
+        <li><b>Chicken finger</b> — Tiras empanizadas, listas en minutos.</li>
+        <li><b>Hot dog de pollo</b> — Prácticos para merienda</li>
+      </ul></section>
+      <section><h2>Embutidos</h2><ul>
+        <li><b>Chorizo Suelto</b> — Receta de la casa, ideal para la parrilla.</li>
+        <li><b>Chorizo Indio</b> — Sabor tradicional catracho.</li>
+        <li><b>Chorizo Barbacoa</b> — Ahumadito y dulzón, para la brasa.</li>
+        <li><b>Chorizo Criollo</b> — El de siempre, jugoso al asar.</li>
+        <li><b>Chorizo Parrillero</b> — Hecho para la parrillada del finde con el picante ideal</li>
+        <li><b>Chorizo Cervecero</b> — Con su toque especial, para la juntada.</li>
+      </ul></section>
+      <section><h2>Vísceras</h2><ul>
+        <li><b>Hígado</b> — Fresco del día, suave para encebollar.</li>
+        <li><b>Lengua</b> — Tierna en su punto, para la lengua entomatada.</li>
+        <li><b>Mondongo</b> — Limpio y listo para la sopa. (Mitad pata y mitad tripa)</li>
+      </ul></section>
+      <section><h2>Extras</h2><ul>
+        <li><b>Papas congeladas</b> — Corte clásico, doradas y crocantes.</li>
+        <li><b>Manteca de cerdo</b> — Manteca pura, alta en beneficios naturales</li>
+        <li><b>Camarón 41-50</b> — Fresco, para tu coctel o al ajillo.</li>
+        <li><b>Papas sazonadas</b> — Condimentas como en restaurante, listas para freír.</li>
+        <li><b>Papas tornillo</b> — Divertidas y crocantes, para picar.</li>
+        <li><b>Bacon</b> — Tiras de tocino crocante para tus mejores platillos.</li>
+        <li><b>Camarón 5 lb</b> — Camarón, presentación en caja de 5 libras.</li>
+      </ul></section>
+      <p class="preload-n">Cargando precios y disponibilidad…</p>
+    </div>
+    <!-- CATALOGO-SEO:FIN --></main>
   </div>
 
   <!-- En CELULAR esto es un panel a pantalla completa que sube desde abajo (se siente app).

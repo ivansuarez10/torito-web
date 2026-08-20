@@ -64,6 +64,20 @@ Resto de la línea gráfica: sombras suaves, mucho espacio en blanco. **El rojo 
 - Checkout: el pedido sale por **dos vías a la vez** — Edge Function `submit-order` de Supabase (cae en **Comandas Torito**, `~/Desktop/Proyectos/Torito/INDCAN/ComandasTorito/`) y apertura de WhatsApp con el pedido escrito.
 - **Pago en línea = Fase 2, no implementado.** No prometerlo ni insinuarlo en la interfaz.
 
+## Al cambiar el catálogo, correr `build-catalogo.py`
+
+El catálogo lo pinta el JavaScript, así que el HTML que descarga un buscador no traía ni un nombre de producto. Dentro de `#catalog` hay ahora un bloque **generado** con la lista en texto, entre las marcas `CATALOGO-SEO:INICIO/FIN`. El JS lo reemplaza por el catálogo real al cargar; en una conexión lenta, es lo que la clienta lee mientras espera.
+
+```bash
+python3 build-catalogo.py          # regenera el bloque
+python3 build-catalogo.py --check  # falla si quedó viejo
+```
+
+- **No editar ese bloque a mano**: se pisa en la siguiente corrida.
+- El script **lee el catálogo del panel** (`app_config` key `store_catalog`) porque **ese reemplaza a `catalog.json` en producción**; solo cae al archivo del repo si no hay nube. Sin eso, el HTML lista productos que ya se dieron de baja desde el panel.
+- Si no se corre, **la tienda sigue bien** (el JS siempre lee lo vigente); lo único que envejece es lo que lee el buscador.
+- Va **sin precios a propósito**: cambian, y un precio viejo en el HTML es peor que ninguno.
+
 ## Contexto de producto
 
 El contexto completo (quién compra, para qué existe la tienda, restricciones) está en `PRODUCT.md`, en esta misma carpeta. **La restricción que más manda:** el cliente típico usa un **Android de gama baja con datos limitados**, así que el peso de la página es una restricción de producto, no una preferencia estética.
