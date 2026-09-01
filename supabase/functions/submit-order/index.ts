@@ -27,6 +27,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Los precios viven aparte para poder probarlos sin levantar el servidor.
 // El porqué del diseño está en la cabecera de precios.ts.
 import { precioDeLinea, preciosDeConfianza } from "./precios.ts";
+import { costoEnvio } from "./envio.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -171,6 +172,13 @@ Deno.serve(async (req) => {
     };
   });
 
+  // El envío que vale es el que sale de las coordenadas marcadas, no el que mandó la
+  // pantalla. Se calcula antes de armar la fila para poder dejar constancia si no
+  // coinciden.
+  const envio = costoEnvio(payload?.addr, !!payload?.delivery);
+  const envioPantalla = Number(payload?.shipping) || 0;
+  const envioDifiere = !!payload?.delivery && envioPantalla !== envio.costo;
+
   // ---- Capa 2: por teléfono (consulta la DB con la service role) ----
   if (await phoneRateLimited(supa, phone, now)) return json({ error: "rate_limited" }, 429);
 
@@ -190,13 +198,10 @@ Deno.serve(async (req) => {
     zone: String(payload?.zone ?? "").slice(0, 80),
     addr: String(payload?.addr ?? "").slice(0, 200),
     delivery: !!payload?.delivery,
-    // El envío también lo manda el navegador. Recalcularlo exigiría geocodificar
-    // acá dentro, así que por ahora solo se acota: sin domicilio va en 0, y con
-    // domicilio no puede bajar del mínimo publicado (50) ni dispararse. La fórmula
-    // tope a 25 km no pasa de ~275, así que 400 deja margen sin dejar pasar basura.
-    shipping: !payload?.delivery
-      ? 0
-      : Math.min(400, Math.max(50, Number(payload?.shipping) || 0)),
+    // El envío ya NO se acota: se RECALCULA. No hizo falta geocodificar — el pin que
+    // la clienta marcó viaja como link de Maps dentro de `addr`, así que el servidor
+    // mide la distancia él mismo (ver envio.ts).
+    shipping: envio.costo,
     note: String(payload?.note ?? "").slice(0, 400),
     status: "cotizar", // entra a la columna "Por cotizar" para validar peso
     paid: false,
@@ -205,12 +210,22 @@ Deno.serve(async (req) => {
     // Si algún precio no coincidió con el catálogo, queda constancia VISIBLE en la
     // comanda. En operación normal esto no aparece nunca; si aparece, o alguien
     // manipuló el pedido, o hay un producto que falta en el catálogo de la nube.
-    hist: corregidos
-      ? [
-        { at: now, ev: "Pedido creado desde la tienda web" },
-        { at: now, ev: `Ojo: ${corregidos} precio(s) no coincidían con el catálogo. Se usó el del catálogo.` },
-      ]
-      : [{ at: now, ev: "Pedido creado desde la tienda web" }],
+    hist: (() => {
+      const h: Array<{ at: number; ev: string }> = [{ at: now, ev: "Pedido creado desde la tienda web" }];
+      if (corregidos) {
+        h.push({ at: now, ev: `Ojo: ${corregidos} precio(s) no coincidían con el catálogo. Se usó el del catálogo.` });
+      }
+      // El carnicero tiene que poder VER por qué el envío no es el que la clienta creyó,
+      // en vez de descubrirlo cuando el repartidor ya salió.
+      if (envio.motivo === "sin_pin") {
+        h.push({ at: now, ev: "Envío a convenir: el pedido no trae ubicación marcada en el mapa." });
+      } else if (envio.motivo === "fuera_de_zona") {
+        h.push({ at: now, ev: `Envío a convenir: la ubicación está a ~${envio.km.toFixed(1)} km, fuera de la zona de reparto.` });
+      } else if (envioDifiere) {
+        h.push({ at: now, ev: `Ojo: la pantalla mandó L ${envioPantalla} de envío y por distancia (~${envio.km.toFixed(1)} km) corresponden L ${envio.costo}. Se usó el calculado.` });
+      }
+      return h;
+    })(),
   };
 
   const { error } = await supa.from("orders").insert(row);
