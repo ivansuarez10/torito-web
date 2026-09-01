@@ -1288,7 +1288,10 @@
         '<button role="tab" aria-selected="'+(crear)+'" class="'+(crear?"on":"")+'" data-am="crear">Crear cuenta</button></div>'+
       '<div class="auth-lead">'+(crear
         ? "Con una cuenta podés ver tus pedidos anteriores y en qué van. No hace falta para comprar."
-        : "Entrá con el teléfono y la contraseña que elegiste.")+'</div>'+
+        : (sesionVencida
+          // Lo primero es sacarle el susto: no la echaron, y su pedido no depende de esto.
+          ? "Pasó un rato y tu sesión se cerró sola. Entrá otra vez para ver tus pedidos — para comprar no hace falta cuenta."
+          : "Entrá con el teléfono y la contraseña que elegiste."))+'</div>'+
       (crear?'<div class="field" id="w_anom"><label for="a_nom">Tu nombre</label>'+
         '<input id="a_nom" type="text" autocomplete="name" maxlength="60"></div>':'')+
       '<div class="field" id="w_atel"><label for="a_tel">Tu celular</label>'+
@@ -2042,6 +2045,11 @@
   // Se usa REST directo en vez del SDK de Supabase (~100KB): el peso de la página es
   // una restricción de producto, el cliente típico usa Android de gama baja.
   var SESS=null, authTel="", authPass="", authFlow="alta";
+  // Se enciende cuando la sesión se venció sola (no cuando la clienta cerró sesión).
+  // Sin esto, a quien se le vencía la sesión le aparecía el formulario de entrar EN BLANCO
+  // y sin una palabra, mientras la home seguía saludándola por su nombre: el sitio la
+  // conocía y la trataba de desconocida al mismo tiempo.
+  var sesionVencida=false;
   try{ SESS=JSON.parse(localStorage.getItem("torito_sess_v1")||"null"); }catch(e){ SESS=null; }
   function saveSess(o){ SESS=o; try{ o?localStorage.setItem("torito_sess_v1",JSON.stringify(o))
     :localStorage.removeItem("torito_sess_v1"); }catch(e){}
@@ -2088,6 +2096,7 @@
   }
   function guardarSesion(j){
     if(!j||!j.access_token) return false;
+    sesionVencida=false;   // volvió a entrar: el aviso ya no aplica
     var um=(j.user&&j.user.user_metadata)||{};
     var nom=um.full_name||(SESS&&SESS.nom)||"";
     var meta={rtn:um.rtn||"", fact:um.fact_nombre||"", casa:um.addr_casa||"", ofi:um.addr_oficina||""};
@@ -2101,15 +2110,25 @@
   }
   // El token dura ~1h; si venció se renueva solo con el refresh_token (que no caduca
   // mientras se use). Por eso la clienta no tiene que volver a escribir la contraseña.
+  // Antes de soltar la sesión, guardar el teléfono: al volver a entrar, el campo ya viene
+  // puesto y solo tiene que escribir la contraseña. Empezar de cero es lo que se siente
+  // como que la echaron.
+  function soltarSesionVencida(){
+    if(SESS&&SESS.tel) authTel=telDigits(SESS.tel);
+    sesionVencida=true;
+    saveSess(null);
+  }
   function sesionValida(){
     if(!SESS) return Promise.resolve(null);
     if(Date.now()<SESS.exp) return Promise.resolve(SESS.at);
-    if(!SESS.rt){ saveSess(null); return Promise.resolve(null); }
+    if(!SESS.rt){ soltarSesionVencida(); return Promise.resolve(null); }
     return fetch(SUPA_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",
       headers:{"Content-Type":"application/json","apikey":SUPA_KEY},
       body:JSON.stringify({refresh_token:SESS.rt})})
       .then(function(r){return r.ok?r.json():null;})
-      .then(function(j){ if(j&&j.access_token){ guardarSesion(j); return SESS.at; } saveSess(null); return null; })
+      .then(function(j){ if(j&&j.access_token){ guardarSesion(j); return SESS.at; } soltarSesionVencida(); return null; })
+      // Sin internet NO se cierra la sesión: se devuelve el token que había. Perder la
+      // cuenta por un semáforo de señal sería peor que reintentar.
       .catch(function(){ return SESS?SESS.at:null; });
   }
   // Traduce los errores de Supabase a algo que una clienta entienda.
@@ -2221,7 +2240,15 @@
       '</div>';
     sFoot.innerHTML="";
     sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
-    sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){var w=el.closest(".field");if(w)w.classList.remove("invalid")})});
+    sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){
+      var w=el.closest(".field");if(w)w.classList.remove("invalid");
+      // Si reescribe la dirección, el pin que venía del pedido anterior deja de valer:
+      // el texto dice una colonia y las coordenadas dicen otra. Se suelta y se le vuelve
+      // a pedir que marque, en vez de cobrarle el envío del lugar donde vivía antes.
+      if(el.id==="f_addr" && ship.heredado){
+        ship.pin=null; ship.located=false; ship.ok=false; ship.heredado=false; updateShip();
+      }
+    })});
     // Autollenado desde el perfil local (sin login)
     if(PROFILE){
       var pv=function(id,v){var e=document.getElementById(id); if(e&&v)e.value=v;};
@@ -2254,8 +2281,11 @@
     var startMode=(PROFILE&&PROFILE.mode==="domicilio")?"domicilio":"retiro";
     var rad=sBody.querySelector('input[name="deliv"][value="'+startMode+'"]'); if(rad)rad.checked=true;
     ship.mode=startMode; onDeliv(startMode);
-    // Restaurar la ubicación guardada → recalcula el envío al instante
-    if(startMode==="domicilio" && PROFILE && PROFILE.pin){ ship.pin=PROFILE.pin; ship.located=true; updateShip(); }
+    // Restaurar la ubicación guardada → recalcula el envío al instante.
+    // Se marca como HEREDADA: si la clienta reescribe la dirección, esas coordenadas ya no
+    // corresponden a lo que escribió y hay que soltarlas (ver el listener de f_addr abajo).
+    // Sin eso se cobraba el envío de la dirección ANTERIOR con la dirección nueva.
+    if(startMode==="domicilio" && PROFILE && PROFILE.pin){ ship.pin=PROFILE.pin; ship.located=true; ship.heredado=true; updateShip(); }
     renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
     document.getElementById("mapBtn") && (document.getElementById("mapBtn").onclick=openMapPicker);
@@ -2280,7 +2310,15 @@
     },{enableHighAccuracy:true,timeout:10000});
   }
   function updateShip(){
-    if(!ship.pin){ renderSide(); return; }
+    if(!ship.pin){
+      // Sin ubicación marcada NO se inventa un costo: se dice qué falta. Antes esta rama
+      // salía sin tocar la caja, así que podía quedar en pantalla el costo de un cálculo
+      // anterior mientras el pedido ya no tenía pin.
+      ship.ok=false; ship.cost=0;
+      var b0=document.getElementById("shipBox");
+      if(b0){ b0.className="shipbox"; b0.innerHTML='<span>Marcá tu ubicación en el mapa para calcular el envío</span><b>—</b>'; }
+      renderSide(); return;
+    }
     var km=haversine(ORIGIN,ship.pin); ship.km=km;
     var box=document.getElementById("shipBox");
     if(km>25){ ship.ok=false;ship.cost=0; if(box){box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';} }
@@ -2310,8 +2348,21 @@
       MAPMARK.on("drag",function(e){ mapReadout(e.target.getLatLng()); });
       MAP.on("click",function(e){ MAPMARK.setLatLng(e.latlng); mapReadout(e.latlng); hideSug(); });
     }else{ MAP.setView([start.lat,start.lng],17); MAPMARK.setLatLng([start.lat,start.lng]); }
-    mapReadout({lat:start.lat,lng:start.lng});
+    // ⚠️ EL PIN ARRANCA SOBRE LA CARNICERÍA cuando la clienta todavía no marcó nada.
+    // Antes se calculaba el costo de esa posición y se mostraba "~0.0 km · L 50" en verde,
+    // con Confirmar habilitado: quien tocaba Confirmar creyendo que ya estaba listo mandaba
+    // el pedido con la ubicación de la CARNICERÍA y el envío mínimo, viviera donde viviera.
+    // Pasó de verdad (ago 2026, cliente en una colonia lejana cobrado L 50).
+    // Ahora, sin ubicación propia, no hay costo ni Confirmar: hay que marcarla.
+    if(ship.pin||(PROFILE&&PROFILE.pin)) mapReadout({lat:start.lat,lng:start.lng});
+    else mapSinMarcar();
     setTimeout(function(){ MAP.invalidateSize(); },200);
+  }
+  function mapSinMarcar(){
+    mapPin=null;
+    var rd=document.getElementById("mapRead"), cf=document.getElementById("mapConfirm");
+    if(rd){ rd.className="mapreadout"; rd.innerHTML='<span>Tocá el mapa o arrastrá el pin hasta tu casa</span><b>—</b>'; }
+    if(cf) cf.disabled=true;
   }
   // Vista satelital: en Tegucigalpa las direcciones no ayudan — la gente reconoce su TECHO,
   // no su calle. Se muestra la foto aérea con una capa de nombres encima (lo mejor de las dos).
