@@ -636,7 +636,11 @@
        · celular    → un recorte 4:5 de la zona CON producto y SIN texto quemado, y el
                       mensaje va en HTML encima, con la tipografía del sitio
      La foto que baja el teléfono nunca es la de escritorio (<picture> con media). */
-  .bnr{position:relative;background:#000;overflow:hidden}
+  /* Mientras la agencia manda los banners en medida de celular, cada pantalla se queda
+     con lo que le sirve: el carrusel en computadora, el cine en el teléfono. No es solo
+     esconder uno — encender los dos costaría bajar 40 fotogramas del cine en la compu y
+     tres banners en el celular, para no mostrarlos. Lo decide el JS al arrancar. */
+  .bnr{display:none;position:relative;background:#000;overflow:hidden}
   .bnr-track{display:flex;transition:transform .5s cubic-bezier(.16,1,.3,1);will-change:transform}
   .bnr-slide{flex:0 0 100%;position:relative;min-width:0}
   .bnr-slide img{display:block;width:100%;height:auto}
@@ -663,7 +667,8 @@
   @media (min-width:768px){
     /* Los puntos salen FUERA de la imagen: encima caían sobre el recuadro rojo del
        banner y el punto activo, que también es rojo, desaparecía. */
-    .bnr{max-width:var(--site,1160px);margin:0 auto;border-radius:16px;padding-bottom:26px}
+    .bnr{display:block;max-width:var(--site,1160px);margin:0 auto;border-radius:16px;padding-bottom:26px}
+    .cine{display:none}
     .bnr-cap{display:none}          /* en escritorio manda el arte de la agencia */
     /* ⚠️ NADA de overflow:hidden en el carril: el carril SE MUEVE, así que su propia caja
        se va de la pantalla y recorta las diapositivas que tiene que mostrar (pasó: solo
@@ -1027,10 +1032,10 @@
 </div>
 
 <div class="wrap">
-  <!-- DEMO sep 2026: el carrusel de banners reemplaza al cine como hero.
-       El cine NO se borró todavía (sigue abajo, oculto por CSS) para poder volver atrás
-       de una línea mientras Ivan decide. Si el carrusel se queda, hay que sacarlo de
-       verdad: markup, CSS e initCine(). -->
+  <!-- Sep 2026: en COMPUTADORA manda el carrusel de la agencia; en CELULAR sigue el cine
+       hasta que la agencia entregue los banners en medida vertical. Los dos existen en el
+       HTML pero solo uno se enciende (ver heroDelAncho): son piezas caras — 40 fotogramas
+       el cine, 3 banners el carrusel — y nadie debe pagar por la que no ve. -->
   <section class="bnr" id="bnr" aria-roledescription="carrusel" aria-label="Novedades de El Torito">
     <h1 class="sr-only">Carnicería El Torito · carne cortada al peso en Tegucigalpa</h1>
     <div class="bnr-track" id="bnrTrack"></div>
@@ -1041,7 +1046,7 @@
     <div class="bnr-dots" id="bnrDots" role="tablist" aria-label="Elegir banner"></div>
   </section>
 
-  <section class="cine" id="cine" style="display:none">
+  <section class="cine" id="cine">
     <div class="cine-sticky">
       <canvas id="cineCv"></canvas>
       <div class="cine-vig"></div>
@@ -1932,7 +1937,7 @@
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_BASE=d.meta.shipping.base||50; SHIP_PER_KM=d.meta.shipping.per_km||9; if(d.meta.shipping.street_factor)SHIP_STREET=d.meta.shipping.street_factor}
-    render(); refreshCart(); renderWelcome(); initHero();   // initCine() apagado: lo reemplaza el carrusel
+    render(); refreshCart(); renderWelcome(); heroDelAncho();
   }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
 
   function renderPromo(){
@@ -2693,6 +2698,16 @@
     {img:"antojo", alt:"Los chorizos de El Torito: ahumado, barbacoa, parrillero y suelto",
      t:"Uno para cada antojo", s:"Barbacoa, ahumado, parrillero, suelto, cervecero, indio y criollo.", cta:"Ver los chorizos", href:"#cat-embutidos"}
   ];
+  // Enciende UNA sola pieza según el ancho, y la otra solo si el ancho cruza el corte
+  // (redimensionar la ventana en una compu). Cada una se arma una vez: volver a armarla
+  // duplicaría los listeners de scroll del cine y los relojes del carrusel.
+  var heroArmado={bnr:false, cine:false};
+  function heroDelAncho(){
+    var escritorio=window.matchMedia("(min-width:768px)").matches;
+    if(escritorio && !heroArmado.bnr){ heroArmado.bnr=true; initHero(); }
+    if(!escritorio && !heroArmado.cine){ heroArmado.cine=true; initCine(); }
+  }
+  window.addEventListener("resize",heroDelAncho);
   var heroI=0, heroTimer=null, bnrTrack=null;
   function initHero(){
     bnrTrack=document.getElementById("bnrTrack");
