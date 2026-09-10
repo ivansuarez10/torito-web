@@ -625,6 +625,12 @@
   .shipbox b{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;color:var(--gold)} .shipbox.err{border-color:var(--red);color:#ff9a9a}
   .geobtn{width:100%;margin-top:8px;background:var(--card2);color:var(--cream);border:1px solid var(--line);border-radius:11px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
   .altlink{display:block;margin:10px auto 2px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;transition:color .15s} .altlink u{color:var(--cream)} .altlink:hover{color:var(--cream)}
+  /* Mapa de confirmación bloqueado (la clienta ve dónde cayó su GPS; no se arrastra) */
+  .comap-wrap{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  #coMap{height:172px;width:100%;background:#e9e5dd}
+  #coMap.leaflet-container{font-family:inherit}
+  .comap-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);z-index:500;pointer-events:none;color:var(--red)}
+  .comap-pin svg{width:32px;height:40px;filter:drop-shadow(0 5px 6px rgba(0,0,0,.35))}
   .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s} .pay-wa:hover{background:var(--wa-d)} .pay-wa svg{width:20px;height:20px;fill:#fff}
   .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
@@ -2304,10 +2310,10 @@
           '</div>'+
           '<div id="pickWrap"><div class="field" id="w_pick"><label for="f_pick">¿A qué hora pasás a retirar? *</label><select id="f_pick">'+pickSlots()+'</select></div></div>'+
           '<div id="domiWrap" style="display:none">'+
-            '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación</button>'+
-            '<button class="altlink" id="mapBtn" type="button">¿Es para otra dirección? <u>Elegila en el mapa</u></button>'+
-            '<div class="shipbox" id="shipBox"><span>Elegí tu ubicación de entrega y compartenos información de referencia de tu domicilio.</span><b>—</b></div>'+
-            '<div id="addrPickHost"></div><div class="field" id="w_addr"><label for="f_addr">Dirección / referencia *</label><input id="f_addr" placeholder="Colonia, calle, casa, portón, referencia"></div></div>'+
+            '<button class="geobtn" id="geoBtn" type="button" style="margin-top:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>Usar mi ubicación actual</button>'+
+            '<div class="comap-wrap" id="coMapWrap" style="display:none"><div id="coMap"></div><span class="comap-pin" aria-hidden="true"><svg viewBox="0 0 34 42" fill="none"><path d="M17 1C9.8 1 4 6.6 4 13.6 4 23 17 41 17 41s13-18 13-27.4C30 6.6 24.2 1 17 1Z" fill="currentColor" stroke="#fff" stroke-width="2.2"/><circle cx="17" cy="14" r="4.6" fill="#fff"/></svg></span></div>'+
+            '<div class="shipbox" id="shipBox"><span>Tocá <b>Usar mi ubicación actual</b> para calcular el envío.</span><b>—</b></div>'+
+            '<div id="addrPickHost"></div><div class="field" id="w_addr"><label for="f_addr">¿Cómo es tu casa? <span style="color:var(--muted);font-weight:400">(para que el repartidor la encuentre)</span></label><input id="f_addr" placeholder="Color del portón, apartamento, punto conocido cerca…"></div></div>'+
           '<div class="field"><label>Nota para el carnicero <span style="color:var(--muted);font-weight:400">(opcional)</span></label><textarea id="f_note" placeholder="Ej: carne molida empacada en libras"></textarea></div>'+
           '<div class="err" id="f_err">Completá los campos marcados.</div>'+
         '</div>'+
@@ -2317,12 +2323,8 @@
     sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
     sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){
       var w=el.closest(".field");if(w)w.classList.remove("invalid");
-      // Si reescribe la dirección, el pin que venía del pedido anterior deja de valer:
-      // el texto dice una colonia y las coordenadas dicen otra. Se suelta y se le vuelve
-      // a pedir que marque, en vez de cobrarle el envío del lugar donde vivía antes.
-      if(el.id==="f_addr" && ship.heredado){
-        ship.pin=null; ship.located=false; ship.ok=false; ship.heredado=false; updateShip();
-      }
+      // f_addr ya NO es la ubicación (es la referencia de la casa): el envío sale del GPS.
+      // Por eso reescribir la referencia ya no suelta el pin como antes.
     })});
     // Autollenado desde el perfil local (sin login)
     if(PROFILE){
@@ -2363,7 +2365,6 @@
     if(startMode==="domicilio" && PROFILE && PROFILE.pin){ ship.pin=PROFILE.pin; ship.located=true; ship.heredado=true; updateShip(); }
     renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
-    document.getElementById("mapBtn") && (document.getElementById("mapBtn").onclick=openMapPicker);
   }
   function onDeliv(v){
     var d=document.getElementById("domiWrap"), pk=document.getElementById("pickWrap");
@@ -2372,15 +2373,30 @@
     renderSide();
   }
   function haversine(a,b){var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+  // Mapa de confirmación (calles, BLOQUEADO): la clienta solo VE dónde cayó su GPS, no lo
+  // arrastra — así nadie mueve el pin a una dirección falsa para pagar menos. Se crea perezoso
+  // (solo cuando ya hay ubicación) para no pesarle datos a quien solo va a retirar.
+  var COMAP=null;
+  function showCoMap(pin){
+    var w=document.getElementById("coMapWrap"); if(!w||!pin) return; w.style.display="block";
+    if(typeof L==="undefined") return;
+    if(!COMAP){
+      COMAP=L.map("coMap",{zoomControl:false,attributionControl:true,dragging:false,tap:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false}).setView([pin.lat,pin.lng],16);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(COMAP);
+    } else { COMAP.setView([pin.lat,pin.lng],16); }
+    setTimeout(function(){ if(COMAP) COMAP.invalidateSize(); },160);
+  }
+  function hideCoMap(){ var w=document.getElementById("coMapWrap"); if(w) w.style.display="none"; }
   function geolocate(){
     var box=document.getElementById("shipBox");
-    if(!navigator.geolocation){ if(box)box.innerHTML='<span>Tu dispositivo no comparte ubicación. Escribí tu dirección y coordinamos el envío por WhatsApp.</span><b>a convenir</b>'; return; }
+    if(!navigator.geolocation){ ship.pin=null;ship.located=false;ship.ok=false; hideCoMap();
+      if(box){box.className="shipbox";box.innerHTML='<span>Tu teléfono no comparte ubicación. Escribí tu dirección abajo y lo coordinamos por WhatsApp.</span><b>a convenir</b>';} renderSide(); return; }
     if(box){box.className="shipbox";box.innerHTML='<span>Obteniendo tu ubicación…</span><b>…</b>';}
     navigator.geolocation.getCurrentPosition(function(pos){
-      ship.pin={lat:pos.coords.latitude,lng:pos.coords.longitude}; ship.located=true; updateShip();
+      ship.pin={lat:pos.coords.latitude,lng:pos.coords.longitude}; ship.located=true; ship.heredado=false; updateShip();
     },function(){
-      ship.pin=null; ship.located=false; ship.ok=false;
-      if(box){box.className="shipbox";box.innerHTML='<span>No pudimos obtener tu ubicación. Escribí tu dirección y coordinamos el envío por WhatsApp.</span><b>a convenir</b>';}
+      ship.pin=null; ship.located=false; ship.ok=false; hideCoMap();
+      if(box){box.className="shipbox";box.innerHTML='<span>No pudimos leer tu ubicación. Escribí tu dirección abajo y lo coordinamos por WhatsApp.</span><b>a convenir</b>';}
       renderSide();
     },{enableHighAccuracy:true,timeout:10000});
   }
@@ -2389,15 +2405,16 @@
       // Sin ubicación marcada NO se inventa un costo: se dice qué falta. Antes esta rama
       // salía sin tocar la caja, así que podía quedar en pantalla el costo de un cálculo
       // anterior mientras el pedido ya no tenía pin.
-      ship.ok=false; ship.cost=0;
+      ship.ok=false; ship.cost=0; hideCoMap();
       var b0=document.getElementById("shipBox");
-      if(b0){ b0.className="shipbox"; b0.innerHTML='<span>Marcá tu ubicación en el mapa para calcular el envío</span><b>—</b>'; }
+      if(b0){ b0.className="shipbox"; b0.innerHTML='<span>Tocá <b>Usar mi ubicación actual</b> para calcular el envío.</span><b>—</b>'; }
       renderSide(); return;
     }
+    showCoMap(ship.pin); // mapa de calles bloqueado: la clienta VE dónde cayó su GPS
     var km=haversine(ORIGIN,ship.pin); ship.km=km;
     var box=document.getElementById("shipBox");
     if(km>25){ ship.ok=false;ship.cost=0; if(box){box.className="shipbox err";box.innerHTML='<span>Fuera de zona · por ahora solo entregamos en Tegucigalpa</span><b>—</b>';} }
-    else{ var kmC=km*SHIP_STREET, cost=Math.max(SHIP_BASE, Math.round((SHIP_BASE+SHIP_PER_KM*kmC)/5)*5); ship.ok=true;ship.cost=cost; if(box){box.className="shipbox";box.innerHTML='<span>✓ Ubicación captada · ~'+kmC.toFixed(1)+' km por calle</span><b>'+money(cost)+'</b>';} }
+    else{ var kmC=km*SHIP_STREET, cost=Math.max(SHIP_BASE, Math.round((SHIP_BASE+SHIP_PER_KM*kmC)/5)*5); ship.ok=true;ship.cost=cost; if(box){box.className="shipbox";box.innerHTML='<span>✓ Te ubicamos · envío a domicilio</span><b>'+money(cost)+'</b>';} }
     var w=document.getElementById("w_addr"); if(w)w.classList.remove("invalid");
     renderSide();
   }
@@ -2553,7 +2570,7 @@
         (isDomi?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.located&&ship.ok?money(ship.cost):(outZone?"—":"a convenir"))+'</span></div>':'')+
         '<div class="sumline total"><span class="lbl">Total'+(hasEst()||shipToConfirm?" estimado":"")+'</span><span class="val slab">'+money(total)+(shipToConfirm?' + envío':'')+'</span></div>'+
       '</div>'+
-      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación</b> o elegila en el mapa, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
+      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación actual</b>, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="pay-bac" disabled>Pago en línea<small>Próximamente</small></button>'+
@@ -2590,8 +2607,13 @@
     else if(!telValido(tel)){ markInvalid("w_phone","El celular lleva 8 dígitos y empieza con 3, 7, 8 o 9."); bad=true; }
     else { f.phone=tel; }
     if(ship.mode==="domicilio"){
-      if(!f.addr){markInvalid("w_addr","Escribí tu dirección / referencia.");bad=true}
-      if(ship.located&&!ship.ok){markInvalid("w_addr","Tu ubicación está fuera de zona (por ahora solo Tegucigalpa).");bad=true}
+      if(ship.located){
+        // Con GPS: la referencia de la casa es opcional; lo que importa es que esté en zona.
+        if(!ship.ok){markInvalid("w_addr","Tu ubicación está fuera de zona (por ahora solo Tegucigalpa).");bad=true}
+      } else {
+        // Sin GPS: el envío va "a convenir" por WhatsApp, pero sí necesitamos una dirección escrita.
+        if(!f.addr){markInvalid("w_addr","Tocá \"Usar mi ubicación actual\", o escribí tu dirección para coordinar por WhatsApp.");bad=true}
+      }
     }
     if(bad){var fe=document.getElementById("f_err");if(fe){fe.scrollIntoView({block:"nearest"})}return}
 
