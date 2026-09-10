@@ -826,7 +826,7 @@
       fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
     /* Mientras hay una vista abierta, la tienda se aparta. La cabecera y el pie
        se quedan: son lo que hace que esto se lea como un sitio y no como un overlay. */
-    body.pagemode #cine,body.pagemode .ticker,body.pagemode #welcomeHost,
+    body.pagemode #cine,body.pagemode #bnr,body.pagemode .ticker,body.pagemode #welcomeHost,
     body.pagemode .searchbar,body.pagemode #catalogo,body.pagemode #catalog,
     body.pagemode .faq{display:none}
     /* El checkout NO parte en dos columnas acá: a 768 el formulario quedaba en 310px,
@@ -2063,9 +2063,11 @@
   // Al entrar como página se recuerda dónde estaba en el catálogo y se vuelve ahí al salir:
   // si no, cerrar la cuenta lo dejaría tirado arriba del todo.
   function enterShell(){ if(!pageShell()) return; _pageY=window.pageYOffset||0;
-    document.body.classList.add("pagemode"); window.scrollTo(0,0); }
+    document.body.classList.add("pagemode"); window.scrollTo(0,0);
+    heroPausa(); }   // el carrusel queda escondido: que además deje de girar
   function exitShell(){ if(!document.body.classList.contains("pagemode")) return;
-    document.body.classList.remove("pagemode"); window.scrollTo(0,_pageY); }
+    document.body.classList.remove("pagemode"); window.scrollTo(0,_pageY);
+    heroAnda(); }
   // Volver al principio al cambiar de vista: en celular scrollea el panel, en escritorio la página.
   function topShell(){ if(pageShell()) window.scrollTo(0,0); else sBody.scrollTop=0; }
   var ICO_CHEV='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
