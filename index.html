@@ -644,28 +644,20 @@
        · celular    → un recorte 4:5 de la zona CON producto y SIN texto quemado, y el
                       mensaje va en HTML encima, con la tipografía del sitio
      La foto que baja el teléfono nunca es la de escritorio (<picture> con media). */
-  /* Mientras la agencia manda los banners en medida de celular, cada pantalla se queda
-     con lo que le sirve: el carrusel en computadora, el cine en el teléfono. No es solo
-     esconder uno — encender los dos costaría bajar 40 fotogramas del cine en la compu y
-     tres banners en el celular, para no mostrarlos. Lo decide el JS al arrancar. */
-  .bnr{display:none;position:relative;background:#000;overflow:hidden}
+  /* ===== Carrusel de banners =====
+     La agencia entrega cada mensaje en DOS formatos: tira ancha para computadora y
+     vertical 4:5 para celular. Cada pantalla usa el suyo y cada pieza trae su texto
+     adentro, compuesto para ese formato — por eso acá ya no hay ni recortes ni texto
+     escrito encima. El juego de banners lo elige el JS (heroDelAncho), así que el
+     teléfono nunca descarga los de escritorio ni al revés. */
+  .bnr{display:block;position:relative;background:#000;overflow:hidden}
+  /* El cine (el toro con la sal) ya no se usa en ninguna pantalla: lo reemplazaron los
+     banners. Sigue en el archivo por si hay que volver; si no, toca borrarlo de verdad. */
+  .cine{display:none}
   .bnr-track{display:flex;transition:transform .5s cubic-bezier(.16,1,.3,1);will-change:transform}
   .bnr-slide{flex:0 0 100%;position:relative;min-width:0}
+  .bnr-slide a{display:block}
   .bnr-slide img{display:block;width:100%;height:auto}
-  /* El texto solo se dibuja en celular: en escritorio el banner ya lo trae adentro. */
-  /* El velo arranca bien arriba y sube en tres pasos: el título cae sobre el producto
-     (la etiqueta del paquete) y sin esto no se lee. El espacio de abajo es para que los
-     puntos no queden debajo del botón. */
-  .bnr-cap{position:absolute;left:0;right:0;bottom:0;padding:76px 20px 48px;
-    background:linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.88) 38%,rgba(0,0,0,.6) 70%,rgba(0,0,0,0) 100%)}
-  .bnr-t{font-family:"Poppins",sans-serif;font-weight:800;letter-spacing:-.015em;
-    font-size:clamp(26px,7vw,34px);line-height:1.04;margin:0 0 8px;text-wrap:balance}
-  .bnr-s{color:#cfcac2;font-size:14.5px;line-height:1.45;margin:0 0 16px;max-width:34ch}
-  .bnr-cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;
-    border:none;font-family:inherit;font-weight:700;font-size:15px;padding:13px 20px;border-radius:100px;
-    cursor:pointer;min-height:44px;transition:background .18s}
-  .bnr-cta:hover{background:var(--red-d)}
-  /* Puntos: área táctil de 44px aunque el punto se vea chico (mismo criterio del sitio). */
   .bnr-dots{position:absolute;left:0;right:0;bottom:2px;display:flex;justify-content:center;gap:2px;z-index:3}
   .bnr-dots button{width:34px;height:34px;padding:0;background:none;border:none;cursor:pointer;
     display:flex;align-items:center;justify-content:center}
@@ -675,9 +667,7 @@
   @media (min-width:768px){
     /* Los puntos salen FUERA de la imagen: encima caían sobre el recuadro rojo del
        banner y el punto activo, que también es rojo, desaparecía. */
-    .bnr{display:block;max-width:var(--site,1160px);margin:0 auto;border-radius:16px;padding-bottom:26px}
-    .cine{display:none}
-    .bnr-cap{display:none}          /* en escritorio manda el arte de la agencia */
+    .bnr{max-width:var(--site,1160px);margin:0 auto;border-radius:16px;padding-bottom:26px}
     /* ⚠️ NADA de overflow:hidden en el carril: el carril SE MUEVE, así que su propia caja
        se va de la pantalla y recorta las diapositivas que tiene que mostrar (pasó: solo
        se veía la primera). El recorte lo hace la sección, que está quieta. */
@@ -2733,22 +2723,32 @@
   // que ya trae su mensaje adentro. Por eso el título del slide no es el <h1> — el <h1>
   // es fijo, describe el negocio y vive arriba: un titular que rota cada 6 segundos no
   // le dice a nadie (ni a un buscador) de qué es este sitio.
-  var HERO=[
-    {img:"honduras", alt:"Chorizo Cervecero y Ahumado de El Torito junto a la bandera de Honduras",
-     t:"El sabor de Honduras", s:"El chorizo perfecto para celebrar lo nuestro.", cta:"Ver los chorizos", href:"#cat-embutidos"},
-    {img:"pasos", alt:"La tienda de El Torito abierta en un celular",
-     t:"Tu pedido en 3 pasos", s:"Armalo acá, te confirmamos el total por WhatsApp, y pagás al recibir.", cta:"Armá tu pedido", href:"#catalogo"},
-    {img:"antojo", alt:"Los chorizos de El Torito: ahumado, barbacoa, parrillero y suelto",
-     t:"Uno para cada antojo", s:"Barbacoa, ahumado, parrillero, suelto, cervecero, indio y criollo.", cta:"Ver los chorizos", href:"#cat-embutidos"}
+  // Cada pantalla tiene su propio juego de banners, porque la agencia los diseñó así:
+  // tiras anchas para computadora y verticales 4:5 para celular. Ya NO se recorta nada
+  // ni se escribe texto encima — cada pieza trae su mensaje adentro, compuesto para su
+  // formato. Por eso el `alt` repite lo que dice la imagen: es lo único que le queda a
+  // quien no puede verla.
+  var HERO_ESC=[
+    {img:"honduras-w", alt:"El sabor de Honduras en su mejor versión · el chorizo perfecto para celebrar lo nuestro", href:"#cat-embutidos"},
+    {img:"pasos-w",    alt:"Realizá tu compra en 3 simples pasos: armá tu pedido, confirmamos el total, pagás y recibís", href:"#catalogo"},
+    {img:"antojo-w",   alt:"Uno para cada antojo: barbacoa, ahumado, parrillero, suelto, cervecero, indio y criollo", href:"#cat-embutidos"}
   ];
-  // Enciende UNA sola pieza según el ancho, y la otra solo si el ancho cruza el corte
-  // (redimensionar la ventana en una compu). Cada una se arma una vez: volver a armarla
-  // duplicaría los listeners de scroll del cine y los relojes del carrusel.
-  var heroArmado={bnr:false, cine:false};
+  var HERO_CEL=[
+    {img:"orgullo-v", alt:"Septiembre sabe a orgullo hondureño con nuestros cortes premium", href:"#cat-res"},
+    {img:"sabor-v",   alt:"El sabor de Honduras en su mejor versión · el chorizo perfecto para celebrar lo nuestro", href:"#cat-embutidos"},
+    {img:"pasos-v",   alt:"Realizá tu compra en 3 simples pasos: armá tu pedido, confirmamos el total, pagás y recibís", href:"#catalogo"}
+  ];
+  var HERO=HERO_ESC;
+  // Ahora las dos pantallas llevan carrusel; lo que cambia es el juego de banners. Se
+  // rearma solo si el ancho CRUZA el corte (redimensionar en una compu), no en cada
+  // resize: en un celular, abrir el teclado dispara resize y no hay que rehacer nada.
+  var heroJuego=null;
   function heroDelAncho(){
-    var escritorio=window.matchMedia("(min-width:768px)").matches;
-    if(escritorio && !heroArmado.bnr){ heroArmado.bnr=true; initHero(); }
-    if(!escritorio && !heroArmado.cine){ heroArmado.cine=true; initCine(); }
+    var juego=window.matchMedia("(min-width:768px)").matches ? "esc" : "cel";
+    if(juego===heroJuego) return;
+    heroJuego=juego;
+    HERO=(juego==="esc")?HERO_ESC:HERO_CEL;
+    initHero();
   }
   window.addEventListener("resize",heroDelAncho);
   var heroI=0, heroTimer=null, bnrTrack=null;
@@ -2756,26 +2756,22 @@
     bnrTrack=document.getElementById("bnrTrack");
     var dots=document.getElementById("bnrDots");
     if(!bnrTrack||!HERO.length) return;
+    heroPausa();   // se puede rearmar al cruzar el corte: que no queden dos relojes
     bnrTrack.innerHTML=HERO.map(function(b,i){
-      // El teléfono NUNCA baja la imagen de escritorio: la elige el navegador por media.
-      // La primera carga con prioridad; las otras cuando hagan falta.
       // El primero carga con prioridad porque es lo primero que se ve. Los otros NO van
       // con loading="lazy": adentro de un carrusel el navegador los considera fuera de
       // vista y no los baja, así que al rotar aparecía un hueco NEGRO. Se cargan solos
-      // cuando el navegador está desocupado (ver precargarResto), que es antes de que
-      // el carrusel gire por primera vez a los 6 s.
+      // cuando el navegador está desocupado (ver precargarResto), antes de que el
+      // carrusel gire por primera vez a los 6 s.
+      // El banner entero es un enlace: en un cartel que dice "armá tu pedido", lo natural
+      // es tocarlo, no buscar un botón.
       return '<div class="bnr-slide" role="group" aria-roledescription="banner" aria-label="'+(i+1)+' de '+HERO.length+'">'+
-        '<picture>'+
-          (i?'<source data-w="img/banners/'+b.img+'-w.webp" media="(min-width:768px)">'
-            :'<source media="(min-width:768px)" srcset="img/banners/'+b.img+'-w.webp">')+
-          '<img '+(i?'data-m="img/banners/'+b.img+'-m.webp"':'src="img/banners/'+b.img+'-m.webp" fetchpriority="high"')+
-            ' alt="'+pesc(b.alt)+'" decoding="async">'+
-        '</picture>'+
-        '<div class="bnr-cap"><p class="bnr-t">'+pesc(b.t)+'</p><p class="bnr-s">'+pesc(b.s)+'</p>'+
-        '<a class="bnr-cta" href="'+pesc(b.href)+'">'+pesc(b.cta)+' →</a></div></div>';
+        '<a href="'+pesc(b.href)+'">'+
+        '<img '+(i?'data-src="img/banners/'+b.img+'.webp"':'src="img/banners/'+b.img+'.webp" fetchpriority="high"')+
+          ' alt="'+pesc(b.alt)+'" decoding="async"></a></div>';
     }).join("");
     dots.innerHTML=HERO.map(function(b,i){
-      return '<button type="button" role="tab" data-bnr="'+i+'" aria-label="Banner '+(i+1)+': '+pesc(b.t)+'" aria-current="'+(i===0)+'"><i></i></button>';
+      return '<button type="button" role="tab" data-bnr="'+i+'" aria-label="Banner '+(i+1)+' de '+HERO.length+'" aria-current="'+(i===0)+'"><i></i></button>';
     }).join("");
     dots.querySelectorAll("[data-bnr]").forEach(function(b){
       b.onclick=function(){ heroIr(+b.dataset.bnr, true); };
@@ -2793,9 +2789,14 @@
       if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.5) heroIr(heroI+(dx<0?1:-1), true);
       x0=y0=null;
     },{passive:true});
+    // Estos van al contenedor, que NO se rehace: se enganchan una sola vez o se
+    // acumularían al cruzar el corte de ancho.
     var h=document.getElementById("bnr");
-    h.addEventListener("mouseenter",heroPausa); h.addEventListener("mouseleave",heroAnda);
-    h.addEventListener("focusin",heroPausa);
+    if(!h.dataset.enganchado){
+      h.dataset.enganchado="1";
+      h.addEventListener("mouseenter",heroPausa); h.addEventListener("mouseleave",heroAnda);
+      h.addEventListener("focusin",heroPausa);
+    }
     heroIr(0,false); heroAnda();
     precargarResto();
   }
@@ -2804,8 +2805,7 @@
   function precargarResto(){
     var traer=function(){
       if(!bnrTrack) return;
-      bnrTrack.querySelectorAll("source[data-w]").forEach(function(s){ s.srcset=s.dataset.w; s.removeAttribute("data-w"); });
-      bnrTrack.querySelectorAll("img[data-m]").forEach(function(im){ im.src=im.dataset.m; im.removeAttribute("data-m"); });
+      bnrTrack.querySelectorAll("img[data-src]").forEach(function(im){ im.src=im.dataset.src; im.removeAttribute("data-src"); });
     };
     if(window.requestIdleCallback) requestIdleCallback(traer,{timeout:2500}); else setTimeout(traer,1200);
   }
