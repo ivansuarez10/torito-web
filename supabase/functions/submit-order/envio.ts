@@ -42,7 +42,7 @@ export function distanciaKm(a: { lat: number; lng: number }, b: { lat: number; l
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
-export type Envio = { costo: number; motivo: "retiro" | "sin_pin" | "fuera_de_zona" | "calculado"; km: number };
+export type Envio = { costo: number; motivo: "retiro" | "sin_pin" | "fuera_de_zona" | "calculado"; km: number; source?: "ruta" | "estimado" };
 
 /** El costo que vale: el que sale de las coordenadas, no el que mandó la pantalla.
  *  El tope de 25 km se mide en línea recta y el costo sobre la distancia por calle,
@@ -55,4 +55,44 @@ export function costoEnvio(addr: unknown, delivery: boolean): Envio {
   if (recto > KM_MAX) return { costo: 0, motivo: "fuera_de_zona", km: recto };
   const calle = recto * FACTOR_CALLE;
   return { costo: Math.max(BASE, Math.round((BASE + POR_KM * calle) / 5) * 5), motivo: "calculado", km: calle };
+}
+
+/** Distancia REAL por carretera (km) según OSRM. Devuelve null si falla o tarda:
+ *  quien llama cae al estimado. En Tegucigalpa el factor fijo se queda corto (cerros/quebradas),
+ *  por eso se mide la ruta de verdad. */
+export async function rutaKm(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+  timeoutMs = 6000,
+): Promise<number | null> {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    const url = `https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=false`;
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const m = j?.routes?.[0]?.distance;
+    if (typeof m !== "number" || !isFinite(m) || m <= 0) return null;
+    return m / 1000;
+  } catch {
+    return null;
+  }
+}
+
+/** Igual que costoEnvio pero cobra sobre la distancia REAL por ruta (OSRM). Si la ruta no se
+ *  puede medir, cae al estimado (línea recta × factor) y marca source:"estimado". El tope de
+ *  zona sigue midiéndose en línea recta (lo decide costoEnvio). getRuta es inyectable para probar. */
+export async function costoEnvioReal(
+  addr: unknown,
+  delivery: boolean,
+  getRuta: (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => Promise<number | null> = rutaKm,
+): Promise<Envio> {
+  const base = costoEnvio(addr, delivery);
+  if (base.motivo !== "calculado") return base;            // retiro / sin_pin / fuera_de_zona: sin cambio
+  const pin = pinDeDireccion(addr)!;                        // 'calculado' garantiza que hay pin válido
+  const rk = await getRuta(ORIGEN, pin);
+  if (rk == null) return { ...base, source: "estimado" };  // OSRM no respondió → estimado ×factor
+  return { costo: Math.max(BASE, Math.round((BASE + POR_KM * rk) / 5) * 5), motivo: "calculado", km: rk, source: "ruta" };
 }

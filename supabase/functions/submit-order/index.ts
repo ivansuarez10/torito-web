@@ -27,7 +27,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Los precios viven aparte para poder probarlos sin levantar el servidor.
 // El porqué del diseño está en la cabecera de precios.ts.
 import { precioDeLinea, preciosDeConfianza } from "./precios.ts";
-import { costoEnvio } from "./envio.ts";
+import { costoEnvioReal } from "./envio.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
   // El envío que vale es el que sale de las coordenadas marcadas, no el que mandó la
   // pantalla. Se calcula antes de armar la fila para poder dejar constancia si no
   // coinciden.
-  const envio = costoEnvio(payload?.addr, !!payload?.delivery);
+  const envio = await costoEnvioReal(payload?.addr, !!payload?.delivery);
   const envioPantalla = Number(payload?.shipping) || 0;
   const envioDifiere = !!payload?.delivery && envioPantalla !== envio.costo;
 
@@ -223,6 +223,9 @@ Deno.serve(async (req) => {
         h.push({ at: now, ev: `Envío a convenir: la ubicación está a ~${envio.km.toFixed(1)} km, fuera de la zona de reparto.` });
       } else if (envioDifiere) {
         h.push({ at: now, ev: `Ojo: la pantalla mandó L ${envioPantalla} de envío y por distancia (~${envio.km.toFixed(1)} km) corresponden L ${envio.costo}. Se usó el calculado.` });
+      }
+      if (envio.source === "estimado") {
+        h.push({ at: now, ev: "Envío estimado (no se pudo medir la ruta exacta); si hace falta, ajústalo a mano." });
       }
       return h;
     })(),
