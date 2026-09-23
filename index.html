@@ -594,6 +594,8 @@
   .cart-empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:15px}
   .sumline{display:flex;justify-content:space-between;align-items:baseline;margin:4px 0} .sumline .lbl{color:var(--muted);font-size:14px} .sumline.total .lbl{color:var(--cream);font-weight:700;font-size:16px} .sumline .val{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:17px} .sumline.total .val{font-size:25px}
   .estnote{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--muted);font-size:12.5px;margin:12px 0} .estnote b{color:var(--gold)}
+  .estnote.locwarn{border-color:var(--red);color:var(--cream)} .estnote.locwarn b{color:#ff9a9a}
+  .lnk-loc{display:inline-block;background:none;border:none;color:var(--gold);font-family:inherit;font-size:12.5px;text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:4px 0 0}
   .field{margin-top:12px} .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
   .field input,.field textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--cream);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
   .field input:focus,.field textarea:focus{border-color:var(--red)} .field textarea{resize:vertical;min-height:58px}
@@ -2012,7 +2014,7 @@
     if(sheetOpen&&view!=="cuenta") renderSheet();
   }
 
-  var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null,located:false};
+  var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null,located:false,convenir:false};
   // ===== Dos envases para las mismas vistas =====
   // CELULAR: panel a pantalla completa que sube desde abajo. Se bloquea el scroll del
   //   fondo para que no se mueva la tienda detrás — comportamiento de app.
@@ -2292,7 +2294,7 @@
         '<div class="co-side"><div id="coSide"></div></div>'+
       '</div>';
     sFoot.innerHTML="";
-    sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value)}});
+    sBody.querySelectorAll('input[name="deliv"]').forEach(function(r){r.onchange=function(){ship.mode=r.value;onDeliv(r.value,true)}});
     sBody.querySelectorAll("input,select,textarea").forEach(function(el){el.addEventListener("input",function(){
       var w=el.closest(".field");if(w)w.classList.remove("invalid");
       // f_addr ya NO es la ubicación (es la referencia de la casa): el envío sale del GPS.
@@ -2338,11 +2340,14 @@
     renderSide();
     document.getElementById("geoBtn") && (document.getElementById("geoBtn").onclick=geolocate);
   }
-  function onDeliv(v){
+  function onDeliv(v,auto){
     var d=document.getElementById("domiWrap"), pk=document.getElementById("pickWrap");
     if(d) d.style.display=v==="domicilio"?"block":"none";
     if(pk) pk.style.display=v==="retiro"?"block":"none";
     renderSide();
+    // Al ELEGIR domicilio pedimos la ubicación de una (menos pedidos que llegan sin envío).
+    // Solo cuando lo tocó el usuario (auto), no en el render inicial, y si aún no se ubicó.
+    if(auto && v==="domicilio" && !ship.located && !ship.convenir){ geolocate(); }
   }
   function haversine(a,b){var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
   // Distancia real por RUTA (OSRM, gratis). Devuelve null si falla o tarda → se usa el
@@ -2556,24 +2561,28 @@
     var isDomi=ship.mode==="domicilio";
     var lines=cartLines(), prod=cartTotal(), envio=(isDomi&&ship.located&&ship.ok)?ship.cost:0, total=prod+envio;
     var outZone=isDomi&&ship.located&&!ship.ok;         // GPS captado pero fuera de zona → bloquea
-    var shipToConfirm=isDomi&&!ship.located;            // sin GPS → envío a convenir por WhatsApp
-    var canWa=!outZone;
+    var needLoc=isDomi&&!ship.located&&!ship.convenir;  // falta ubicarse y NO eligió coordinar → BLOQUEA el envío
+    var convenir=isDomi&&!ship.located&&ship.convenir;  // eligió a propósito coordinar sin ubicación
+    var canWa=!outZone && !needLoc;
     var itemsHtml=lines.map(function(l){
       return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+(l.big?' · a confirmar':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
     }).join("");
     side.innerHTML=
       '<div class="card-sum"><h4>Tu pedido</h4>'+itemsHtml+
         '<div class="sumline" style="margin-top:10px"><span class="lbl">Productos'+(hasEst()?" (estimado)":"")+'</span><span class="val">'+money(prod)+'</span></div>'+
-        (isDomi?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.located&&ship.ok?money(ship.cost):(outZone?"—":"a convenir"))+'</span></div>':'')+
-        '<div class="sumline total"><span class="lbl">Total'+(hasEst()||shipToConfirm?" estimado":"")+'</span><span class="val slab">'+money(total)+(shipToConfirm?' + envío':'')+'</span></div>'+
+        (isDomi?'<div class="sumline"><span class="lbl">Envío</span><span class="val">'+(ship.located&&ship.ok?money(ship.cost):(convenir?"a convenir":"—"))+'</span></div>':'')+
+        '<div class="sumline total"><span class="lbl">Total'+(hasEst()||convenir?" estimado":"")+'</span><span class="val slab">'+money(total)+(convenir?' + envío':'')+'</span></div>'+
       '</div>'+
-      (shipToConfirm?'<div class="estnote" style="margin:12px 0 0">Tocá <b>Usar mi ubicación actual</b>, o lo coordinamos por WhatsApp con tu dirección.</div>':'')+
+      (needLoc?'<div class="estnote locwarn" style="margin:12px 0 0">Para calcular tu envío <b>necesitamos tu ubicación</b>. Tocá <b>Usar mi ubicación actual</b> arriba. <button type="button" id="btnConvenir" class="lnk-loc">No puedo compartir mi ubicación</button></div>':'')+
+      (convenir?'<div class="estnote" style="margin:12px 0 0">Coordinaremos el envío por WhatsApp con tu dirección. <button type="button" id="btnUnconvenir" class="lnk-loc">Mejor comparto mi ubicación</button></div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="pay-bac" disabled>Pago en línea<small>Próximamente</small></button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
     document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
+    var bc=document.getElementById("btnConvenir"); if(bc)bc.onclick=function(){ship.convenir=true;renderSide();};
+    var bu=document.getElementById("btnUnconvenir"); if(bu)bu.onclick=function(){ship.convenir=false;renderSide();geolocate();};
   }
 
   // Celulares de Honduras: 8 dígitos que empiezan con 3, 7, 8 o 9 (Claro, Hondutel,
@@ -2607,9 +2616,12 @@
       if(ship.located){
         // Con GPS: la referencia de la casa es opcional; lo que importa es que esté en zona.
         if(!ship.ok){markInvalid("w_addr","Tu ubicación está fuera de zona (por ahora solo Tegucigalpa).");bad=true}
+      } else if(ship.convenir){
+        // Eligió a propósito coordinar sin ubicación: necesitamos la dirección escrita.
+        if(!f.addr){markInvalid("w_addr","Escribí tu dirección para coordinar el envío por WhatsApp.");bad=true}
       } else {
-        // Sin GPS: el envío va "a convenir" por WhatsApp, pero sí necesitamos una dirección escrita.
-        if(!f.addr){markInvalid("w_addr","Tocá \"Usar mi ubicación actual\", o escribí tu dirección para coordinar por WhatsApp.");bad=true}
+        // No se ubicó ni eligió coordinar → se exige la ubicación (así el pedido llega CON envío).
+        markInvalid("w_addr","Tocá \"Usar mi ubicación actual\" para calcular tu envío (o elegí \"No puedo compartir mi ubicación\").");bad=true;
       }
     }
     if(bad){var fe=document.getElementById("f_err");if(fe){fe.scrollIntoView({block:"nearest"})}return}
