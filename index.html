@@ -81,11 +81,20 @@
   }
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
 <!-- Mapa (pin arrastrable para elegir otra dirección de entrega) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
+  /* Poppins servida desde la tienda (APROBACIONES 11b): solo los dos grosores que se usan
+     (700 en .slab, 800 en los titulares grandes), recortada a latín. Antes venía de Google
+     Fonts: dos conexiones más (googleapis + gstatic) antes de poder pintar un titular, y un
+     tercer grosor (600) que ningún texto en Poppins usaba. */
+  @font-face{font-family:"Poppins";src:url("fuentes/poppins-700-latin.woff2") format("woff2");
+    font-weight:700;font-style:normal;font-display:swap;
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+  @font-face{font-family:"Poppins";src:url("fuentes/poppins-800-latin.woff2") format("woff2");
+    font-weight:800;font-style:normal;font-display:swap;
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
   :root{
     --bg:#000000; --bg2:#0d0d0d; --card:#161616; --card2:#232323;
     --cream:#f2f2f2; --muted:#8f8f8f; --line:#242424;
