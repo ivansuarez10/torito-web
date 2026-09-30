@@ -81,9 +81,6 @@
   }
 }
 </script>
-<!-- Mapa (pin arrastrable para elegir otra dirección de entrega) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
   /* Poppins servida desde la tienda (APROBACIONES 11b): solo los dos grosores que se usan
      (700 en .slab, 800 en los titulares grandes), recortada a latín. Antes venía de Google
@@ -2277,6 +2274,7 @@
     return out;
   }
   function checkoutView(){
+    cargarLeaflet().catch(function(){});   // se adelanta mientras llena sus datos
     sTitle.textContent="Datos de entrega"; sheet.classList.add("wide"); setBack(true);
     sBody.innerHTML=
       '<div class="co-grid">'+
@@ -2373,9 +2371,29 @@
   // arrastra — así nadie mueve el pin a una dirección falsa para pagar menos. Se crea perezoso
   // (solo cuando ya hay ubicación) para no pesarle datos a quien solo va a retirar.
   var COMAP=null;
+  // Leaflet (el mapa) se baja SOLO al llegar al checkout (APROBACIONES 11a): antes venía en
+  // el <head> y cada visita a la home pagaba ~46 KB de un mapa que casi nadie llega a ver.
+  // Mismos archivos e integrity de siempre. Si falla la red, el checkout sigue: sin mapa.
+  var _leaflet=null;
+  function cargarLeaflet(){
+    if(typeof L!=="undefined") return Promise.resolve();
+    if(_leaflet) return _leaflet;
+    _leaflet=new Promise(function(ok,mal){
+      var c=document.createElement("link"); c.rel="stylesheet";
+      c.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      c.integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="; c.crossOrigin="";
+      document.head.appendChild(c);
+      var j=document.createElement("script");
+      j.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      j.integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; j.crossOrigin="";
+      j.onload=function(){ ok(); }; j.onerror=function(){ _leaflet=null; mal(new Error("leaflet")); };
+      document.head.appendChild(j);
+    });
+    return _leaflet;
+  }
   function showCoMap(pin){
     var w=document.getElementById("coMapWrap"); if(!w||!pin) return; w.style.display="block";
-    if(typeof L==="undefined") return;
+    if(typeof L==="undefined"){ cargarLeaflet().then(function(){ if(ship.pin===pin) showCoMap(pin); }).catch(function(){}); return; }
     if(!COMAP){
       COMAP=L.map("coMap",{zoomControl:false,attributionControl:true,dragging:false,tap:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false}).setView([pin.lat,pin.lng],16);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(COMAP);
