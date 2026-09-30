@@ -81,6 +81,9 @@
   }
 }
 </script>
+<!-- Animaciones del 08 Motion (aviso de licencia de React Bits adentro). No frena el primer
+     pintado: solo anima el aviso, la barra y las tarjetas, que llegan después. -->
+<link rel="stylesheet" href="css/motion.css" media="print" onload="this.media='all'" />
 <style>
   /* Poppins servida desde la tienda (APROBACIONES 11b): solo los dos grosores que se usan
      (700 en .slab, 800 en los titulares grandes), recortada a latín. Antes venía de Google
@@ -2980,6 +2983,10 @@
 <script src="js/catalogo.js" defer></script>
 <script src="js/cart.js" defer></script>
 <script src="js/tienda.js" defer></script>
+<!-- 08 Motion: sacudida de los cortes (3), contador/aviso con mecha/totales que ruedan (4) y
+     tarjetas que entran al hacer scroll (7). Adaptado de React Bits (MIT + Commons Clause).
+     Sin este archivo todo funciona igual, solo que sin animación. -->
+<script src="js/motion.min.js" defer></script>
 <!-- Analítica de Cloudflare: cuántas visitas y de dónde vienen.
      Sin cookies y sin banner de consentimiento (no identifica personas).
      Va al final y como módulo (se difiere solo), así no compite con la carga del

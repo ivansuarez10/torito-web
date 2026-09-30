@@ -44,6 +44,7 @@
   function motionLeave(el, kind, done) {
     var M = window.ToritoMotion, hecho = false;
     function fin() { if (!hecho) { hecho = true; done(); } }
+    if (M && M.sel) M.sel.scrim = "#pscrim"; // el velo de esta hoja (el .scrim de la cuenta es otro)
     if (M && M.leave) { try { M.leave(el, kind, fin); setTimeout(fin, 600); return; } catch (e) {} }
     fin();
   }

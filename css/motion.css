@@ -1,0 +1,62 @@
+/* Adaptado de React Bits AnimatedContent, Counter, SwipeToast y TrueFocus — © David Haz, MIT + Commons Clause — https://github.com/DavidHDev/react-bits */
+/* El Torito · motion.css (08 Motion). Va junto con motion.js; ver la cabecera de ese archivo.
+   Solo transform y opacity. Nada de esto oculta contenido si motion.js no carga:
+   el único estado oculto (.tm-pre) lo pone el JS, y solo a tarjetas fuera de pantalla. */
+:root { --tm-ease: cubic-bezier(.16, 1, .3, 1); --tm-cut: var(--accent); }  /* --accent de tokens.css (= #E4232A en el tema oscuro) */
+
+/* 3 · Aviso "Agregaste…" y barra "Ver mi pedido": entran desde abajo al pasar de hidden a visible.
+   (Una animación CSS se reinicia sola cada vez que el elemento deja de ser display:none.) */
+.toast { animation: tm-up 240ms var(--tm-ease) both; }
+.orderbar { animation: tm-up 320ms var(--tm-ease) both; }
+@keyframes tm-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes tm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* 4 · Héroe: el titular NO se anima (se lee y cuenta para el LCP desde el primer cuadro).
+   Solo la línea de corte bajo la frase clave se dibuja de izquierda a derecha.
+   Marcado: <h1>Res, cerdo y pollo, cortados <span class="tm-cut">a tu medida</span>.</h1> */
+.tm-cut { position: relative; display: inline-block; white-space: nowrap; }
+.tm-cut::after {
+  /* 2 px, 2-4 px bajo la línea base (acordado con el 05). Base de Poppins con line-height 1.05:
+     .875em desde arriba (su respaldo métrico: .86em), así que no pisa descendentes. */
+  content: ""; position: absolute; left: 0; right: .04em; top: calc(.875em + 2px); height: 2px;
+  border-radius: 99px; background: var(--tm-cut);
+  transform-origin: 0 50%;
+  animation: tm-cut 640ms var(--tm-ease) 180ms both;
+  pointer-events: none;
+}
+@keyframes tm-cut { from { transform: scaleX(0); } to { transform: none; } }
+
+/* 5 · Tarjetas al hacer scroll. .tm-js solo existe si hay IntersectionObserver. */
+.tm-js .tm-pre { opacity: 0; transform: translateY(14px); }
+.tm-js .tm-in { transition: opacity 360ms var(--tm-ease), transform 420ms var(--tm-ease); }
+
+/* Reducir movimiento: nada se desplaza ni escala. Quedan fundidos de opacidad cortos
+   donde ayudan a entender (aviso, barra) y la línea del héroe ya dibujada.
+   OJO: aquí solo se apagan transform y animaciones de este archivo; los cambios de color
+   (hover, activo, fondo) NO son movimiento y no se tocan. */
+@media (prefers-reduced-motion: reduce) {
+  .toast, .orderbar { animation: tm-fade 150ms linear both; }
+  .tm-cut::after { animation: none; }
+  .tm-js .tm-pre { opacity: 1; transform: none; }
+}
+/* Lo mismo, forzado con <html class="tm-reduce"> (demos y QA). */
+.tm-reduce .toast, .tm-reduce .orderbar { animation: tm-fade 150ms linear both; }
+.tm-reduce .tm-cut::after { animation: none; }
+.tm-reduce .tm-pre { opacity: 1; transform: none; }
+
+/* 3b · Mecha del aviso (SwipeToast): se consume en el mismo tiempo que app.js deja "Deshacer"
+   (TOAST_MS = 2500). Se pausa con el dedo, el cursor o el foco encima. motion.js la inserta. */
+.toast { overflow: hidden; }  /* ya es position:fixed en el prototipo */
+.tm-fuse {
+  position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 2px;
+  background: var(--tm-fuse, currentColor); opacity: .45; transform-origin: 0 50%;
+  animation: tm-fuse var(--tm-toast-ms, 2500ms) linear forwards; pointer-events: none;
+}
+.toast:hover .tm-fuse, .toast:focus-within .tm-fuse { animation-play-state: paused; }
+@keyframes tm-fuse { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .tm-fuse { display: none; } }
+.tm-reduce .tm-fuse { display: none; }
+
+/* 6 · Falta el corte: sin CSS aquí. La sacudida de la fila de cortes es propia (no de React Bits) y
+   va con WAAPI en motion.js (ToritoMotion.nudge). El borde rojo fino de los chips ya lo pinta el
+   prototipo (.blk.err .cut { border-color: var(--accent) }): un color fijo, queda con Reducir movimiento. */
