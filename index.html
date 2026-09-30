@@ -118,17 +118,6 @@
   .hero .heroText{position:relative;z-index:2}
   .hero-bg{position:absolute;inset:0;z-index:0;background:#000 url("img/hero.webp") center/cover no-repeat}
   .bnr-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,#000 6%,rgba(0,0,0,.55) 46%,rgba(0,0,0,.12) 78%,rgba(0,0,0,.4) 100%)}
-  .cat h2{letter-spacing:-.01em}
-  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
-  .reveal.in{opacity:1;transform:none}
-  /* Las tarjetas SOLO aparecen, no se desplazan: llevan botones y, si se mueven 22px
-     mientras el cliente hace clic, el botón se le escapa al cursor y el clic se pierde
-     (reportado en escritorio: había que hacer clic dos veces para agregar).
-     NO se les pone pointer-events:none mientras no estén reveladas: si el observer
-     fallara, la tarjeta quedaría muerta y se perdería la venta. Invisible pero
-     clickeable es mejor que invisible y muerta. */
-  .prod.reveal{transform:none}
-  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 
   /* Top bar */
   /* LA RENDIJA DE ARRIBA (iPhone con isla dinámica, visto por Ivan el 13 ago 2026):
@@ -203,50 +192,6 @@
   .promo-cta{flex:none;position:relative;z-index:1;font-weight:800;font-size:13px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.25);padding:9px 13px;border-radius:100px;white-space:nowrap}
   @media (min-width:768px){ .promo{margin:16px 44px 2px;padding:16px 24px} .promo-t{font-size:18px} .promo-s{font-size:13.5px} }
 
-  /* Search + nav */
-  .searchbar{padding:14px 16px 0}
-  .searchbar .f{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .2s}
-  .searchbar .f:focus-within{border-color:var(--red)}
-  .searchbar svg{width:18px;height:18px;fill:var(--muted);flex:none}
-  .searchbar input{border:0;background:transparent;font-size:16px;width:100%;outline:none;color:var(--cream)}
-  /* Fondo sólido por el mismo motivo que la cabecera: el blur suaviza pero no oculta
-     lo que pasa por debajo, y cuesta un recomposite por cuadro al scrollear. */
-  .nav{position:sticky;top:52px;z-index:30;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--line)}
-  .nav .scroll{display:flex;gap:8px;overflow-x:auto;padding:0 16px;scrollbar-width:none}
-  .nav .scroll::-webkit-scrollbar{display:none}
-  .nav a{flex:none;display:inline-flex;align-items:center;min-height:44px;text-decoration:none;font-size:13.5px;font-weight:700;color:#cfcfcf;background:transparent;border:1px solid #2b2b2b;padding:9px 16px;border-radius:100px;white-space:nowrap;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
-  .nav a:hover{border-color:#454545;color:#fff}
-  .nav a.active{background:var(--red);color:#fff;border-color:var(--red)}
-
-  /* Category + cards */
-  .cat{padding:26px 16px 6px;scroll-margin-top:108px}
-  .cat h2{font-size:clamp(30px,8vw,42px);text-transform:uppercase;line-height:.9;display:flex;align-items:center;gap:12px}
-  .cat h2::after{content:"";flex:1;height:3px;background:var(--red);border-radius:2px;opacity:.5}
-  .cat .m{color:var(--muted);font-size:12.5px;margin-top:6px}
-  .grid{padding:12px 16px 0;display:grid;gap:14px}
-  /* Fondo y borde propios, más claros que el resto de tarjetas del sitio. El TEXTO ya
-     pasaba AA de sobra (descripción 5.6:1, nombre 16:1); lo que fallaba era que la
-     tarjeta se separara del fondo: #161616 sobre negro da 1.16:1, o sea casi nada, y
-     el catálogo se leía como una mancha oscura en vez de como productos. */
-  .prod{background:#1c1c1c;border:1px solid #333;border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
-  .prod .ph{position:relative;aspect-ratio:16/10;background:#0d0d0d;overflow:hidden}
-  .prod .ph img{width:100%;height:100%;object-fit:cover;display:block}
-  .prod .ph .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:linear-gradient(135deg,#1e1e1e,#141414);color:var(--muted)}
-  .prod .ph .fallback img{width:44px;height:auto;filter:brightness(0) invert(1);opacity:.5}
-  .prod .ph .badge{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:100px;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);color:var(--gold);border:1px solid #333333}
-  .prod .bd{padding:14px 15px 15px}
-  .prod .nm{font-size:18px;line-height:1.05}
-  .prod .sb{color:var(--muted);font-size:12px;margin-top:3px;min-height:15px}
-  .prod .rate{color:var(--gold);font-weight:700;font-size:12.5px;margin-top:8px}
-  .cutsel{margin-top:10px}
-  .cutsel label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;transition:color .2s}
-  /* Selector de corte por chips tocables (sin <select> nativo — funciona igual en iOS/Android/Huawei/Xiaomi) */
-  .cuts{display:flex;flex-wrap:wrap;gap:7px}
-  .cutchip{flex:1 1 auto;min-width:76px;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--cream);font-family:inherit;font-size:13px;font-weight:600;line-height:1.1;cursor:pointer;transition:border-color .15s,background .15s,color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  .cutchip:active{transform:scale(.96)}
-  .cutchip.on{border-color:var(--red);background:rgba(228,35,42,.14);color:#fff}
-  .cutsel.warn label{color:var(--red)}
-  .cutsel.warn .cutchip:not(.on){border-color:var(--red)}
   /* Perfil local (sin login): saludo "El de siempre" — heritage, cálido, sin emojis */
   /* Saludo (perfil local) — tipográfico, SIN caja, integrado a la página */
   .welcome{margin:0;padding:28px 16px 6px}
@@ -263,18 +208,7 @@
     .welcome{padding:34px 44px 8px;text-align:center}
     .welcome-over,.welcome-actions{justify-content:center}
     .welcome-sub{max-width:46ch;margin-left:auto;margin-right:auto}
-    .searchbar .f{max-width:640px}
   }
-  /* Agotado: el producto se sigue viendo (para que el cliente sepa que existe) pero no se puede pedir */
-  .prod.soldout .ph img{filter:grayscale(1);opacity:.38}
-  .prod.soldout .nm,.prod.soldout .rate{opacity:.55}
-  .prod .badge.out{background:#2a2a2a;color:#bdbdbd;border-color:#3a3a3a}
-  .soldnote{display:flex;align-items:center;gap:8px;margin-top:12px;padding:11px 12px;border:1px dashed #3a3a3a;border-radius:11px;color:var(--muted);font-size:13px;font-weight:600}
-  .soldnote svg{width:15px;height:15px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.9;stroke-linecap:round}
-  .citem.out .ci-nm{opacity:.6} .citem.out img{filter:grayscale(1);opacity:.4}
-  .ci-out{color:var(--red);font-size:12px;font-weight:700;margin-top:3px}
-  .cart-out{margin:0 0 12px;background:rgba(228,35,42,.1);border:1px solid rgba(228,35,42,.4);border-radius:12px;padding:11px 13px;color:var(--cream);font-size:13px;line-height:1.4}
-  .cart-out b{color:#fff}
   /* ===== Cierre del pedido: procesando -> gracias -> WhatsApp =====
      Cubre una espera REAL (el envío a Comandas y el salto a WhatsApp), no una inventada. */
   .conf{position:fixed;inset:0;z-index:120;background:#000;display:none;align-items:center;justify-content:center;padding:28px 22px;text-align:center}
@@ -394,18 +328,6 @@
   .auth-ok{margin-top:14px;background:rgba(46,125,82,.14);border:1px solid rgba(46,125,82,.5);border-radius:11px;
     padding:11px 13px;color:var(--cream);font-size:13.5px;display:none}
   .auth-ok.on{display:block}
-  /* Aviso flotante. Reemplaza a la caja verde que aparecía al pie del formulario: ahí
-     abajo, después del botón, la clienta ni la veía. Este aparece sobre todo y se va solo. */
-  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:9998;
-    display:flex;align-items:center;gap:11px;padding:10px 20px 10px 10px;background:var(--card);
-    border:1px solid #2b2b2b;border-radius:100px;color:var(--cream);font-size:14px;font-weight:700;
-    box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;pointer-events:none;
-    transform:translate(-50%,14px);transition:opacity .2s ease,transform .2s cubic-bezier(.2,.7,.2,1)}
-  .toast.on{opacity:1;transform:translate(-50%,0)}
-  .toast i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--red);
-    display:flex;align-items:center;justify-content:center}
-  .toast svg{width:15px;height:15px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-  @media (prefers-reduced-motion:reduce){ .toast{transition:none} }
   /* Botón sin nada que guardar: no se esconde, se apaga — así se ve que existe y por qué no responde. */
   .pay-wa:disabled{opacity:.4;cursor:default}
   /* Último pedido: la pieza con peso del hub. Las fotos se montan una sobre otra para
@@ -510,15 +432,6 @@
   .disc-line{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--gold);line-height:1.35}
   .disc-line svg{width:16px;height:16px;flex:none;stroke:var(--red);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
   .disc-line b{color:var(--cream);font-weight:700}
-  .stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
-  .stepper button{width:44px;height:44px;flex:none;border:none;border-radius:9px;background:var(--card2);color:var(--cream);font-size:21px;cursor:pointer;transition:background .15s}
-  .stepper button:hover{background:#2c2c2c} .stepper button:active{transform:scale(.94)}
-  .stepper .qty{font-weight:700;font-size:15px} .stepper .qty .u{color:var(--muted);font-size:12px;font-weight:600;margin-left:2px}
-  .btm{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
-  .price{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:23px;line-height:1}
-  .price .est{display:block;font-family:-apple-system,sans-serif;font-size:10px;color:var(--muted);font-weight:600;margin-top:3px}
-  .add{display:inline-flex;align-items:center;justify-content:center;min-height:44px;gap:6px;background:var(--cream);color:#17140f;border:none;font-weight:800;font-size:14px;padding:11px 16px;border-radius:11px;cursor:pointer;transition:.15s}
-  .add:hover{background:#fff} .add.added{background:var(--red);color:#fff} .add svg{width:15px;height:15px;fill:currentColor}
 
   /* ===== Preguntas frecuentes =====
      <details> nativo: cero JS, accesible de fábrica y funciona en WebViews viejos.
@@ -576,10 +489,6 @@
   footer .disc{font-size:11.5px;margin-top:16px;line-height:1.55}
   @media (min-width:700px){ .foot-cols{grid-template-columns:repeat(3,1fr);gap:20px} }
 
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:45;width:min(648px,calc(100% - 24px));display:none}
-  .fab.show{display:block}
-  .fab button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--red);color:#fff;border:none;font-weight:800;font-size:16px;padding:15px 20px;border-radius:100px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
-  .fab .left{display:flex;align-items:center;gap:10px} .fab .badge{background:#fff;color:var(--red);min-width:24px;height:24px;border-radius:100px;font-size:13px;font-weight:800;display:grid;place-items:center;padding:0 6px} .fab .tot{font-weight:800;letter-spacing:-.01em}
 
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
   .scrim.open{opacity:1;pointer-events:auto}
@@ -590,14 +499,7 @@
   .sheet .head-l{display:flex;align-items:center;gap:10px}
   .sheet .sheetback{background:var(--card);border:none;color:var(--cream);width:44px;height:44px;border-radius:100px;font-size:20px;cursor:pointer;flex:none;line-height:1;display:flex;align-items:center;justify-content:center}
   .sheet .body{overflow-y:auto;padding:8px 20px 20px} .sheet .foot{padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg2)}
-  .citem{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
-  .citem img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex:none;background:#0d0d0d}
-  .citem .ci-nm{font-weight:700;font-size:15px} .citem .ci-meta{color:var(--muted);font-size:12px;margin-top:1px}
-  .citem .ci-right{margin-left:auto;text-align:right;flex:none} .citem .ci-price{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px}
-  .mini{display:inline-flex;align-items:center;gap:6px;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:3px}
-  .mini button{width:26px;height:26px;border:none;border-radius:6px;background:var(--card2);color:var(--cream);font-size:15px;cursor:pointer} .mini .q{font-size:12.5px;font-weight:700;min-width:46px;text-align:center}
   .ci-rm{background:none;border:none;color:var(--muted);font-size:11.5px;cursor:pointer;text-decoration:underline;margin-top:0;min-height:44px;line-height:44px;padding:0 10px}
-  .cart-empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:15px}
   .sumline{display:flex;justify-content:space-between;align-items:baseline;margin:4px 0} .sumline .lbl{color:var(--muted);font-size:14px} .sumline.total .lbl{color:var(--cream);font-weight:700;font-size:16px} .sumline .val{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:17px} .sumline.total .val{font-size:25px}
   .estnote{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--muted);font-size:12.5px;margin:12px 0} .estnote b{color:var(--gold)}
   .estnote.locwarn{border-color:var(--red);color:var(--cream)} .estnote.locwarn b{color:#ff9a9a}
@@ -622,7 +524,7 @@
   .comap-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);z-index:500;pointer-events:none;color:var(--red)}
   .comap-pin svg{width:32px;height:40px;filter:drop-shadow(0 5px 6px rgba(0,0,0,.35))}
   .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s} .pay-wa:hover{background:var(--wa-d)} .pay-wa svg{width:20px;height:20px;fill:#fff}
-  .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
+  .co-form .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
   /* ===== Carrusel de banners de la agencia (sep 2026) =====
      Los banners vienen a 3.04:1, hechos para pantalla de computadora. En un celular de
      375px ese formato se dibuja como una tira de 118px y el texto quemado queda en ~6px:
@@ -746,7 +648,6 @@
       padding-top:calc(18px + env(safe-area-inset-top))}
     .sheet .body{flex:1}
   }
-  @media (min-width:520px){ .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))} }
   @media (min-width:768px){
     /* ===== ESCRITORIO: la hoja NO es modal, es una página =====
        En celular esto sigue siendo un panel a pantalla completa (bloque de arriba).
@@ -809,7 +710,7 @@
     /* Mientras hay una vista abierta, la tienda se aparta. La cabecera y el pie
        se quedan: son lo que hace que esto se lea como un sitio y no como un overlay. */
     body.pagemode #bnr,body.pagemode .ticker,body.pagemode #welcomeHost,
-    body.pagemode .searchbar,body.pagemode #catalogo,body.pagemode #catalog,
+    body.pagemode #catalogo,body.pagemode #catalog,
     body.pagemode .faq{display:none}
     /* El checkout NO parte en dos columnas acá: a 768 el formulario quedaba en 310px,
        más angosto que el resumen de 344, y ese formulario lleva mapa y direcciones.
@@ -821,8 +722,7 @@
     .hero p{max-width:480px;font-size:17px;margin:18px 0 26px}
     .hero-bg{background-position:right center}
     .bnr-scrim{background:linear-gradient(to right,#000 0%,rgba(0,0,0,.86) 30%,rgba(0,0,0,.4) 58%,rgba(0,0,0,.08) 100%)}
-    .steps{padding:22px 44px} .searchbar{padding:10px 44px 0} .nav .scroll{padding:0 44px}
-    .cat{padding:32px 44px 6px} .grid{padding:16px 44px 0;gap:18px}
+    .steps{padding:22px 44px}
     /* La barra ocupa todo el ancho; su CONTENIDO se alinea con la columna de 1160.
        El padding va en % (no en vw) para que el cálculo excluya la barra de scroll y
        no aparezca un desborde horizontal en Windows. */
@@ -834,7 +734,6 @@
     .co-grid{grid-template-columns:minmax(420px,1fr) 344px;align-items:start;gap:26px}
     .co-side{position:sticky;top:0}
   }
-  @media (min-width:1040px){ .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))} }
   /* La columna de lectura crece un poco con el sitio, sin llegar a ser incómoda de leer.
      Va DESPUÉS del bloque de 768 a propósito: ahí se define el valor base y, a igual
      especificidad, gana la última regla. */
@@ -851,6 +750,235 @@
     .sheet .body{padding-top:16px}
     .sheet .foot{margin-top:18px}
   }
+  /* ═══ CATÁLOGO, HOJA DE PRODUCTO Y "TU PEDIDO" · rediseño aprobado por Ivan (30 sep 2026) ═══
+     Viene del prototipo del Estudio UX (salida/prototipo, tokens del 05). Todo va con ALCANCE
+     (#catnav, #secciones, .psheet, .toast, .orderbar): la hoja de cuenta y checkout (#sheet,
+     .sheet) es otra pieza y no se toca. Mismo tema oscuro: #000 / #161616 / rojo #E4232A. */
+  :root{
+    --bg-2:#0d0d0d; --surface:#161616; --surface-2:#232323; --ink:#F2F2F2; --ink-2:#8F8F8F;
+    --mark:#333333; --accent:#E4232A; --accent-press:#C11C22; --on-accent:#FFFFFF;
+    --on-ink:#0D0D0D; --media-bg:#0D0D0D; --glass:rgba(35,35,35,.88); --spot:rgba(255,255,255,.07);
+    --font-display:"Poppins","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --num-features:"tnum" 1,"lnum" 1;
+    --fs-h1:clamp(24px,6vw,36px); --fs-small:14px; --fs-caption:13px; --fs-label:12px; --fs-total:25px;
+    --fw-strong:700; --fw-display:800; --lh-tight:1.05;
+    --tracking-display:-0.015em; --tracking-num:-0.02em;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-12:48px;
+    --gutter:var(--sp-4); --col-mobile:680px; --tap:44px;
+    --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:24px; --r-pill:999px;
+    --sh-1:0 0 0 1px var(--line); --sh-2:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);
+    --sh-3:0 0 0 1px var(--line),0 24px 64px rgba(0,0,0,.7);
+    --focus-ring:0 0 0 3px var(--bg),0 0 0 5px var(--accent);
+    --scrim:rgba(0,0,0,.64); --ease-out:cubic-bezier(.16,1,.3,1); --dur-fast:150ms; --dur-med:300ms;
+    --bar-h:65px;   /* alto real de la cabecera: lo mide js/tienda.js */
+  }
+  @media (prefers-reduced-motion:reduce){ :root{ --dur-fast:0ms; --dur-med:0ms } }
+  /* Reset solo para las piezas nuevas. :where() deja la especificidad en 0: cualquier regla
+     de abajo le gana, y no toca ningún botón del resto del sitio. */
+  :where(#catnav,#secciones,.psheet,.toast,.orderbar,.dsearch) :where(button,input){font:inherit;color:inherit;background:none;border:0}
+  :where(#catnav,#secciones,.psheet,.toast,.orderbar) button{cursor:pointer}
+  :where(#secciones,.psheet) img{display:block;max-width:100%}
+  .ico{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .ico.s{width:18px;height:18px}
+  .num{font-feature-settings:var(--num-features);letter-spacing:var(--tracking-num)}
+  .display{font-family:var(--font-display);font-weight:var(--fw-display);letter-spacing:var(--tracking-display);line-height:var(--lh-tight)}
+  .bullmark{display:block;width:52px;height:50px;background:var(--mark);-webkit-mask:url(img/torito-bull.webp) center/contain no-repeat;mask:url(img/torito-bull.webp) center/contain no-repeat}
+
+  /* Barra de categorías + lupa: pegada bajo la cabecera mientras se recorre el catálogo.
+     Fondo SÓLIDO, por lo mismo que la cabecera (legibilidad y un recomposite menos). Vive
+     dentro de #catalogo: al llegar al FAQ se suelta y deja de flotar encima. */
+  .catnav{position:sticky;top:var(--bar-h);z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
+  .catnav-in{display:flex;align-items:center;gap:var(--sp-1);overflow-x:auto;padding:var(--sp-2) var(--gutter);scrollbar-width:none}
+  .catnav-in::-webkit-scrollbar{display:none}
+  .sbtn{flex:none;width:var(--tap);height:var(--tap);display:grid;place-items:center;border-radius:var(--r-pill);background:var(--surface);box-shadow:var(--sh-1);margin-right:var(--sp-1)}
+  .pill{flex:none;min-height:var(--tap);padding:0 14px;display:flex;align-items:center;border-radius:var(--r-pill);font-size:var(--fs-small);font-weight:var(--fw-strong);text-decoration:none;color:var(--ink-2)}
+  .pill[aria-current="true"]{background:var(--ink);color:var(--on-ink)}
+  .sfield{display:none;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--gutter)}
+  .sfield label{flex:1;display:flex;align-items:center;gap:var(--sp-2);height:var(--tap);padding:0 var(--sp-3);background:var(--surface);border-radius:var(--r-pill);box-shadow:var(--sh-1);color:var(--ink-2)}
+  .sfield input,.dsearch input{flex:1;min-width:0;height:100%;font-size:16px;color:var(--ink);outline:none}
+  .sfield input::placeholder,.dsearch input::placeholder{color:var(--ink-2)}
+  .sfield label:focus-within,.dsearch:focus-within{box-shadow:var(--focus-ring)}
+  .sfield input:focus-visible,.dsearch input:focus-visible{outline:none;box-shadow:none}
+  .sfield input[type=search]::-webkit-search-cancel-button,.dsearch input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+  .catnav.searching .catnav-in{display:none}
+  .catnav.searching .sfield{display:flex}
+  .xbtn{width:var(--tap);height:var(--tap);display:grid;place-items:center;border-radius:50%}
+  .dsearch{display:none}
+
+  /* Secciones y grilla de 2 columnas (4 en escritorio) */
+  .sec{padding:var(--sp-8) var(--gutter) 0;scroll-margin-top:calc(var(--bar-h) + 56px)}
+  .sec h2{font-size:var(--fs-h1)}
+  .sec .tag{margin-top:4px;color:var(--ink-2);font-size:var(--fs-small)}
+  .sec .tag b{color:var(--ink);font-weight:var(--fw-strong)}
+  #secciones .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);margin-top:var(--sp-4)}
+  #secciones .grid[data-pend]{min-height:calc(var(--rows) * var(--row-h, 300px))}
+  #secciones.buscando > .sec,#secciones.buscando > .preload{display:none}
+  #busqueda[hidden]{display:none}
+  .card{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-1)}
+  .card .open{display:block;text-decoration:none;color:inherit}
+  .card .open:focus-visible{box-shadow:none;outline:none}
+  .card:has(.open:focus-visible){box-shadow:var(--focus-ring)}
+  .card .ph,.psheet .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--media-bg)}
+  .card .ph img,.psheet .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .card .ph.none,.psheet .ph.none{display:grid;place-items:center}
+  .ph img.fail{display:none}
+  .card .bd{display:flex;flex-direction:column;gap:4px;padding:var(--sp-3) var(--sp-3) 0}
+  .card .nm{font-size:15px;font-weight:var(--fw-strong);line-height:1.25}
+  .card .ds{font-size:var(--fs-caption);color:var(--ink-2);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip{align-self:flex-start;font-size:var(--fs-label);font-weight:var(--fw-strong);color:var(--ink-2);background:var(--surface-2);border-radius:var(--r-pill);padding:3px 8px;line-height:1.3;margin-top:2px}
+  .chip.out{color:var(--on-accent);background:var(--accent)}
+  .card .price{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:4px;margin-top:auto;padding:var(--sp-2) var(--sp-3) 0}
+  .card .price .ax{flex-basis:100%;font-size:var(--fs-caption);color:var(--ink-2);line-height:1.1}
+  .card .price b{font-size:19px;font-weight:var(--fw-strong);white-space:nowrap}
+  .card .price span{font-size:var(--fs-caption);color:var(--ink-2)}
+  .card .price.q b{font-size:15px;color:var(--ink-2)}
+  .card .foot{padding:var(--sp-2)}
+  .card .add{width:100%;min-height:var(--tap);display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-pill);background:var(--surface-2);font-size:15px;font-weight:var(--fw-strong);transition:transform var(--dur-fast) var(--ease-out),background var(--dur-fast)}
+  .card .add:active{transform:scale(.97);background:var(--line)}
+  .card .stepper,.psheet .stepper{display:flex;align-items:center;justify-content:space-between;min-height:var(--tap);border-radius:var(--r-pill);background:var(--bg-2)}
+  .card .stepper button,.psheet .stepper button{width:44px;height:44px;border-radius:50%;background:var(--surface-2);box-shadow:var(--sh-1);display:grid;place-items:center}
+  .card .stepper button:disabled,.psheet .stepper button:disabled{opacity:.4;box-shadow:none;cursor:default}
+  .card .stepper output,.psheet .stepper output{font-size:var(--fs-small);font-weight:var(--fw-strong)}
+  .card .soldout,.psheet .soldout{min-height:var(--tap);display:flex;align-items:center;justify-content:center;font-size:var(--fs-small);color:var(--ink-2)}
+  .blank{text-align:center;padding:var(--sp-12) var(--gutter) var(--sp-8)}
+  .blank > .ico{width:40px;height:40px;color:var(--ink-2);margin:0 auto var(--sp-4)}
+  .blank > b{display:block;font-size:17px}
+  .blank p{margin-top:4px;color:var(--ink-2);font-size:15px;max-width:32ch;margin-inline:auto}
+  .blank p b{color:var(--ink)}
+  .blank .cta{margin:var(--sp-5) auto 0;display:inline-flex}
+  .cta{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:52px;padding:0 var(--sp-6);border-radius:var(--r-pill);background:var(--accent);color:var(--on-accent);font-size:17px;font-weight:var(--fw-strong);text-decoration:none;white-space:nowrap;box-shadow:var(--sh-2);transition:transform var(--dur-fast) var(--ease-out),background var(--dur-fast)}
+  .cta:active{transform:scale(.98);background:var(--accent-press)}
+  .cta:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* Aviso "Agregaste…" (con Deshacer) y barra "Ver mi pedido". El aviso va sobre las hojas
+     (z 70) porque también lo usa la cuenta ("Cambios guardados"). */
+  .toast{position:fixed;left:var(--sp-3);right:var(--sp-3);bottom:calc(88px + env(safe-area-inset-bottom));z-index:70;max-width:calc(var(--col-mobile) - 24px);margin:0 auto;display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);min-height:52px;border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);box-shadow:var(--sh-3);font-size:var(--fs-small)}
+  .toast[hidden]{display:none!important}
+  .toast p{flex:1;line-height:1.35}
+  .toast button{min-height:var(--tap);padding:0 var(--sp-3);font-weight:var(--fw-strong);text-decoration:underline;text-underline-offset:3px}
+  .orderbar{position:fixed;left:var(--sp-3);right:var(--sp-3);bottom:calc(var(--sp-3) + env(safe-area-inset-bottom));z-index:45;max-width:calc(var(--col-mobile) - 24px);margin:0 auto;display:flex;align-items:center;gap:var(--sp-3);padding:0 var(--sp-5) 0 var(--sp-4);min-height:60px;border-radius:var(--r-pill);background:var(--surface-2);color:var(--ink);box-shadow:var(--sh-3);text-decoration:none}
+  .orderbar[hidden]{display:none!important}
+  .orderbar .count{min-width:24px;height:24px;padding:0 6px;border-radius:var(--r-pill);background:var(--accent);color:var(--on-accent);font-size:13px;font-weight:700;line-height:24px;text-align:center}
+  .orderbar .t{flex:1;font-size:16px;font-weight:var(--fw-strong)}
+  .orderbar .v{font-size:16px;font-weight:var(--fw-strong)}
+  .orderbar .v small{font-size:var(--fs-caption);font-weight:400;color:var(--ink-2);margin-right:3px}
+  body.pagemode .orderbar{display:none!important}
+
+  /* Hojas: producto y "Tu pedido" (abajo en celular; diálogo y panel lateral en escritorio) */
+  html.lock{overflow:hidden}
+  .pscrim{position:fixed;inset:0;z-index:62;background:var(--scrim)}
+  .psheet{position:fixed;left:0;right:0;bottom:0;z-index:63;max-width:var(--col-mobile);margin:0 auto;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);color:var(--ink);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-3);padding:var(--sp-2) var(--gutter) calc(var(--sp-4) + env(safe-area-inset-bottom))}
+  .psheet:focus{outline:none}
+  .psheet[hidden],.pscrim[hidden]{display:none!important}
+  .psheet .grab{width:36px;height:5px;border-radius:3px;background:var(--line);margin:0 auto var(--sp-3)}
+  .psheet .close{width:var(--tap);height:var(--tap);display:grid;place-items:center;border-radius:50%;background:var(--surface-2);flex:none}
+  .psheet .over{position:sticky;top:0;height:0;z-index:2;display:flex;justify-content:flex-end}
+  .psheet .over .close{margin:var(--sp-2) var(--sp-2) 0 0;background:var(--glass);box-shadow:var(--sh-1)}
+  .psheet .shot{aspect-ratio:16/9;border-radius:var(--r-md)}
+  .psheet h3{font-size:24px;margin-top:var(--sp-4)}
+  .psheet .unitp{margin-top:4px;font-size:15px;color:var(--ink-2)}
+  .psheet .unitp b{color:var(--ink);font-size:17px}
+  .psheet .desc{margin-top:var(--sp-2);font-size:var(--fs-small);color:var(--ink-2)}
+  .psheet .blk{margin-top:var(--sp-5)}
+  .psheet .blk h4{font-size:15px;font-weight:var(--fw-strong)}
+  .psheet .cuts{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-2)}
+  .psheet .cut{min-height:var(--tap);padding:0 var(--sp-4);border-radius:var(--r-sm);border:1px solid var(--line);font-size:var(--fs-small);font-weight:var(--fw-strong)}
+  .psheet .cut[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+  .psheet .blk.err .cut{border-color:var(--accent)}
+  .psheet .errmsg{display:flex;gap:6px;align-items:center;margin-top:var(--sp-2);font-size:var(--fs-small);font-weight:var(--fw-strong);color:var(--ink)}
+  .psheet .errmsg .ico{color:var(--accent)}
+  .psheet .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);margin-top:var(--sp-2)}
+  .psheet .quick button{min-height:var(--tap);border-radius:var(--r-sm);border:1px solid var(--line);font-size:var(--fs-small);font-weight:var(--fw-strong)}
+  .psheet .quick button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+  .psheet .qty{display:flex;align-items:center;justify-content:space-between;margin-top:var(--sp-2);background:var(--bg-2);border-radius:var(--r-pill);padding:4px}
+  .psheet .qty button{width:48px;height:48px;border-radius:50%;background:var(--surface-2);box-shadow:var(--sh-1);display:grid;place-items:center}
+  .psheet .qty button:disabled{opacity:.4;box-shadow:none}
+  .psheet .qty output{font-size:22px;font-weight:var(--fw-strong)}
+  .psheet .note{display:flex;gap:var(--sp-2);margin-top:var(--sp-4);font-size:var(--fs-small);color:var(--ink-2);line-height:1.45}
+  .psheet .note.warn{color:var(--ink)}
+  .psheet .cta{width:100%;margin-top:var(--sp-5)}
+  .psheet .sec-link{display:flex;justify-content:center;margin-top:var(--sp-1)}
+  .psheet .link{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--sp-3);font-size:15px;font-weight:var(--fw-strong);color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);text-decoration-thickness:2px;white-space:nowrap}
+  .psheet .sheet-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+  .psheet .sheet-top h3{margin-top:0}
+  .psheet .lines{list-style:none;margin-top:var(--sp-2)}
+  .psheet .line{display:grid;grid-template-columns:56px 1fr auto;gap:var(--sp-1) var(--sp-3);padding:var(--sp-4) 0}
+  .psheet .line + .line{border-top:1px solid var(--line)}
+  .psheet .line .th{grid-row:span 2;width:56px;height:56px;border-radius:var(--r-sm);overflow:hidden;background:var(--media-bg);position:relative}
+  .psheet .line .th img{width:100%;height:100%;object-fit:cover}
+  .psheet .line b{display:block;font-size:15px;line-height:1.25}
+  .psheet .line small{display:block;font-size:var(--fs-caption);color:var(--ink-2);line-height:1.35}
+  .psheet .line .warn{color:var(--ink);font-weight:var(--fw-strong)}
+  .psheet .line .r{text-align:right}
+  .psheet .line .r b{font-size:16px}
+  .psheet .line .ctl{grid-column:2 / 4;display:flex;align-items:center;justify-content:space-between}
+  .psheet .line .stepper{min-width:168px}
+  .psheet .line .rm{min-height:var(--tap);padding:0 var(--sp-2);white-space:nowrap;font-size:var(--fs-small);font-weight:var(--fw-strong);color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+  .psheet .line .out{grid-column:2 / 4;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);font-size:var(--fs-small);color:var(--accent);font-weight:var(--fw-strong)}
+  .psheet .line.soldout-line b,.psheet .line.soldout-line .th{opacity:.55}
+  .psheet .sum{margin-top:var(--sp-2);padding-top:var(--sp-4);border-top:1px solid var(--line);display:grid;gap:var(--sp-2)}
+  .psheet .sum div{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3);font-size:15px}
+  .psheet .sum .tot b{font-size:var(--fs-total);font-weight:var(--fw-strong)}
+  .psheet .sum .tot small{font-size:var(--fs-caption);color:var(--ink-2);font-weight:400;margin-right:4px}
+  .psheet .sum .muted{font-size:var(--fs-small);color:var(--ink-2);justify-content:flex-start;gap:var(--sp-2)}
+  .psheet .empty{text-align:center;padding:var(--sp-8) var(--sp-4) var(--sp-4)}
+  .psheet .empty .bullmark{margin:0 auto var(--sp-4);width:64px;height:62px}
+  .psheet .empty b{display:block;font-size:17px}
+  .psheet .empty p{margin-top:4px;color:var(--ink-2);font-size:15px}
+
+  @media (min-width:1024px){
+    /* En escritorio se busca en la cabecera; la lupa de la barra de categorías no hace falta. */
+    .dsearch{display:flex;align-items:center;gap:var(--sp-2);flex:0 1 420px;margin-left:auto;margin-right:12px;height:var(--tap);padding:0 var(--sp-4);background:var(--surface);border-radius:var(--r-pill);box-shadow:var(--sh-1);color:var(--ink-2);cursor:text}
+    .dsearch input{font-size:15px}
+    .topbar .acctbtn{margin-right:10px}
+    .catnav-in{justify-content:center;padding:var(--sp-2) var(--sp-6)}
+    .catnav .sbtn{display:none}
+    .catnav .sfield,.catnav.searching .sfield{display:none}
+    .catnav.searching .catnav-in{display:flex}
+    .sec{padding:var(--sp-12) var(--sp-6) 0}
+    #secciones .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5)}
+    .card .bd{padding:var(--sp-4) var(--sp-4) 0}
+    .card .price{padding:var(--sp-2) var(--sp-4) 0}
+    .card .foot{padding:var(--sp-3)}
+    .card .nm{font-size:16px}
+    .card .price b{font-size:20px}
+    .card{transition:box-shadow var(--dur-fast)}
+    .card:hover{box-shadow:var(--sh-2)}
+    .card .add:hover{background:var(--line)}
+    .orderbar{left:auto;right:var(--sp-6);bottom:var(--sp-6);width:400px;max-width:none}
+    .toast{left:auto;right:var(--sp-6);bottom:calc(var(--sp-6) + 72px);width:400px;max-width:none}
+    /* Hoja de producto = diálogo centrado de 2 columnas */
+    .psheet.prod{top:50%;bottom:auto;left:50%;right:auto;transform:translate(-50%,-50%);width:min(920px,calc(100vw - 64px));max-width:none;max-height:calc(100dvh - 64px);border-radius:var(--r-xl);padding:var(--sp-6);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:var(--sp-8);align-content:start}
+    .psheet.prod > *{grid-column:2}
+    .psheet.prod .grab{display:none}
+    .psheet.prod .over{position:absolute;top:var(--sp-3);right:var(--sp-3);height:auto;grid-column:auto}
+    .psheet.prod .over .close{margin:0;background:var(--surface-2);box-shadow:none}
+    .psheet.prod > .ph{grid-column:1;grid-row:1 / span 12;aspect-ratio:4/5;align-self:stretch;border-radius:var(--r-lg)}
+    .psheet.prod h3{margin-top:0;font-size:28px;padding-right:var(--sp-12)}
+    /* Tu pedido = panel lateral derecho */
+    .psheet.order{top:0;bottom:0;left:auto;right:0;width:440px;max-width:none;max-height:none;margin:0;border-radius:var(--r-xl) 0 0 var(--r-xl);padding:var(--sp-6)}
+    .psheet.order .grab{display:none}
+  }
+  /* Entrada de las hojas con CSS. El agregado, el aviso, la barra y las tarjetas los anima el 08 (css/motion.css). */
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes t-sheet{from{transform:translateY(100%)}}
+    @keyframes t-fade{from{opacity:0}}
+    @keyframes t-dialog{from{opacity:0;transform:translate(-50%,-47%) scale(.98)}}
+    @keyframes t-drawer{from{transform:translateX(100%)}}
+    .pscrim:not([hidden]){animation:t-fade var(--dur-med) ease-out}
+    .psheet:not([hidden]){animation:t-sheet var(--dur-med) var(--ease-out)}
+    @media (min-width:1024px){
+      .psheet.prod:not([hidden]){animation:t-dialog var(--dur-med) var(--ease-out)}
+      .psheet.order:not([hidden]){animation:t-drawer var(--dur-med) var(--ease-out)}
+    }
+  }
+  /* Reducir movimiento: nada se desplaza en las piezas nuevas (el color sí cambia). Acotado a
+     ellas a propósito: una regla global apagaría también el failsafe de #intro. */
+  @media (prefers-reduced-motion:reduce){
+    :where(#catnav,#secciones,.psheet,.pscrim,.toast,.orderbar),
+    :where(#catnav,#secciones,.psheet,.pscrim,.toast,.orderbar) *{transition-property:opacity,background-color,color,border-color,box-shadow!important;animation:none!important}
+  }
+
   /* ===== Foco visible por teclado (WCAG 2.4.7) =====
      Va al final a propósito: los campos traen outline:none y con la misma
      especificidad gana la última regla. :focus-visible solo se muestra a quien
@@ -860,9 +988,12 @@
   a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
   textarea:focus-visible,[tabindex]:focus-visible{
     outline:3px solid #fff;outline-offset:2px;border-radius:4px}
-  .searchbar input:focus-visible,.field input:focus-visible,.field textarea:focus-visible,
+  .field input:focus-visible,.field textarea:focus-visible,
   .field select:focus-visible,.mapsearch input:focus-visible{
     outline:3px solid #fff;outline-offset:2px}
+  /* Las piezas redondas del catálogo nuevo conservan su forma con el aro de foco. */
+  .pill:focus-visible,.sbtn:focus-visible,.orderbar:focus-visible{border-radius:var(--r-pill)}
+  .xbtn:focus-visible{border-radius:50%}
 
   /* ═══ INTRO DE MARCA ═══════════════════════════════════════════
      Máscara sobre el hero en la primera visita de la sesión. El toro
@@ -982,6 +1113,25 @@
 </head>
 <body>
 
+<!-- Íconos de línea del catálogo nuevo: Tabler Icons (MIT), trazo 1.75, currentColor -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12l14 0"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1"/></symbol>
+  <symbol id="i-gps" viewBox="0 0 24 24"><path d="M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M4 12a8 8 0 1 0 16 0a8 8 0 1 0 -16 0"/><path d="M12 2l0 2"/><path d="M12 20l0 2"/><path d="M20 12l2 0"/><path d="M2 12l2 0"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><path d="M7 11a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/><path d="M12 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 21l18 0"/><path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"/><path d="M5 21l0 -10.15"/><path d="M19 21l0 -10.15"/><path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"/></symbol>
+  <symbol id="i-pkg" viewBox="0 0 24 24"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/><path d="M16 5.25l-8 4.5"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 18l.01 0"/><path d="M9.172 15.172a4 4 0 0 1 5.656 0"/><path d="M6.343 12.343a7.963 7.963 0 0 1 3.864 -2.14m4.163 .155a7.965 7.965 0 0 1 3.287 2"/><path d="M3.515 9.515a12 12 0 0 1 3.544 -2.455m3.101 -.92a12 12 0 0 1 10.325 3.374"/><path d="M3 3l18 18"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+</svg>
+
 <!-- ═══ INTRO DE MARCA · solo primera visita de la sesión, solo home ═══ -->
 <div id="intro" aria-hidden="true">
   <div class="intro-stage">
@@ -1013,8 +1163,10 @@
        encima y sigue funcionando aunque el JavaScript falle. El clic normal lo
        intercepta el JS para no recargar la página (ver más abajo). -->
   <a class="brand" id="brand" href="/" aria-label="El Torito · ir al inicio"><img id="brandBull" src="img/torito-bull.webp" alt="" /><span>EL TORITO</span></a>
+    <!-- Buscador de escritorio (≥1024 px). En celular se busca con la lupa de la barra de categorías. -->
+    <label class="dsearch"><svg class="ico s" aria-hidden="true"><use href="#i-search"/></svg><input id="dInput" type="search" placeholder="Buscá un corte…" aria-label="Buscar en el catálogo" autocomplete="off"></label>
     <button class="acctbtn" id="openAcct" aria-label="Mi cuenta"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.7-3.5 3.6-5.6 7.2-5.6s6.5 2.1 7.2 5.6"/></svg><span class="lbl">Mi cuenta</span></button>
-    <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount">0</span></button>
+    <button class="cartbtn" id="openCart"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.2 14.6l.03-.15L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7L19.42 4l-3.86 7H8.53L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.13 0-.25-.11-.22-.4z"/></svg><span>Carrito</span><span class="count" id="cartCount" data-motion="bag-count">0</span></button>
 </div>
 
 <div class="wrap">
@@ -1049,17 +1201,23 @@
 
   <div id="welcomeHost"></div>
 
-  <div class="searchbar"><div class="f"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg><input id="search" type="search" aria-label="Buscar productos del catálogo" placeholder="Buscar corte, pollo, chorizo…" autocomplete="off" /></div></div>
-  <!-- Las pastillas son sticky. Este envoltorio existe para ACOTARLAS al catálogo:
-       un elemento sticky se suelta al terminar su contenedor, así que al pasar al FAQ
-       y al pie dejan de flotar encima. Sin esto tapaban el título de las preguntas. -->
-  <div class="shop">
-    <nav class="nav" id="catalogo"><div class="scroll" id="navscroll"></div></nav>
-    <!-- Lo de adentro lo GENERA build-catalogo.py desde catalog.json: es el catálogo en
-         texto, para que el HTML que descarga un buscador (y quien tiene señal mala) traiga
-         los nombres de los cortes. El JavaScript lo reemplaza por el catálogo de verdad
-         apenas carga, así que nadie ve dos catálogos. NO editar a mano: se pisa. -->
-    <main id="catalog"><!-- CATALOGO-SEO:INICIO · generado por build-catalogo.py · NO editar a mano -->
+  <!-- CATÁLOGO (rediseño aprobado el 30 sep 2026). La barra de categorías con la lupa es sticky
+       y este envoltorio la ACOTA al catálogo: al pasar al FAQ y al pie deja de flotar encima.
+       Las secciones, las tarjetas, la hoja de producto y "Tu pedido" las pinta js/tienda.js. -->
+  <div class="shop" id="catalogo">
+    <div class="catnav" id="catnav" role="navigation" aria-label="Categorías del catálogo">
+      <div class="catnav-in" id="pills">
+        <button type="button" class="sbtn js-sopen" aria-label="Buscar en el catálogo"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
+      </div>
+      <div class="sfield">
+        <label><svg class="ico s" aria-hidden="true"><use href="#i-search"/></svg><input id="sInput" type="search" placeholder="Buscá un corte…" aria-label="Buscar en el catálogo" autocomplete="off"></label>
+        <button type="button" class="xbtn" id="sClose" aria-label="Cerrar la búsqueda"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+    </div>
+    <!-- Lo de adentro de las marcas lo GENERA build-catalogo.py: es el catálogo en texto, para
+         que el HTML que descarga un buscador (y quien tiene señal mala) traiga los nombres de
+         los cortes. js/tienda.js lo reemplaza por el catálogo de verdad apenas carga. NO editar a mano. -->
+    <main id="catalog"><div id="secciones"><!-- CATALOGO-SEO:INICIO · generado por build-catalogo.py · NO editar a mano -->
     <div class="preload" id="preloadCat">
       <section><h2>Res</h2><ul>
         <li><b>Bistec</b> — Fino y tierno, listo para el sartén.</li>
@@ -1132,7 +1290,7 @@
       </ul></section>
       <p class="preload-n">Cargando precios y disponibilidad…</p>
     </div>
-    <!-- CATALOGO-SEO:FIN --></main>
+    <!-- CATALOGO-SEO:FIN --></div></main>
   </div>
 
   <!-- En CELULAR esto es un panel a pantalla completa que sube desde abajo (se siente app).
@@ -1213,9 +1371,12 @@
   </footer>
 </div>
 
-<div class="fab" id="fab"><button id="fabBtn"><span class="left"><span class="badge" id="fabCount">0</span> Ver mi pedido</span><span class="tot" id="fabTotal">L 0</span></button></div>
+<a class="orderbar" id="orderbar" href="#" hidden></a>
 <div class="scrim" id="scrim"></div>
-<div class="toast" id="toast" role="status" aria-live="polite"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></i><span></span></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<!-- Hoja de producto y "Tu pedido" (js/tienda.js). La de cuenta y checkout es #sheet, otra pieza. -->
+<div class="pscrim" id="pscrim" hidden></div>
+<section class="psheet" id="psheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitleP" tabindex="-1"></section>
 <!-- Popup: elegir otra dirección de entrega con pin arrastrable -->
 <div class="conf" id="confOv" role="dialog" aria-modal="true" aria-live="polite"><div class="conf-in"><div id="confBody"></div></div></div>
 
@@ -1263,11 +1424,6 @@
     }catch(e){}
   }
   var CAT=null, PROD=[], CATS=[], ORIGIN={lat:14.1091381,lng:-87.1916749}, SHIP_BASE=50, SHIP_PER_KM=9, SHIP_STREET=1.3;
-  var cart=load(), draft={}, cutSel=loadCuts();
-  function load(){try{return JSON.parse(localStorage.getItem("torito_cart_v2")||"{}")}catch(e){return {}}}
-  function save(){localStorage.setItem("torito_cart_v2",JSON.stringify(cart))}
-  function loadCuts(){try{return JSON.parse(localStorage.getItem("torito_cuts_v2")||"{}")}catch(e){return {}}}
-  function saveCuts(){localStorage.setItem("torito_cuts_v2",JSON.stringify(cutSel))}
   // ---- Perfil local (sin login): el navegador recuerda al cliente. Cero servidor, cero fricción. ----
   var PROFILE=loadProfile(), FREQ=loadFreq(), LASTORDER=loadLastOrder();
   function loadProfile(){try{return JSON.parse(localStorage.getItem("torito_profile_v1")||"null")}catch(e){return null}}
@@ -1290,11 +1446,13 @@
   }
   // Reconstruye el carrito con el último pedido (mismas cantidades y cortes).
   function repeatLast(){
-    if(!LASTORDER||!LASTORDER.items) return;
+    if(!LASTORDER||!LASTORDER.items||!carritoListo()) return;
+    // Mismas cantidades y cortes. Si un corte ya no se ofrece (o el pedido es de antes de
+    // los cortes), la línea entra "sin corte" y "Tu pedido" pide elegirlo antes de seguir.
     LASTORDER.items.forEach(function(it){ var p=prodById(it.id); if(!p) return;
-      cart[it.id]=Math.min(hardCap(p),(cart[it.id]||0)+(it.qty||UNIT[p.unit].def));
-      if(it.cut) cutSel[it.id]=it.cut; });
-    saveCuts(); save(); refreshCart(); if(sheetOpen){view="cart";renderSheet();} else openSheet();
+      window.ToritoCart.add(it.id, it.qty||UNIT[p.unit].def, {cut:it.cut||null, sinCorte:true}); });
+    if(sheetOpen) closeSheet();
+    window.ToritoTienda.abrirPedido();
   }
   // Pinta el saludo + repetir pedido en el home (si el navegador ya conoce al cliente).
   function renderWelcome(){
@@ -1552,13 +1710,8 @@
   // Todo vive en los metadatos de la cuenta -> disponible en cualquier aparato.
   // Guardado compartido: siempre manda TODOS los metadatos (lo editado + lo que ya había).
   // Aviso flotante, se va solo. No usa emoji: el check es un SVG de línea, como el resto.
-  var _toastT=null;
-  function toast(msg){
-    var t=document.getElementById("toast"); if(!t) return;
-    t.querySelector("span").textContent=msg;
-    t.classList.add("on"); clearTimeout(_toastT);
-    _toastT=setTimeout(function(){ t.classList.remove("on"); },2400);
-  }
+  // El aviso flotante es el mismo del catálogo nuevo (js/tienda.js): uno solo en toda la tienda.
+  function toast(msg){ try{ if(window.ToritoTienda) window.ToritoTienda.aviso(msg); }catch(e){} }
 
   // "Guardar" se enciende SOLO si algo cambió de verdad. Antes, tocarlo sin haber
   // editado nada mandaba igual una escritura al servidor y respondía "listo, quedó
@@ -1754,21 +1907,20 @@
   // salta y se avisa. Devuelve cuántos entraron.
   var REPES={};
   function repetirPedido(folio){
+    if(!carritoListo()) return;
     var its=REPES[folio]||[], puestos=0, faltan=[];
     its.forEach(function(it){
       var p=PROD.find(function(x){ return x.name.toLowerCase()===String(it.name||"").toLowerCase(); });
       if(!p||p.soldout){ faltan.push(it.name); return; }
-      var q=Number(it.qty)||UNIT[p.unit].def;
-      cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+q);
-      if(it.corte) cutSel[p.id]=it.corte;
-      puestos++;
+      var r=window.ToritoCart.add(p.id, Number(it.qty)||UNIT[p.unit].def, {cut:it.corte||null, sinCorte:true});
+      if(r&&r.ok) puestos++; else faltan.push(it.name);
     });
     // Antes esto se caía en silencio: si nada del pedido estaba disponible, tocar el
     // botón no hacía absolutamente nada y parecía roto. Y si faltaba UN producto, se
     // armaba el carrito incompleto sin avisar.
     if(!puestos){ toast("Hoy no tenemos nada de ese pedido"); return; }
-    saveCuts(); save(); refreshCart();
-    view="cart"; renderSheet(); topShell();
+    if(sheetOpen) closeSheet();
+    window.ToritoTienda.abrirPedido();
     if(faltan.length) toast(faltan.length===1 ? ("Hoy no hay "+faltan[0]) : ("Faltan "+faltan.length+" productos de ese pedido"));
   }
 
@@ -1867,13 +2019,6 @@
   function unitWord(t,q){var w={libra:["libra","libras"],paquete:["paquete","paquetes"],pieza:["pieza","piezas"]}[t]||["",""];return q===1?w[0]:w[1]}
   function imgpath(p){return "img/products/"+(p.img||"")+".webp"}
   function unitQty(p,q){return q+" "+unitWord(p.unit,q)}
-  function priceText(p,q){return p.quote?"A cotizar":money(linePrice(p,q))}
-  // Tope de stock: hasta maxNormal se compra normal; arriba pasa a "bajo pedido" (se confirma por WhatsApp);
-  // el stepper nunca supera hardCap para evitar cantidades absurdas.
-  function maxNormal(p){ if(p.max!=null&&p.max!=="") return Number(p.max); var s=CAT&&CAT.meta&&CAT.meta.stock; return p.unit==="paquete"?((s&&s.max_paquete)||12):((s&&s.max_libra)||20); }
-  function hardCap(p){ var s=CAT&&CAT.meta&&CAT.meta.stock; return Math.max((s&&s.hard_cap)||80, maxNormal(p)); }
-  function isBig(p,q){ return q>maxNormal(p)+1e-9; }
-  function estText(p,q){ if(p.quote) return "se coordina por WhatsApp"; if(p.validate) return "estimado · se confirma"; if(isBig(p,q)) return "cantidad grande · se confirma disponibilidad"; return p.unit==="libra"?"precio exacto":"precio fijo"; }
 
   // ---- load catalog ----
   // Lee el catálogo de la nube (editable desde /panel); si no existe, usa el JSON del repo.
@@ -1905,119 +2050,44 @@
       return stampSold(cloud);
     });
   }
-  loadCatalog().then(function(d){
+  // La promesa queda en window.ToritoDatos: la usa js/tienda.js (catálogo, carrito, hojas).
+  // La fuente no cambia: la nube (app_config) manda y catalog.json es el respaldo.
+  var CATALOGO=loadCatalog();
+  window.ToritoDatos=CATALOGO;
+  CATALOGO.then(function(d){
     CAT=d; CATS=d.categories; PROD=d.products.filter(function(p){return p.active!==false});
     if(d.meta&&d.meta.origin){ORIGIN={lat:d.meta.origin.lat,lng:d.meta.origin.lng}}
     if(d.meta&&d.meta.shipping){SHIP_BASE=d.meta.shipping.base||50; SHIP_PER_KM=d.meta.shipping.per_km||9; if(d.meta.shipping.street_factor)SHIP_STREET=d.meta.shipping.street_factor}
-    render(); refreshCart(); renderWelcome(); heroDelAncho();
-  }).catch(function(e){document.getElementById("catalog").innerHTML='<div class="loading">No se pudo cargar el catálogo. Recargá la página.</div>';});
+    renderWelcome(); heroDelAncho();
+  }).catch(function(){ heroDelAncho(); });   // el aviso de "no se pudo cargar" lo pinta js/tienda.js
 
-  function renderPromo(){
-    var el=document.getElementById("promo"); if(!el) return;
-    var pr=CAT&&CAT.meta&&CAT.meta.promo;
-    if(pr&&pr.on&&(pr.title||pr.sub)){
-      document.getElementById("promoT").textContent=pr.title||"";
-      var s=document.getElementById("promoS"); s.textContent=pr.sub||""; s.style.display=pr.sub?"":"none";
-      el.hidden=false; setTimeout(function(){el.classList.add("in")},50);
-    } else { el.hidden=true; el.classList.remove("in"); }
-  }
-
-  var navEl=document.getElementById("navscroll"), catEl=document.getElementById("catalog");
-  function render(){
-    navEl.innerHTML=""; catEl.innerHTML="";
-    CATS.forEach(function(c){
-      var items=PROD.filter(function(p){return p.cat===c.id});
-      if(!items.length) return;
-      var a=document.createElement("a"); a.href="#"; a.textContent=c.label; a.dataset.nav=c.id; navEl.appendChild(a);
-      var sec=document.createElement("section"); sec.className="cat"; sec.id="cat-"+c.id;
-      var prs=items.map(function(p){return p.price}).filter(function(x){return typeof x==="number"}); var minP=prs.length?Math.min.apply(null,prs):null;
-      sec.innerHTML='<h2 class="slab reveal">'+c.label+'</h2><div class="m reveal">'+items.length+' opciones'+(minP!=null?' · desde '+money(minP)+(items[0].unit==="paquete"?"":" / libra"):"")+'</div><div class="grid"></div>';
-      catEl.appendChild(sec);
-      var grid=sec.querySelector(".grid");
-      items.forEach(function(p){
-        draft[p.id]=UNIT[p.unit].def;
-        var cutHtml=(p.cuts&&p.cuts.length)?'<div class="cutsel"><label>\u00bfC\u00f3mo lo cortamos? *</label><div class="cuts" role="group" aria-label="Eleg\u00ed el corte">'+p.cuts.map(function(c){var on=cutSel[p.id]===c;return '<button type="button" class="cutchip'+(on?" on":"")+'" data-cutopt="'+c.replace(/"/g,"&quot;")+'" aria-pressed="'+(on?"true":"false")+'">'+c+'</button>'}).join("")+'</div></div>':"";
-        var card=document.createElement("div"); card.className="prod reveal"+(p.soldout?" soldout":""); card.dataset.pid=p.id;
-        var badge=p.soldout?'<span class="badge out">Agotado</span>':(p.validate?'<span class="badge">Se confirma peso</span>':(p.unit==="paquete"?'<span class="badge">Paquete</span>':(p.quote?'<span class="badge">A cotizar</span>':'')));
-        var sub=p.desc||(p.quote?"Precio a cotizar":p.validate?"Se confirma el peso y el total":p.unit==="paquete"?"Precio por paquete":"Cortado al peso que pidás");
-        card.innerHTML=
-          '<div class="ph"><img src="'+imgpath(p)+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>'+
-          '<div class="fallback" style="display:none"><img src="img/logo.png" alt=""/><span style="font-size:12px">'+p.name+'</span></div>'+badge+'</div>'+
-          '<div class="bd"><div class="nm slab">'+p.name+'</div><div class="sb">'+sub+'</div>'+
-          '<div class="rate">'+(p.quote?"A cotizar":money(p.price)+' '+UNIT[p.unit].each)+'</div>'+
-          (p.soldout
-            ? '<div class="soldnote"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.01M10.3 3.9 2.4 17.2A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Se acabó por hoy</div>'
-            : cutHtml+
-              '<div class="stepper"><button data-dec>−</button><span class="qty"><span data-q>'+draft[p.id]+'</span> <span class="u">'+unitWord(p.unit,draft[p.id])+'</span></span><button data-inc>+</button></div>'+
-              '<div class="btm"><div class="price slab"><span data-lp>'+priceText(p,draft[p.id])+'</span>'+
-              '<span class="est" data-est>'+estText(p,draft[p.id])+'</span></div>'+
-              '<button class="add" data-add><svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar</button></div>')+'</div>';
-        grid.appendChild(card);
-      });
-    });
-    setupNav(); showCat(activeCat||firstCat()); observeReveal();
-  }
   function prodById(id){return PROD.find(function(p){return p.id===id})}
-  function linePrice(p,q){ if(p.quote||p.price==null)return 0; return p.price*q }
 
-  catEl.addEventListener("click",function(e){
-    var card=e.target.closest(".prod"); if(!card) return;
-    var p=prodById(card.dataset.pid), u=UNIT[p.unit];
-    if(p.soldout) return; // agotado: no se agrega ni se cambia cantidad
-    var cutBtn=e.target.closest("[data-cutopt]");
-    if(cutBtn){
-      cutSel[p.id]=cutBtn.dataset.cutopt; saveCuts();
-      card.querySelectorAll("[data-cutopt]").forEach(function(c){var on=(c===cutBtn);c.classList.toggle("on",on);c.setAttribute("aria-pressed",on?"true":"false")});
-      var cwOk=card.querySelector(".cutsel"); if(cwOk)cwOk.classList.remove("warn");
-      return;
-    }
-    if(e.target.closest("[data-dec]")) setDraft(card,p,Math.max(u.min,draft[p.id]-u.step));
-    else if(e.target.closest("[data-inc]")) setDraft(card,p,Math.min(hardCap(p),draft[p.id]+u.step));
-    else if(e.target.closest("[data-add]")){
-      if(p.cuts&&p.cuts.length&&!cutSel[p.id]){var cw=card.querySelector(".cutsel");if(cw){cw.classList.add("warn");try{cw.scrollIntoView({block:"center",behavior:"smooth"})}catch(_){}}return;}
-      cart[p.id]=Math.min(hardCap(p),(cart[p.id]||0)+draft[p.id]); save(); refreshCart();
-      track("add",p,draft[p.id]);
-      var b=card.querySelector("[data-add]"); b.classList.add("added"); b.innerHTML="✓ Agregado";
-      setTimeout(function(){b.classList.remove("added");b.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>Agregar'},1100);
-    }
-  });
-  function setDraft(card,p,q){q=Math.round(q*100)/100;draft[p.id]=q;card.querySelector("[data-q]").textContent=q;card.querySelector("[data-lp]").textContent=priceText(p,q);var u=card.querySelector(".qty .u");if(u)u.textContent=unitWord(p.unit,q);var es=card.querySelector("[data-est]");if(es)es.textContent=estText(p,q)}
-
-  // search
-  document.getElementById("search").addEventListener("input",function(){
-    var q=norm(this.value.trim());
-    if(!q){ showCat(activeCat||firstCat()); return; }
-    document.querySelectorAll("#catalog .cat").forEach(function(sec){
-      var grid=sec.querySelector(".grid"), any=false;
-      grid.querySelectorAll(".prod").forEach(function(card){
-        var nm=norm(card.querySelector(".nm").textContent); var show=nm.indexOf(q)!==-1;
-        card.style.display=show?"":"none"; if(show)any=true;
-      });
-      sec.style.display=any?"":"none"; grid.style.display=any?"":"none";
+  // ---- Carrito ----
+  // El carrito vive en js/cart.js (v3: cada corte es su propia línea). Acá se lo lee con la
+  // forma de siempre ({p, qty, total, cut, big}) para el checkout, submit-order y WhatsApp.
+  function carritoListo(){ return !!(window.ToritoCart&&window.ToritoCart.listo()&&window.ToritoTienda&&window.ToritoTienda.listo()); }
+  function cartLines(){
+    if(!carritoListo()) return [];
+    return window.ToritoCart.lines().map(function(l){
+      return {key:l.key, p:l.product, qty:l.qty, total:l.total||0, cut:l.cut||null, big:l.big, needCut:!!l.needCut};
     });
-  });
-  function norm(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()}
-
-  // cart
-  function cartLines(){return Object.keys(cart).map(function(k){var p=prodById(k);return p?{p:p,qty:cart[k],total:linePrice(p,cart[k]),cut:(p.cuts&&p.cuts.length)?cutSel[k]:null,big:isBig(p,cart[k])}:null}).filter(Boolean)}
-  function cartCount(){return cartLines().length}
+  }
   function cartTotal(){return cartLines().reduce(function(s,l){return s+l.total},0)}
   function hasEst(){return cartLines().some(function(l){return l.p.validate})}
   function hasWhats(){return cartLines().some(function(l){return l.p.validate||l.p.quote||l.big})}
-  function hasBig(){return cartLines().some(function(l){return l.big})}
-  function hasQuote(){return cartLines().some(function(l){return l.p.quote})}
   // Se acabó mientras el cliente lo tenía en el carrito (lo agotó el carnicero en Comandas).
   function soldLines(){return cartLines().filter(function(l){return l.p.soldout})}
+  // Líneas que todavía no tienen corte (carrito viejo o pedido repetido): se eligen en "Tu pedido".
+  function sinCorteLines(){return cartLines().filter(function(l){return l.needCut})}
+  // Nombre para la clienta ("Costilla de res"). SOLO pantalla y WhatsApp: a submit-order va p.name.
+  function nombreVisible(p){ try{ return window.ToritoTienda.nombrePedido(p); }catch(e){ return p.name; } }
   function refreshCart(){
-    var n=cartCount(),t=cartTotal();
-    document.getElementById("cartCount").textContent=n; document.getElementById("fabCount").textContent=n;
-    document.getElementById("fabTotal").textContent=money(t);
-    document.getElementById("fab").classList.toggle("show",n>0&&!sheetOpen);
-    // El hub de la cuenta no muestra nada del carrito, y repintarlo cuesta otra
-    // consulta del historial al servidor: agregar desde "Lo de siempre" borraría el
-    // "Agregado" y gastaría datos en cada toque. Las demás vistas sí se repintan.
-    if(sheetOpen&&view!=="cuenta") renderSheet();
+    try{ if(window.ToritoTienda) window.ToritoTienda.barra(); }catch(e){}
+    if(sheetOpen&&view==="checkout") renderSide();
   }
+  // Volver a "Tu pedido" (la hoja nueva) desde el checkout.
+  function volverAlPedido(){ closeSheet(); if(window.ToritoTienda) window.ToritoTienda.abrirPedido(); }
 
   var scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet"),sBody=document.getElementById("sheetBody"),sFoot=document.getElementById("sheetFoot"),sTitle=document.getElementById("sheetTitle"),sheetOpen=false,view="cart",ship={ok:false,cost:0,km:0,mode:"retiro",pin:null,located:false,convenir:false};
   // ===== Dos envases para las mismas vistas =====
@@ -2055,8 +2125,7 @@
       bk.textContent="←"; bk.setAttribute("aria-label","Volver");
     }
   }
-  function openSheetAt(v){sheetOpen=true;view=v;lockScroll();enterShell();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
-  function openSheet(){sheetOpen=true;view="cart";lockScroll();enterShell();scrim.classList.add("open");sheet.classList.add("open");document.getElementById("fab").classList.remove("show");renderSheet()}
+  function openSheetAt(v){sheetOpen=true;view=v;lockScroll();enterShell();scrim.classList.add("open");sheet.classList.add("open");refreshCart();renderSheet()}
   function closeSheet(){if(trkTimer){clearInterval(trkTimer);trkTimer=null;}sheetOpen=false;scrim.classList.remove("open");sheet.classList.remove("open");sheet.classList.remove("wide");
     // Si se cerró con una espera puesta (Esc, atrás del navegador), que no quede pegada
     // esperando a la próxima vez que abra.
@@ -2071,7 +2140,7 @@
     if(pageShell()){ unlockScroll(); if(!document.body.classList.contains("pagemode")){ _pageY=0; document.body.classList.add("pagemode"); window.scrollTo(0,0); } }
     else { document.body.classList.remove("pagemode"); lockScroll(); }
   });
-  document.getElementById("openCart").onclick=openSheet; document.getElementById("fabBtn").onclick=openSheet; document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
+  document.getElementById("closeSheet").onclick=closeSheet; scrim.onclick=closeSheet;
   // El logo al inicio. Si hay una vista abierta (carrito, checkout, cuenta) se cierra y
   // se vuelve arriba SIN recargar: recargar en un Android de gama baja cuesta segundos y
   // volver a bajar el catálogo. El href="/" sigue ahí para abrir en otra pestaña, para
@@ -2086,7 +2155,7 @@
     });
   })();
   document.getElementById("sheetBack").onclick=function(){
-    if(view==="checkout"){sheet.classList.remove("wide");view="cart";renderSheet();topShell();}
+    if(view==="checkout"){sheet.classList.remove("wide");volverAlPedido();}
     else if(view==="codigo"){view=(authFlow==="reset")?"entrar":"crear";renderSheet();topShell();}
     else if(view==="track"){view="pedidos";renderSheet();topShell();}
     else if(view==="pedidos"||view==="perfil"||view==="direcciones"){view="cuenta";renderSheet();topShell();}
@@ -2216,39 +2285,9 @@
     if(view==="perfil") return perfilView();
     if(view==="direcciones") return direccionesView();
     if(view==="track") return trkView();
-    return view==="cart"?cartView():checkoutView();
+    if(view==="cart"){ volverAlPedido(); return; }   // "Tu pedido" es la hoja nueva (js/tienda.js)
+    return checkoutView();
   }
-
-  function cartView(){
-    sTitle.textContent="Tu pedido"; setBack(false); var lines=cartLines();
-    if(!lines.length){
-      var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
-      var rep=lastValid.length?'<br><button class="empty-repeat" id="emptyRepeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Repetir mi último pedido ('+lastValid.length+')</button>':'';
-      sBody.innerHTML='<div class="cart-empty">Tu carrito está vacío.<br>Agregá tus cortes favoritos.'+rep+'</div>';sFoot.innerHTML="";
-      var er=document.getElementById("emptyRepeat"); if(er)er.onclick=repeatLast;
-      return;
-    }
-    var out=soldLines();
-    var html=out.length?('<div class="cart-out">Se acabó por hoy: <b>'+out.map(function(l){return l.p.name}).join(", ")+'</b>. Quitalo del carrito para seguir con tu pedido.</div>'):"";
-    lines.forEach(function(l){
-      html+='<div class="citem'+(l.p.soldout?" out":"")+'" data-pid="'+l.p.id+'"><img src="'+imgpath(l.p)+'" onerror="this.src=\'img/logo.png\'" alt=""/><div><div class="ci-nm">'+l.p.name+(l.cut?' <span style="color:var(--gold);font-weight:600">\u00b7 '+l.cut+'</span>':"")+'</div><div class="ci-meta">'+(l.p.quote?"A cotizar":money(l.p.price)+' '+UNIT[l.p.unit].each)+'</div>'+(l.p.soldout?'<div class="ci-out">Se acabó por hoy</div>':'<div class="mini"><button data-cdec>−</button><span class="q">'+unitQty(l.p,l.qty)+'</span><button data-cinc>+</button></div>')+'<button class="ci-rm" data-crm>Quitar</button></div><div class="ci-right"><div class="ci-price slab">'+(l.p.quote?"\u2014":money(l.total))+'</div>'+(l.p.validate?'<div class="ci-meta">estimado</div>':(l.p.quote?'<div class="ci-meta">a cotizar</div>':(l.big?'<div class="ci-meta">a confirmar</div>':'')))+'</div></div>';
-    });
-    sBody.innerHTML=html;
-    sFoot.innerHTML=(hasWhats()?'<div class="estnote">Tu pedido lleva cortes que se <b>venden por pieza</b>: hay que pesarlos para darte el <b>total exacto</b>, así que lo coordinamos y confirmamos por <b>WhatsApp</b>. Lo demás ya va con precio exacto.</div>':'')+
-      '<div class="sumline total"><span class="lbl">'+(hasEst()?"Total estimado":"Total")+'</span><span class="val slab">'+money(cartTotal())+'</span></div>'+
-      '<button class="pay-wa" id="toCheckout" style="margin-top:14px'+(out.length?';opacity:.45;cursor:not-allowed':'')+'"'+(out.length?' disabled':'')+'>Continuar →</button>';
-    document.getElementById("toCheckout").onclick=function(){ if(soldLines().length){topShell();return;}
-      track("checkout",null,null,{n_items:cartLines().length});
-      view="checkout";renderSheet();topShell()}
-  }
-  sBody.addEventListener("click",function(e){
-    var row=e.target.closest(".citem"); if(!row) return; var p=prodById(row.dataset.pid),u=UNIT[p.unit];
-    if(e.target.closest("[data-cdec]"))cart[p.id]=Math.max(u.min,cart[p.id]-u.step);
-    else if(e.target.closest("[data-cinc]"))cart[p.id]=Math.min(hardCap(p),cart[p.id]+u.step);
-    else if(e.target.closest("[data-crm]"))delete cart[p.id]; else return;
-    if(cart[p.id])cart[p.id]=Math.round(cart[p.id]*100)/100; save(); cartView();
-    document.getElementById("cartCount").textContent=cartCount(); document.getElementById("fabCount").textContent=cartCount();
-  });
 
   function fmtHM(h,m){ var hh=((h%12)||12), ap=h<12?"am":"pm", mm=m===0?"00":"30"; return hh+":"+mm+" "+ap; }
   var DOW_ES=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
@@ -2591,7 +2630,7 @@
     var convenir=isDomi&&!ship.located&&ship.convenir;  // eligió a propósito coordinar sin ubicación
     var canWa=!outZone && !needLoc;
     var itemsHtml=lines.map(function(l){
-      return '<div class="co-line"><span class="nm">'+l.p.name+(l.cut?' <small>'+l.cut+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+(l.big?' · a confirmar':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
+      return '<div class="co-line"><span class="nm">'+pesc(nombreVisible(l.p))+(l.cut?' <small>'+pesc(l.cut)+'</small>':'')+' <small>'+unitQty(l.p,l.qty)+(l.p.validate?' · se pesa':'')+(l.big?' · a confirmar':'')+'</small></span><span class="vl">'+(l.p.quote?"a cotizar":money(l.total))+'</span></div>';
     }).join("");
     side.innerHTML=
       '<div class="card-sum"><h4>Tu pedido</h4>'+itemsHtml+
@@ -2604,7 +2643,7 @@
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
-    document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
+    document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");volverAlPedido()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
     var bc=document.getElementById("btnConvenir"); if(bc)bc.onclick=function(){ship.convenir=true;renderSide();};
     var bu=document.getElementById("btnUnconvenir"); if(bu)bu.onclick=function(){ship.convenir=false;renderSide();geolocate();};
@@ -2629,7 +2668,7 @@
     var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim(); f.addr=f.addr.trim(); f.note=f.note.trim();
     // ---- Validación de campos obligatorios ----
     var out=soldLines();
-    if(out.length){ view="cart"; renderSheet(); topShell(); return; } // se acabó mientras llenaba el checkout
+    if(out.length||sinCorteLines().length){ volverAlPedido(); return; } // se acabó (o falta un corte) mientras llenaba el checkout
     var bad=false;
     if(!f.name){markInvalid("w_name","Escribí tu nombre.");bad=true}
     var tel=telDigits(f.phone);
@@ -2674,10 +2713,10 @@
     var s="Hola El Torito, me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
     lines.forEach(function(l){
       var nota=l.p.quote?" (a cotizar)":(l.p.validate?" (pendiente confirmar peso y disponibilidad)":"");
-      s+="• "+unitQty(l.p,l.qty)+" de "+l.p.name+(l.cut?" ("+l.cut+")":"")+nota+"\n";
+      s+="• "+unitQty(l.p,l.qty)+" de "+nombreVisible(l.p)+(l.cut?" ("+l.cut+")":"")+nota+"\n";   // nombre para la clienta: SOLO en el texto
     });
     rememberOrder(f,lines,fol); // perfil local: datos + último pedido + folio + favoritos
-    cart={};save();
+    try{ window.ToritoCart.clear(); }catch(e){}
     showConfirm(fol, "https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s), enviado);
   }
 
@@ -2711,36 +2750,20 @@
     });
   }
 
-  // nav + reveal
-  var activeCat=null;
-  function firstCat(){for(var i=0;i<CATS.length;i++){if(PROD.some(function(p){return p.cat===CATS[i].id}))return CATS[i].id}return null}
-  function showCat(id){
-    if(!id)return; activeCat=id;
-    document.querySelectorAll("#catalog .cat").forEach(function(sec){sec.style.display=(sec.id==="cat-"+id)?"":"none"});
-    document.querySelectorAll("#catalog .prod").forEach(function(c){c.style.display=""});
-    document.querySelectorAll("#catalog .grid").forEach(function(g){g.style.display=""});
-    document.querySelectorAll("[data-nav]").forEach(function(a){a.classList.toggle("active",a.dataset.nav===id)});
-    observeReveal();
-    // centrar la pastilla activa SOLO en horizontal (no mover la página)
-    var nav=document.getElementById("navscroll"), ap=document.querySelector('[data-nav="'+id+'"]');
-    if(nav&&ap){ nav.scrollLeft = ap.offsetLeft - nav.clientWidth/2 + ap.clientWidth/2; }
-  }
-  function setupNav(){
-    document.querySelectorAll("[data-nav]").forEach(function(a){
-      a.addEventListener("click",function(e){e.preventDefault();var sb=document.getElementById("search");if(sb)sb.value="";showCat(a.dataset.nav);
-        // solo subir si el usuario está por debajo del inicio del catálogo (para ver la categoría desde arriba); nunca bajar
-        var y=document.getElementById("catalog").offsetTop-96; if(window.pageYOffset>y) window.scrollTo(0,Math.max(0,y));
-      });
-    });
-  }
-  function observeReveal(){
-    var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");ro.unobserve(e.target)}})},{rootMargin:"0px 0px -6% 0px"});
-    document.querySelectorAll(".reveal:not(.in)").forEach(function(el){ro.observe(el)});
-    // safety net: never leave on-screen content hidden if the observer is slow
-    function safety(){document.querySelectorAll(".reveal:not(.in)").forEach(function(el){var r=el.getBoundingClientRect();if(r.top<window.innerHeight*1.15&&r.bottom>-60)el.classList.add("in")})}
-    setTimeout(safety,350); window.addEventListener("scroll",safety,{passive:true});
-  }
-  observeReveal();
+  // ===== Puente con el catálogo nuevo (js/tienda.js) =====
+  // "Seguir con mi pedido" abre ESTE checkout, sin cambiar su lógica.
+  window.ToritoCheckout={
+    abrir:function(){
+      if(!cartLines().length) return;
+      track("checkout",null,null,{n_items:cartLines().length});
+      openSheetAt("checkout"); topShell();
+    },
+    track:function(accion,p,qty){ track(accion,p,qty); },
+    ultimo:function(){ return (LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}).length:0; },
+    repetir:function(){ repeatLast(); }
+  };
+  // Cuando el catálogo nuevo terminó de cargar (carrito incluido), el saludo y la barra se ponen al día.
+  document.addEventListener("torito:listo",function(){ renderWelcome(); refreshCart(); });
 
   // ===== Carrusel de banners =====
   // Los textos de abajo SOLO se ven en celular: en escritorio manda el arte de la agencia,
@@ -2951,6 +2974,12 @@
   });
 })();
 </script>
+<!-- Catálogo, carrito v3, hoja de producto y "Tu pedido" (rediseño del 30 sep 2026).
+     defer: no frenan el primer pintado; corren después del script grande de arriba, que
+     ya dejó la carga del catálogo en marcha (window.ToritoDatos). -->
+<script src="js/catalogo.js" defer></script>
+<script src="js/cart.js" defer></script>
+<script src="js/tienda.js" defer></script>
 <!-- Analítica de Cloudflare: cuántas visitas y de dónde vienen.
      Sin cookies y sin banner de consentimiento (no identifica personas).
      Va al final y como módulo (se difiere solo), así no compite con la carga del
