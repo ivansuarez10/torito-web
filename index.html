@@ -616,7 +616,6 @@
   .comap-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);z-index:500;pointer-events:none;color:var(--red)}
   .comap-pin svg{width:32px;height:40px;filter:drop-shadow(0 5px 6px rgba(0,0,0,.35))}
   .pay-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;transition:background .2s} .pay-wa:hover{background:var(--wa-d)} .pay-wa svg{width:20px;height:20px;fill:#fff}
-  .pay-bac{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--cream);border:1px solid var(--line);font-weight:800;font-size:16px;padding:13px;border-radius:14px;cursor:not-allowed;margin-top:10px;opacity:.85} .pay-bac small{font-weight:600;font-size:11.5px;color:var(--muted)}
   .err{color:#ff8a8a;font-size:13px;margin-top:8px;display:none}
   /* ===== Carrusel de banners de la agencia (sep 2026) =====
      Los banners vienen a 3.04:1, hechos para pantalla de computadora. En un celular de
@@ -2577,7 +2576,6 @@
       (convenir?'<div class="estnote" style="margin:12px 0 0">Coordinaremos el envío por WhatsApp con tu dirección. <button type="button" id="btnUnconvenir" class="lnk-loc">Mejor comparto mi ubicación</button></div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
-      '<button class="pay-bac" disabled>Pago en línea<small>Próximamente</small></button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
     document.getElementById("backCart").onclick=function(){sheet.classList.remove("wide");view="cart";renderSheet()};
     var bw=document.getElementById("btnWa"); if(bw&&canWa)bw.onclick=submitWhatsApp;
