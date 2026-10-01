@@ -2443,17 +2443,62 @@
     setTimeout(function(){ if(COMAP) COMAP.invalidateSize(); },160);
   }
   function hideCoMap(){ var w=document.getElementById("coMapWrap"); if(w) w.style.display="none"; }
+  // Navegador DENTRO de otra app (Instagram, Facebook, TikTok, webview de Android). Ahí la ubicación
+  // suele no pedirse o no responder nunca: hay que mandar a la persona a Chrome/Safari.
+  function geoNavApp(){
+    var ua=navigator.userAgent||"";
+    if(/Instagram/i.test(ua)) return "Instagram";
+    if(/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return "Facebook";
+    if(/musical_ly|BytedanceWebview|TikTok/i.test(ua)) return "TikTok";
+    if(/Android/i.test(ua) && /; wv\)/.test(ua)) return "otra app";
+    return "";
+  }
+  // Un mensaje por causa, siempre con salida: Reintentar (o abrir en Chrome) + la opción de coordinar.
+  // motivo: "nosoporte" | "negado" | "sinrespuesta"
+  function geoFallo(box, motivo){
+    ship.pin=null; ship.located=false; ship.ok=false; hideCoMap();
+    if(!box){ renderSide(); return; }
+    var ua=navigator.userAgent||"", android=/Android/i.test(ua), ios=/iPhone|iPad|iPod/i.test(ua);
+    var app=geoNavApp(), txt="", extra="";
+    if(app){
+      txt="Estás dentro de "+app+" y desde aquí tu teléfono no comparte la ubicación.";
+      if(android){
+        var url="intent://"+location.host+location.pathname+location.search+"#Intent;scheme=https;package=com.android.chrome;end";
+        extra='<a class="lnk-loc" id="geoChrome" href="'+url+'">Abrir la tienda en Chrome</a>';
+      } else if(ios){
+        txt+=" Tocá los tres puntos (•••) y elegí <b>Abrir en Safari</b>.";
+      } else {
+        txt+=" Abrí esta página en tu navegador (Chrome o Safari).";
+      }
+    } else if(motivo==="negado"){
+      txt="Tu teléfono no dio permiso de ubicación. "+(ios
+        ? "Activalo en <b>Ajustes → Privacidad → Localización → Safari</b> y volvé a intentar."
+        : "Tocá el candado junto a la dirección de la página → <b>Permisos → Ubicación</b> y volvé a intentar.");
+    } else if(motivo==="nosoporte"){
+      txt="Este navegador no comparte la ubicación. Abrí la tienda en Chrome o Safari.";
+    } else {
+      txt="Tu teléfono no respondió con la ubicación. Revisá que el GPS esté encendido y volvé a intentar.";
+    }
+    box.className="shipbox";
+    box.innerHTML='<span>'+txt+'<br><button type="button" class="lnk-loc" id="geoRetry">Reintentar</button>'+(extra?' · '+extra:'')+'</span><b>—</b>';
+    var r=document.getElementById("geoRetry"); if(r) r.onclick=geolocate;
+    renderSide();
+  }
   function geolocate(){
     var box=document.getElementById("shipBox");
-    if(!navigator.geolocation){ ship.pin=null;ship.located=false;ship.ok=false; hideCoMap();
-      if(box){box.className="shipbox";box.innerHTML='<span>Tu teléfono no comparte ubicación. Escribí tu dirección abajo y lo coordinamos por WhatsApp.</span><b>a convenir</b>';} renderSide(); return; }
+    if(!navigator.geolocation){ geoFallo(box, "nosoporte"); return; }
     if(box){box.className="shipbox";box.innerHTML='<span>Obteniendo tu ubicación…</span><b>…</b>';}
+    // Reloj propio: el timeout del navegador recién corre DESPUÉS de resolverse el permiso, y dentro
+    // de algunas apps ninguna de las dos respuestas llega nunca → se quedaba en "Obteniendo…" para siempre.
+    var listo=false;
+    var reloj=setTimeout(function(){ if(listo) return; listo=true; geoFallo(box, "sinrespuesta"); }, 12000);
     navigator.geolocation.getCurrentPosition(function(pos){
+      // Si llega tarde (después del reloj), igual sirve: se usa en vez de dejar el aviso.
+      listo=true; clearTimeout(reloj);
       ship.pin={lat:pos.coords.latitude,lng:pos.coords.longitude}; ship.located=true; ship.heredado=false; updateShip();
-    },function(){
-      ship.pin=null; ship.located=false; ship.ok=false; hideCoMap();
-      if(box){box.className="shipbox";box.innerHTML='<span>No pudimos leer tu ubicación. Escribí tu dirección abajo y lo coordinamos por WhatsApp.</span><b>a convenir</b>';}
-      renderSide();
+    },function(err){
+      if(listo) return; listo=true; clearTimeout(reloj);
+      geoFallo(box, (err&&err.code===1) ? "negado" : "sinrespuesta");
     },{enableHighAccuracy:true,timeout:10000});
   }
   function updateShip(){
@@ -2642,7 +2687,7 @@
         '<div class="sumline total"><span class="lbl">Total'+(hasEst()||convenir?" estimado":"")+'</span><span class="val slab">'+money(total)+(convenir?' + envío':'')+'</span></div>'+
       '</div>'+
       (needLoc?'<div class="estnote locwarn" style="margin:12px 0 0">Para calcular tu envío <b>necesitamos tu ubicación</b>. Tocá <b>Usar mi ubicación actual</b> arriba. <button type="button" id="btnConvenir" class="lnk-loc">No puedo compartir mi ubicación</button></div>':'')+
-      (convenir?'<div class="estnote" style="margin:12px 0 0">Coordinaremos el envío por WhatsApp con tu dirección. <button type="button" id="btnUnconvenir" class="lnk-loc">Mejor comparto mi ubicación</button></div>':'')+
+      (convenir?'<div class="estnote" style="margin:12px 0 0">Coordinaremos el envío por WhatsApp. Cuando se abra el chat, <b>mandanos tu ubicación</b> (el clip → Ubicación) y te decimos el costo. <button type="button" id="btnUnconvenir" class="lnk-loc">Mejor comparto mi ubicación</button></div>':'')+
       (hasEst()?'<div class="estnote" style="margin:12px 0 0">Se confirma el total exacto al pesar las piezas; se coordina por WhatsApp.</div>':'')+
       '<button class="pay-wa" id="btnWa" style="margin-top:14px" '+(canWa?"":"disabled style=\"opacity:.5\"")+'><svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>'+(hasWhats()?"Enviar pedido por WhatsApp":"Confirmar pedido por WhatsApp")+'</button>'+
       '<button class="ci-rm" id="backCart" style="display:block;margin:14px auto 0">← Volver al pedido</button>';
@@ -2718,6 +2763,8 @@
       var nota=l.p.quote?" (a cotizar)":(l.p.validate?" (pendiente confirmar peso y disponibilidad)":"");
       s+="• "+unitQty(l.p,l.qty)+" de "+nombreVisible(l.p)+(l.cut?" ("+l.cut+")":"")+nota+"\n";   // nombre para la clienta: SOLO en el texto
     });
+    // A domicilio sin ubicación: que adjunte su ubicación de WhatsApp, así la carnicería le pone precio al envío sin llamar.
+    if(envioConvenir) s+="\nEs a domicilio y no pude compartir mi ubicación desde la página: les mando mi ubicación por aquí (clip → Ubicación).\n";
     rememberOrder(f,lines,fol); // perfil local: datos + último pedido + folio + favoritos
     try{ window.ToritoCart.clear(); }catch(e){}
     showConfirm(fol, "https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s), enviado);
