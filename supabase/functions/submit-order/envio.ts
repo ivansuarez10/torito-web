@@ -21,10 +21,27 @@ export const POR_KM = 9;
 export const FACTOR_CALLE = 1.3; // la calle no va en línea recta
 export const KM_MAX = 25;        // más lejos que esto es fuera de zona
 
+/** La marca que la tienda pega JUSTO ANTES del pin del GPS. Importa porque `addr` se
+ *  arma así:  <lo que la clienta escribió> · 📍 Ubicación: <link del GPS>
+ *  O sea que el texto libre viaja PRIMERO. */
+export const MARCA_PIN = "📍 Ubicación:";
+
 /** Saca lat,lng del link de Maps que la tienda incrusta en la dirección.
- *  Devuelve null si no hay link o si los números no son coordenadas creíbles. */
+ *  Devuelve null si no hay link o si los números no son coordenadas creíbles.
+ *
+ *  ⚠️ SOLO se lee lo que viene DESPUÉS DE LA ÚLTIMA marca, y pegado a ella. Antes esto
+ *  buscaba el primer `maps.google.com/?q=` de todo el texto, y como lo que la clienta
+ *  escribe en "¿Cómo es tu casa?" va al principio, bastaba con teclear ahí un link de
+ *  Maps con las coordenadas de la carnicería para que el servidor cobrara el mínimo
+ *  aunque el GPS dijera otra cosa. Era el cobro de L 50 de septiembre otra vez, por la
+ *  puerta de atrás. La ÚLTIMA marca es la que pone la tienda; una tecleada a mano queda
+ *  siempre antes. Y el ancla `^\s*` impide colar algo entre la marca y el link. */
 export function pinDeDireccion(addr: unknown): { lat: number; lng: number } | null {
-  const m = String(addr ?? "").match(/maps\.google\.com\/\?q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+  const s = String(addr ?? "");
+  const i = s.lastIndexOf(MARCA_PIN);
+  if (i < 0) return null; // sin marca no hay pin de confianza → "a convenir"
+  const cola = s.slice(i + MARCA_PIN.length);
+  const m = cola.match(/^\s*(?:https?:\/\/)?maps\.google\.com\/\?q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
   if (!m) return null;
   const lat = Number(m[1]), lng = Number(m[2]);
   if (!isFinite(lat) || !isFinite(lng)) return null;

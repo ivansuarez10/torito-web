@@ -38,6 +38,30 @@ Deno.test("fuera de zona no se cobra: lo decide el carnicero", () => {
   assertEquals(r.costo, 0);
 });
 
+// ESTE es el agujero que se tapó el 1 oct 2026. Lo que la clienta escribe en
+// "¿Cómo es tu casa?" viaja ANTES del pin del GPS, así que un link de Maps tecleado
+// ahí le ganaba al GPS de verdad y cobraba el mínimo.
+Deno.test("un link de Maps tecleado en la dirección NO le gana al pin del GPS", () => {
+  const casaLejos = { lat: 14.0730, lng: -87.1750 };
+  const tecleado = `Porton azul, maps.google.com/?q=${ORIGEN.lat},${ORIGEN.lng}`; // la carnicería
+  const addr = `${tecleado} · 📍 Ubicación: https://maps.google.com/?q=${casaLejos.lat.toFixed(6)},${casaLejos.lng.toFixed(6)}`;
+  const pin = pinDeDireccion(addr);
+  assertEquals(pin, casaLejos);                         // gana el GPS, no lo tecleado
+  assertEquals(costoEnvio(addr, true).costo > 50, true); // y por lo tanto NO cobra el mínimo
+});
+
+Deno.test("una marca falsa tecleada antes no desplaza a la de la tienda", () => {
+  const casaLejos = { lat: 14.0730, lng: -87.1750 };
+  const addr = `📍 Ubicación: https://maps.google.com/?q=${ORIGEN.lat},${ORIGEN.lng} · 📍 Ubicación: https://maps.google.com/?q=${casaLejos.lat.toFixed(6)},${casaLejos.lng.toFixed(6)}`;
+  assertEquals(pinDeDireccion(addr), casaLejos); // vale la ÚLTIMA, que es la que pega la tienda
+});
+
+Deno.test("sin la marca de la tienda, un link suelto no vale como ubicación", () => {
+  // Sin GPS compartido la dirección es solo texto de la clienta: ahí un link no es prueba de nada.
+  assertEquals(pinDeDireccion("Vivo en maps.google.com/?q=14.109138,-87.191675"), null);
+  assertEquals(costoEnvio("Vivo en maps.google.com/?q=14.109138,-87.191675", true).motivo, "sin_pin");
+});
+
 Deno.test("coordenadas imposibles se descartan", () => {
   assertEquals(pinDeDireccion("… https://maps.google.com/?q=999.9,-87.1"), null);
   assertEquals(pinDeDireccion("… https://maps.google.com/?q=0.000000,0.000000"), null);

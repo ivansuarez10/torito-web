@@ -2722,6 +2722,11 @@
   function markInvalid(id,msg){var w=document.getElementById(id);if(w)w.classList.add("invalid");var e=document.getElementById("f_err");if(e){e.textContent=msg;e.style.display="block"}}
   function submitWhatsApp(){
     var f=getForm(); f.name=f.name.trim(); f.phone=f.phone.trim(); f.addr=f.addr.trim(); f.note=f.note.trim();
+    // La referencia de la casa NO puede traer links ni la marca del pin: el único pin de
+    // confianza lo pega la tienda al final ("📍 Ubicación: ..."), y el servidor lee SOLO eso.
+    // Sin esta limpieza, teclear acá un link de Maps con las coordenadas de la carnicería
+    // era mandar una ubicación falsa y pagar el envío mínimo viviendo lejos (oct 2026).
+    f.addr=f.addr.replace(/\S*maps\.\S*|https?:\/\/\S+|📍/gi,"").replace(/\s{2,}/g," ").trim();
     // ---- Validación de campos obligatorios ----
     var out=soldLines();
     if(out.length||sinCorteLines().length){ volverAlPedido(); return; } // se acabó (o falta un corte) mientras llenaba el checkout
