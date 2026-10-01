@@ -2466,14 +2466,14 @@
         var url="intent://"+location.host+location.pathname+location.search+"#Intent;scheme=https;package=com.android.chrome;end";
         extra='<a class="lnk-loc" id="geoChrome" href="'+url+'">Abrir la tienda en Chrome</a>';
       } else if(ios){
-        txt+=" Tocá los tres puntos (•••) y elegí <b>Abrir en Safari</b>.";
+        txt+=" Tocá los tres puntos (•••) y elegí <strong>Abrir en Safari</strong>.";
       } else {
         txt+=" Abrí esta página en tu navegador (Chrome o Safari).";
       }
     } else if(motivo==="negado"){
       txt="Tu teléfono no dio permiso de ubicación. "+(ios
-        ? "Activalo en <b>Ajustes → Privacidad → Localización → Safari</b> y volvé a intentar."
-        : "Tocá el candado junto a la dirección de la página → <b>Permisos → Ubicación</b> y volvé a intentar.");
+        ? "Activalo en <strong>Ajustes → Privacidad → Localización → Safari</strong> y volvé a intentar."
+        : "Tocá el candado junto a la dirección de la página → <strong>Permisos → Ubicación</strong> y volvé a intentar.");
     } else if(motivo==="nosoporte"){
       txt="Este navegador no comparte la ubicación. Abrí la tienda en Chrome o Safari.";
     } else {
