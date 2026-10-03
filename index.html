@@ -272,6 +272,24 @@
   .codein{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px 14px;
     color:var(--cream);font-size:26px;font-family:inherit;font-weight:800;letter-spacing:.42em;text-align:center;outline:none}
   .codein:focus{border-color:var(--red)}
+  /* Código por SMS: 6 casillas (adaptado de React Bits CodeSlots, MIT + Commons Clause) */
+  .cslots{display:flex;gap:8px;justify-content:center;margin:6px 0 4px}
+  .cs{position:relative;flex:0 1 48px;min-width:44px;height:58px;background:var(--card);border:1.5px solid var(--line);
+    border-radius:12px;transition:border-color .15s}
+  .cs:focus-within{border-color:var(--red)}
+  .cs.ok{border-color:#17853F}.cs.mal{border-color:var(--red)}
+  .cs .d{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;display:grid;place-items:center;
+    font:700 26px/1 Poppins,Helvetica,sans-serif;color:var(--cream)}
+  .cs.ok .d{color:#4cc27a}
+  .cs .d i{font-style:normal;display:block}
+  .cs .d i.cae{animation:csIn .42s cubic-bezier(.34,1.56,.64,1)}
+  .cs .d i.sale{animation:csOut .26s ease-in forwards}
+  .cs input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;background:transparent;border:0;
+    color:transparent;caret-color:transparent;font-size:16px;text-align:center;border-radius:12px;z-index:1}
+  .cs input:focus-visible{border-radius:12px}
+  @keyframes csIn{from{transform:translateY(-120%);opacity:0}to{transform:none;opacity:1}}
+  @keyframes csOut{to{transform:translateY(120%);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.cs .d i.cae,.cs .d i.sale{animation:none}.cs{transition:none}}
   /* Pestañas Entrar / Crear cuenta (referencia de Ivan: ambas visibles) */
   .authtabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:100px;padding:4px;margin:2px 0 20px}
   .authtabs button{flex:1;min-height:44px;border:none;border-radius:100px;background:none;color:var(--muted);
@@ -1565,16 +1583,53 @@
     sTitle.textContent="Escribí el código"; setBack(true);
     sBody.innerHTML =
       '<div class="auth-lead">Te mandamos un código de 6 dígitos por mensaje al <b>+504 '+pesc(authTel)+'</b>.</div>'+
-      '<input id="a_code" class="codein" type="tel" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="one-time-code" aria-label="Código de 6 dígitos">'+
-      '<div class="auth-err" id="authErr"></div>'+
+      '<div class="cslots" id="a_code" role="group" aria-label="Código de 6 dígitos">'+
+        [0,1,2,3,4,5].map(function(i){ return '<div class="cs"><span class="d" aria-hidden="true"></span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="'+(i?'off':'one-time-code')+'" aria-label="Dígito '+(i+1)+' de 6" enterkeyhint="'+(i<5?'next':'done')+'"></div>'; }).join("")+'</div>'+
+      '<div class="auth-err" id="authErr" role="alert"></div>'+
       '<div class="auth-alt">¿No te llegó? <button type="button" id="aResend">Mandalo de nuevo</button></div>';
     sFoot.innerHTML='<button class="pay-wa" id="aOk" style="background:var(--red)">Confirmar</button>';
-    var inp=document.getElementById("a_code");
-    inp.addEventListener("input",function(){ var d=inp.value.replace(/\D/g,"").slice(0,6); if(inp.value!==d) inp.value=d; });
-    try{ inp.focus(); }catch(e){}
+    var cells=[].slice.call(document.querySelectorAll("#a_code input")), box=cells.map(function(c){return c.parentNode;}),
+        RM=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches, busy=false;
+    function code(){ return cells.map(function(c){return c.value;}).join(""); }
+    function put(i,ch){ // pinta la casilla: el dígito cae con rebote; al borrar, sale
+      var c=cells[i], d=box[i].firstChild, was=d.textContent;
+      c.value=ch; if(ch===was) return;
+      d.innerHTML=ch?'<i class="cae">'+ch+'</i>':(was?'<i class="sale">'+was+'</i>':"");
+      if(!ch&&was) setTimeout(function(){ if(!c.value) d.innerHTML=""; },260);
+    }
+    function go(i){ i=Math.max(0,Math.min(5,i)); try{ cells[i].focus(); cells[i].select(); }catch(e){} }
+    function fill(i,txt){ // pegado o autocompletar: reparte los dígitos desde la casilla i
+      var n=txt.replace(/\D/g,"").slice(0,6-i);
+      for(var k=0;k<n.length;k++) put(i+k,n[k]);
+      go(i+n.length>5?5:i+n.length);
+      if(code().length===6) setTimeout(function(){ var b=document.getElementById("aOk"); if(b&&!b.disabled) b.click(); },RM?0:260);
+    }
+    window.__codeReset=function(){ // código malo: se vacía en cascada, de derecha a izquierda
+      busy=true; box.forEach(function(b){b.classList.add("mal");});
+      cells.slice().reverse().forEach(function(_,k){ setTimeout(function(){
+        put(5-k,""); if(k===5){ box.forEach(function(b){b.classList.remove("mal");}); busy=false; go(0); }
+      },RM?0:140+k*70); });
+    };
+    cells.forEach(function(c,i){
+      c.addEventListener("input",function(e){
+        if(busy){ c.value=box[i].firstChild.textContent; return; }
+        var v=c.value.replace(/\D/g,""), was=box[i].firstChild.textContent;
+        box.forEach(function(b){b.classList.remove("ok");});
+        if(!v){ c.value=was; if(was){ put(i,""); if(i>0) go(i-1); } return; }
+        c.value=was; fill(i,v);
+      });
+      c.addEventListener("keydown",function(e){
+        if(busy&&e.key!=="Tab"){ e.preventDefault(); return; }
+        if(e.key==="Backspace"&&!c.value&&i>0){ e.preventDefault(); put(i-1,""); go(i-1); }
+        else if(e.key==="ArrowLeft"){ e.preventDefault(); go(i-1); }
+        else if(e.key==="ArrowRight"){ e.preventDefault(); go(i+1); }
+      });
+      c.addEventListener("focus",function(){ try{ c.select(); }catch(e){} });
+    });
+    try{ cells[0].focus(); }catch(e){}
     document.getElementById("aOk").onclick=function(){
       authClearErr();
-      var code=inp.value.replace(/\D/g,"");
+      var code=cells.map(function(c){return c.value;}).join("");
       if(code.length!==6){ authErr("El código tiene 6 dígitos."); return; }
       var b=document.getElementById("aOk"); b.disabled=true; b.textContent="Confirmando…";
       var listo=authWait("Confirmando tu código");
@@ -1584,10 +1639,12 @@
           authErr(authFail(r));
           // Vaciar lo que escribió mal: si no, tiene que borrar 6 dígitos a mano
           // antes de reintentar, con el teclado abajo.
-          inp.value=""; try{ inp.focus(); }catch(e){}
+          window.__codeReset();
           return;
         }
-        view=(authFlow==="reset")?"nuevapass":"cuenta"; renderSheet(); topShell();
+        // Verde un instante antes de pasar a la cuenta (sin espera con movimiento reducido)
+        box.forEach(function(b){b.classList.add("ok");}); busy=true;
+        setTimeout(function(){ view=(authFlow==="reset")?"nuevapass":"cuenta"; renderSheet(); topShell(); },RM?0:450);
       }); });
     };
     document.getElementById("aResend").onclick=function(){
