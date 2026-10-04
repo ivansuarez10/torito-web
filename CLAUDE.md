@@ -82,6 +82,18 @@ python3 build-catalogo.py --check  # falla si quedó viejo
 
 El contexto completo (quién compra, para qué existe la tienda, restricciones) está en `PRODUCT.md`, en esta misma carpeta. **La restricción que más manda:** el cliente típico usa un **Android de gama baja con datos limitados**, así que el peso de la página es una restricción de producto, no una preferencia estética.
 
+## Optimización de tokens (aplica a toda sesión en este repo)
+
+El límite de uso es **por cuenta**, no por máquina: dos Macs o varias sesiones gastan la misma cuota. Reglas por defecto:
+
+- **Contexto:** al pasar de ~300k tokens, proponer un resumen (decisiones + estado + pendientes) y seguir en una sesión nueva. Una sesión por tema; cerrarla al terminar.
+- **Modelo:** Opus solo para decisiones de arquitectura o estrategia. Sonnet para ejecutar (código, correos, dashboards, tareas repetitivas). Haiku para lo mecánico. Esfuerzo bajo en tareas simples.
+- **Agentes:** máximo 2-3 en paralelo por máquina, y solo si las tareas son independientes. No lanzar subagentes para lo que resuelve una sola sesión.
+- **Lecturas:** leer solo la sección necesaria (offset/limit, grep), no archivos completos.
+- **Salida:** respuestas cortas; el diff o el resultado, sin recapitular lo ya establecido.
+- **Cada rama, un solo agente.** Nunca dos agentes en la misma rama.
+- **Correo:** los agentes crean borradores; los envíos los aprueba Ivan.
+
 ## Cuidado
 
 Es un sitio con clientes reales comprando. Verificar antes de tocar `main`, no después — el navegador está disponible para recorrer el flujo completo de compra.
