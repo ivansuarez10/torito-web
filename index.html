@@ -598,20 +598,33 @@
      escrito encima. El juego de banners lo elige el JS (heroDelAncho), así que el
      teléfono nunca descarga los de escritorio ni al revés. */
   .bnr{display:block;position:relative;background:#000;overflow:hidden}
-  .bnr-track{display:flex;transition:transform .5s cubic-bezier(.16,1,.3,1);will-change:transform}
+  /* El alto del carrusel se reserva desde el primer cuadro (4:5 en celular, 1600:526 en
+     computadora): el JS arma los slides cuando llega el catálogo, y sin esto la página
+     entera saltaba ~490 px hacia abajo en ese momento. */
+  .bnr-track{display:flex;aspect-ratio:900/1125;transition:transform .5s cubic-bezier(.16,1,.3,1);will-change:transform}
   .bnr-slide{flex:0 0 100%;position:relative;min-width:0}
-  .bnr-slide a{display:block}
-  .bnr-slide img{display:block;width:100%;height:auto}
+  .bnr-slide a{display:block;position:relative}
+  .bnr-slide img{display:block;width:100%;height:auto;opacity:0;transition:opacity .35s}
+  .bnr-slide img.on{opacity:1}
+  /* Slide de video: el video va encima de la foto que ya trae el banner (misma toma y mismo
+     recorte), así que mientras no carga o no corre, el banner estático comunica solo. */
+  .bnr-vid{position:absolute;left:48.89%;top:41.78%;width:51.11%;height:48.27%;object-fit:cover;object-position:50% 70%;
+    opacity:0;transition:opacity .3s;pointer-events:none;background:transparent}
+  .bnr-vid.on{opacity:1}
   .bnr-dots{position:absolute;left:0;right:0;bottom:2px;display:flex;justify-content:center;gap:2px;z-index:3}
   .bnr-dots button{width:34px;height:34px;padding:0;background:none;border:none;cursor:pointer;
     display:flex;align-items:center;justify-content:center}
   .bnr-dots button i{display:block;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.42);transition:background .2s,width .2s}
   .bnr-dots button[aria-current="true"] i{background:var(--red);width:20px;border-radius:4px}
+  /* En celular los puntos caen sobre la barra roja que traen los banners: el activo en rojo se perdía. */
+  @media (max-width:767px){ .bnr-dots button[aria-current="true"] i{background:#fff} }
   .bnr-arrow{display:none}
   @media (min-width:768px){
     /* Los puntos salen FUERA de la imagen: encima caían sobre el recuadro rojo del
        banner y el punto activo, que también es rojo, desaparecía. */
     .bnr{max-width:var(--site,1160px);margin:0 auto;border-radius:16px;padding-bottom:26px}
+    .bnr-track{aspect-ratio:1600/526}
+    .bnr-vid{left:45%;top:0;width:55%;height:87.45%;object-position:50% 72%}
     /* ⚠️ NADA de overflow:hidden en el carril: el carril SE MUEVE, así que su propia caja
        se va de la pantalla y recorta las diapositivas que tiene que mostrar (pasó: solo
        se veía la primera). El recorte lo hace la sección, que está quieta. */
@@ -627,7 +640,7 @@
   }
   /* Quien pidió menos movimiento no ve el carrusel moverse solo (lo apaga el JS) ni
      con transición al cambiar de mano. */
-  @media (prefers-reduced-motion:reduce){ .bnr-track{transition:none} }
+  @media (prefers-reduced-motion:reduce){ .bnr-track,.bnr-slide img,.bnr-vid{transition:none} }
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .loading{text-align:center;color:var(--muted);padding:60px 20px}
   /* El catálogo en texto que viaja en el HTML (lo escribe build-catalogo.py). Se ve solo
@@ -3040,15 +3053,17 @@
   // ni se escribe texto encima — cada pieza trae su mensaje adentro, compuesto para su
   // formato. Por eso el `alt` repite lo que dice la imagen: es lo único que le queda a
   // quien no puede verla.
+  // Tres banners (decisión de Ivan, 5 oct 2026). "vid" = el slide lleva video encima de
+  // la foto (celular.mp4/.webm); el resto es solo imagen.
   var HERO_ESC=[
-    {img:"honduras-w", alt:"El sabor de Honduras en su mejor versión · el chorizo perfecto para celebrar lo nuestro", href:"#cat-embutidos"},
-    {img:"pasos-w",    alt:"Realizá tu compra en 3 simples pasos: armá tu pedido, confirmamos el total, pagás y recibís", href:"#catalogo"},
-    {img:"antojo-w",   alt:"Uno para cada antojo: barbacoa, ahumado, parrillero, suelto, cervecero, indio y criollo", href:"#cat-embutidos"}
+    {img:"parrilla-w", alt:"Hoy toca parrilla: sábado de brasa con los cuatro chorizos Torito, listos para la parrillada del finde. Pedí hoy", href:"#cat-embutidos"},
+    {img:"celular-w",  alt:"Pedí desde tu celular: te lo llevamos en Tegucigalpa, o retiralo en el local. Pedí hoy en carniceriaeltorito.com", href:"#catalogo", vid:1},
+    {img:"mostrador-w",alt:"Retirá en el mostrador, o te lo llevamos en Tegucigalpa. Mercado San Pablo, Barrio El Manchén. Pedí hoy", href:"#catalogo"}
   ];
   var HERO_CEL=[
-    {img:"orgullo-v", alt:"Septiembre sabe a orgullo hondureño con nuestros cortes premium", href:"#cat-res"},
-    {img:"sabor-v",   alt:"El sabor de Honduras en su mejor versión · el chorizo perfecto para celebrar lo nuestro", href:"#cat-embutidos"},
-    {img:"pasos-v",   alt:"Realizá tu compra en 3 simples pasos: armá tu pedido, confirmamos el total, pagás y recibís", href:"#catalogo"}
+    {img:"parrilla-m", alt:"Hoy toca parrilla: sábado de brasa con los cuatro chorizos Torito, listos para la parrillada del finde. Pedí hoy", href:"#cat-embutidos"},
+    {img:"celular-m",  alt:"Pedí desde tu celular: te lo llevamos en Tegucigalpa, o retiralo en el local. Pedí hoy en carniceriaeltorito.com", href:"#catalogo", vid:1},
+    {img:"mostrador-m",alt:"Retirá en el mostrador, o te lo llevamos en Tegucigalpa. Mercado San Pablo, Barrio El Manchén. Pedí hoy", href:"#catalogo"}
   ];
   var HERO=HERO_ESC;
   // Ahora las dos pantallas llevan carrusel; lo que cambia es el juego de banners. Se
@@ -3080,7 +3095,9 @@
       return '<div class="bnr-slide" role="group" aria-roledescription="banner" aria-label="'+(i+1)+' de '+HERO.length+'">'+
         '<a href="'+pesc(b.href)+'">'+
         '<img '+(i?'data-src="img/banners/'+b.img+'.webp"':'src="img/banners/'+b.img+'.webp" fetchpriority="high"')+
-          ' alt="'+pesc(b.alt)+'" decoding="async"></a></div>';
+          ' alt="'+pesc(b.alt)+'" decoding="async" onload="this.classList.add(\'on\')">'+
+        (b.vid?'<video class="bnr-vid" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1" disablepictureinpicture data-v="img/banners/celular"></video>':'')+
+        '</a></div>';
     }).join("");
     dots.innerHTML=HERO.map(function(b,i){
       return '<button type="button" role="tab" data-bnr="'+i+'" aria-label="Banner '+(i+1)+' de '+HERO.length+'" aria-current="'+(i===0)+'"><i></i></button>';
@@ -3106,6 +3123,9 @@
     var h=document.getElementById("bnr");
     if(!h.dataset.enganchado){
       h.dataset.enganchado="1";
+      // El video solo corre con el carrusel a la vista y la pestaña activa.
+      document.addEventListener("visibilitychange",heroVideo);
+      if(window.IntersectionObserver) new IntersectionObserver(function(e){ bnrVis=e[0].isIntersecting; heroVideo(); }).observe(h);
       h.addEventListener("mouseenter",heroPausa); h.addEventListener("mouseleave",heroAnda);
       h.addEventListener("focusin",heroPausa);
     }
@@ -3129,6 +3149,29 @@
     // Lo que no se ve no se lee en voz alta ni se tabula.
     bnrTrack.querySelectorAll(".bnr-slide").forEach(function(s,k){ s.setAttribute("aria-hidden", String(k!==heroI)); });
     if(manual) heroAnda();   // tocar reinicia el reloj: nadie quiere que salte encima
+    heroVideo();
+  }
+  // Video del slide 2: no se pide hasta que ese slide es el visible. Con "reducir
+  // movimiento", "ahorro de datos" o conexión 2g nunca se pide: queda el banner estático, que ya
+  // trae la misma foto. Al salir del slide se pausa; el carrusel no espera al video.
+  var bnrVis=true;
+  function heroVideo(){
+    if(!bnrTrack) return;
+    var off=false, c=navigator.connection;
+    try{ off=matchMedia("(prefers-reduced-motion:reduce)").matches||!!(c&&(c.saveData||/2g/.test(c.effectiveType))); }catch(e){}
+    // Nada de video mientras la página sigue cargando: no le quita ancho de banda a lo demás.
+    if(document.readyState!=="complete"){ if(!off) addEventListener("load",heroVideo,{once:true}); return; }
+    bnrTrack.querySelectorAll("video").forEach(function(v){
+      if(off||document.hidden||!bnrVis||v.closest(".bnr-slide")!==bnrTrack.children[heroI]){ v.pause(); v.classList.remove("on"); return; }
+      if(!v.firstChild){
+        var u=v.dataset.v;
+        v.muted=true; v.poster=u+"-poster.webp";
+        v.innerHTML='<source src="'+u+'.mp4" type="video/mp4"><source src="'+u+'.webm" type="video/webm">';
+        v.addEventListener("playing",function(){ v.classList.add("on"); });
+        v.load();
+      }else{ try{ v.currentTime=0; }catch(e){} }
+      var p=v.play(); if(p&&p.catch) p.catch(function(){});
+    });
   }
   function heroPausa(){ if(heroTimer){ clearInterval(heroTimer); heroTimer=null; } }
   function heroAnda(){
@@ -3138,6 +3181,9 @@
     if(HERO.length<2) return;
     heroTimer=setInterval(function(){ if(!document.hidden) heroIr(heroI+1,false); },6000);
   }
+  // Los banners no dependen del catálogo: se arman ya, sin esperar a catalog.json ni a la nube.
+  // (La llamada de cuando llega el catálogo queda como respaldo; no hace nada si ya se armó.)
+  heroDelAncho();
 })();
 </script>
 <script>
@@ -3203,8 +3249,8 @@
       var f=new Image();
       f.onload=res; f.onerror=res;
       f.src = matchMedia('(min-width:768px)').matches
-        ? 'img/banners/honduras-w.webp'
-        : 'img/banners/orgullo-v.webp';
+        ? 'img/banners/parrilla-w.webp'
+        : 'img/banners/parrilla-m.webp';
     });
   }
 
