@@ -83,6 +83,7 @@
 </script>
 <!-- Animaciones del 08 Motion (aviso de licencia de React Bits adentro). No frena el primer
      pintado: solo anima el aviso, la barra y las tarjetas, que llegan después. -->
+<noscript><style>.skel{display:none}.preload{position:static;width:auto;height:auto;margin:0 auto;padding:8px 20px 30px;overflow:visible;clip:auto;clip-path:none;white-space:normal;max-width:680px}</style></noscript>
 <link rel="stylesheet" href="css/motion.css" media="print" onload="this.media='all'" />
 <style>
   /* Poppins servida desde la tienda (APROBACIONES 11b): solo los dos grosores que se usan
@@ -212,11 +213,37 @@
     .welcome-over,.welcome-actions{justify-content:center}
     .welcome-sub{max-width:46ch;margin-left:auto;margin-right:auto}
   }
+  /* Tarjeta "Tu último pedido" del home: una sola, con alto reservado (wh-c / wh-s) para que
+     el saludo no empuje el catálogo. Sin animación de entrada: ya nace pintada. */
+  #welcomeHost.wh-c{min-height:216px} #welcomeHost.wh-s{min-height:136px}
+  @media (min-width:768px){ #welcomeHost.wh-c{min-height:232px} #welcomeHost.wh-s{min-height:136px} }
+  .ult-home{margin-top:16px;max-width:420px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 14px;
+    background:var(--card);border:1px solid #232323;border-radius:18px;padding:14px 14px 12px 18px;min-height:96px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .uh-t{min-width:0} .uh-l{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .uh-d{display:block;font-family:"Poppins",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.015em;margin-top:3px;min-height:1.3em}
+  .uh-b{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 17px;background:var(--red);color:#fff;border:none;border-radius:100px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+  .uh-b:hover{background:var(--red-d)} .uh-b:disabled{opacity:.4;cursor:default} .uh-b svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .uh-n{grid-column:1/-1;font-size:12.5px;color:var(--muted);line-height:1.4}
+  @media (min-width:768px){ .ult-home{margin-left:auto;margin-right:auto;text-align:left} }
+  /* Guardar la tienda en el teléfono (una sola vez, bajo el folio y el botón de WhatsApp) */
+  .conf-pwa{margin-top:22px;text-align:left;background:var(--card);border:1px solid #232323;border-radius:18px;padding:16px}
+  .cp-t{font-size:14.5px;line-height:1.45;color:var(--cream)}
+  .cp-r{display:flex;gap:8px;margin-top:13px}
+  .cp-r button{flex:1;min-height:44px;border-radius:100px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;touch-action:manipulation}
+  .cp-y{background:var(--red);color:#fff;border:none} .cp-y:hover{background:var(--red-d)}
+  .cp-n{background:none;color:var(--muted);border:1px solid #232323}
+  .cp-s{margin:13px 0 0;padding:0;list-style:none;counter-reset:p}
+  .cp-s li{counter-increment:p;font-size:14px;line-height:1.45;padding:7px 0 7px 30px;position:relative;color:var(--cream)}
+  .cp-s li:before{content:counter(p);position:absolute;left:0;top:8px;width:21px;height:21px;border-radius:50%;background:#232323;font-size:12px;font-weight:800;display:grid;place-items:center}
+  .cp-s b{font-weight:800} .cp-s svg{width:14px;height:14px;vertical-align:-2px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .cp-h{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:10px}
+  #confBody .conf-pwa{opacity:0;animation:confUp .5s cubic-bezier(.2,.7,.2,1) 2.5s forwards}
+  @media (prefers-reduced-motion:reduce){#confBody .conf-pwa{animation:none;opacity:1}}
   /* ===== Cierre del pedido: procesando -> gracias -> WhatsApp =====
      Cubre una espera REAL (el envío a Comandas y el salto a WhatsApp), no una inventada. */
-  .conf{position:fixed;inset:0;z-index:120;background:#000;display:none;align-items:center;justify-content:center;padding:28px 22px;text-align:center}
+  .conf{position:fixed;inset:0;z-index:120;background:#000;display:none;align-items:center;justify-content:center;padding:28px 22px;text-align:center;overflow-y:auto;align-items:flex-start}
   .conf.on{display:flex}
-  .conf-in{max-width:380px;width:100%}
+  .conf-in{max-width:380px;width:100%;margin:auto}
   /* El toro de la marca como indicador: silueta gris que se llena de rojo de abajo
      hacia arriba. Se usa logo.png como MÁSCARA (tiene alfa), así el color lo pone el CSS. */
   .bullload{position:relative;width:158px;height:97px;margin:0 auto 24px}
@@ -253,6 +280,11 @@
   .conf-ok svg{width:72px;height:72px}
   .conf-acts{margin-top:26px}
   .conf-hint{margin-top:13px;font-size:12.5px;color:#6f6f6f}
+  #confBody .cf .conf-t,#confBody .cf .conf-s,#confBody .cf .conf-acts,#confBody .cf .conf-back{animation:none;opacity:1}   /* en el fallo, todo a la vez: nadie espera para ver la salida */
+  .conf-fail{width:72px;height:72px;margin:0 auto 20px;color:#8f8f8f} .conf-fail svg{width:72px;height:72px}
+  #confBody .conf-acts .pay-red,#confBody .conf-acts .pay-alt{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:14px;font-family:inherit;font-weight:800;font-size:16px;cursor:pointer}
+  .pay-red{background:var(--red);color:#fff;border:none} .pay-red:hover{background:#c11c22}
+  .pay-alt{background:#161616;color:#f2f2f2;border:1px solid #333;margin-top:10px} .pay-alt svg{width:20px;height:20px;fill:currentColor}
   .conf-back{margin-top:16px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;text-decoration:underline;cursor:pointer;padding:10px;min-height:44px}
   /* ===== Cuenta del cliente (OPCIONAL: nunca bloquea la compra) ===== */
   .acctbtn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 12px;
@@ -601,7 +633,28 @@
   /* El catálogo en texto que viaja en el HTML (lo escribe build-catalogo.py). Se ve solo
      el instante que tarda el JavaScript en reemplazarlo por el catálogo de verdad — o un
      rato largo, si la señal está mala, y de eso se trata: que algo se pueda leer. */
-  .preload{padding:8px 20px 30px;max-width:680px;margin-inline:auto}
+  /* Lista de texto para buscadores y quien no tiene JS: sigue en el HTML pero fuera de la vista, sin ocupar
+     lugar, para que no se vea reemplazada de golpe por las tarjetas (sin-flash 4 oct 2026). */
+  .preload{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+  /* Tarjetas esqueleto: del tamaño final de la primera sección y con 200 ms de retardo, para que no parpadeen
+     si el catálogo llega rápido. Sin pulso ni brillo que corra: solo aparecen con un fundido. */
+  .skel{padding:var(--sp-8) var(--gutter) 0;min-height:100vh;overflow:hidden;animation:skel-in 240ms ease 200ms backwards}
+  .skel .sk-h{height:calc(var(--fs-h1) * 1.2);width:42%;border-radius:8px;background:var(--surface)}
+  .skel .sk-t{height:calc(var(--fs-small) * 1.5);width:62%;margin-top:4px;border-radius:6px;background:var(--surface)}
+  .skel .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);margin-top:var(--sp-4)}
+  .sk-card{height:var(--row-h-sk,288px);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--sh-1);overflow:hidden;display:flex;flex-direction:column;gap:var(--sp-2)}
+  .sk-card i{display:block;border-radius:6px;background:var(--surface-2);margin:0 var(--sp-3)}
+  .sk-card i:first-child{margin:0;border-radius:0;aspect-ratio:3/2;background:var(--media-bg)}
+  .sk-card i:nth-child(2){height:16px;width:70%;margin-top:var(--sp-2)}
+  .sk-card i:nth-child(3){height:12px;width:90%}
+  .sk-card i:nth-child(4){height:22px;width:40%;margin-top:auto}
+  .sk-card i:nth-child(5){height:44px;border-radius:var(--r-pill);margin:0 var(--sp-2) var(--sp-2)}
+  .skel-n{text-align:center;color:var(--ink-2);font-size:13px;padding-top:var(--sp-4)}
+  @keyframes skel-in{from{opacity:0}to{opacity:1}}
+  /* La regla de Reducir movimiento de más abajo apaga animaciones dentro de #secciones; aquí queda solo el fundido corto. */
+  @media (prefers-reduced-motion:reduce){.skel{animation:skel-in 150ms linear 200ms backwards!important}}
+  @media (min-width:900px){.skel{padding:var(--sp-12) var(--sp-6) 0}.skel .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5)}}
+  /* Sin JS no hay catálogo que pintar: se ve la lista de texto y no el esqueleto (ver <noscript> en el <head>). */
   .preload section{margin-bottom:22px}
   .preload h2{font-family:"Poppins",sans-serif;font-weight:800;font-size:15px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--cream);margin:0 0 8px}
@@ -872,6 +925,15 @@
   .blank p{margin-top:4px;color:var(--ink-2);font-size:15px;max-width:32ch;margin-inline:auto}
   .blank p b{color:var(--ink)}
   .blank .cta{margin:var(--sp-5) auto 0;display:inline-flex}
+  /* Kit de detalle (4 oct): vuelo al contador y estados vacíos. El hueco punteado ES el botón. */
+  .fly{position:fixed;left:0;top:0;z-index:80;pointer-events:none}
+  .fly i{display:block;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+  .psheet .slot,.blank .sug button{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:var(--tap);border:1.5px dashed #707070;color:var(--ink);font-size:15px;font-weight:var(--fw-strong);transition:border-color var(--dur-fast) linear,color var(--dur-fast) linear}
+  .psheet .slot{width:100%;min-height:56px;margin-top:var(--sp-5);border-radius:var(--r-md)}
+  .blank .sug{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2);margin-top:var(--sp-4)}
+  .blank .sug button{padding:0 var(--sp-4);border-radius:var(--r-pill)}
+  .psheet .slot:hover,.blank .sug button:hover,.psheet .slot:focus-visible,.blank .sug button:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}
+  .psheet .slot:hover .ico,.psheet .slot:focus-visible .ico{color:var(--accent)}
   .cta{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:52px;padding:0 var(--sp-6);border-radius:var(--r-pill);background:var(--accent);color:var(--on-accent);font-size:17px;font-weight:var(--fw-strong);text-decoration:none;white-space:nowrap;box-shadow:var(--sh-2);transition:transform var(--dur-fast) var(--ease-out),background var(--dur-fast)}
   .cta:active{transform:scale(.98);background:var(--accent-press)}
   .cta:disabled{opacity:.45;cursor:not-allowed;transform:none}
@@ -1225,7 +1287,7 @@
     <span class="ti">3 · Te lo llevamos o lo retirás</span>
   </div></div>
 
-  <div id="welcomeHost"></div>
+  <div id="welcomeHost"></div><script>try{var l=localStorage,h=document.getElementById("welcomeHost");if(l.getItem("torito_lastorder_v1")||l.getItem("torito_sess_v1"))h.className="wh-c";else if(l.getItem("torito_profile_v1"))h.className="wh-s"}catch(e){}</script>
 
   <!-- CATÁLOGO (rediseño aprobado el 30 sep 2026). La barra de categorías con la lupa es sticky
        y este envoltorio la ACOTA al catálogo: al pasar al FAQ y al pie deja de flotar encima.
@@ -1243,7 +1305,7 @@
     <!-- Lo de adentro de las marcas lo GENERA build-catalogo.py: es el catálogo en texto, para
          que el HTML que descarga un buscador (y quien tiene señal mala) traiga los nombres de
          los cortes. js/tienda.js lo reemplaza por el catálogo de verdad apenas carga. NO editar a mano. -->
-    <main id="catalog"><div id="secciones"><!-- CATALOGO-SEO:INICIO · generado por build-catalogo.py · NO editar a mano -->
+    <main id="catalog"><div id="secciones"><div class="skel" id="skel" aria-hidden="true"><div class="sk-h"></div><div class="sk-t"></div><div class="grid"><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div><div class="sk-card"><i></i><i></i><i></i><i></i><i></i></div></div><p class="skel-n" hidden></p></div><!-- CATALOGO-SEO:INICIO · generado por build-catalogo.py · NO editar a mano -->
     <div class="preload" id="preloadCat">
       <section><h2>Res</h2><ul>
         <li><b>Bistec</b> — Fino y tierno, listo para el sartén.</li>
@@ -1472,39 +1534,60 @@
   }
   // Reconstruye el carrito con el último pedido (mismas cantidades y cortes).
   function repeatLast(){
-    if(!LASTORDER||!LASTORDER.items||!carritoListo()) return;
+    if(!LASTORDER||!LASTORDER.items) return;
+    if(!carritoListo()){ document.addEventListener("torito:listo",repeatLast,{once:true}); return; }
     // Mismas cantidades y cortes. Si un corte ya no se ofrece (o el pedido es de antes de
     // los cortes), la línea entra "sin corte" y "Tu pedido" pide elegirlo antes de seguir.
+    var puestos=0;
     LASTORDER.items.forEach(function(it){ var p=prodById(it.id); if(!p) return;
-      window.ToritoCart.add(it.id, it.qty||UNIT[p.unit].def, {cut:it.cut||null, sinCorte:true}); });
+      var r=window.ToritoCart.add(it.id, it.qty||UNIT[p.unit].def, {cut:it.cut||null, sinCorte:true}); if(r&&r.ok) puestos++; });
+    if(!puestos){ toast("Hoy no tenemos nada de ese pedido"); return; }
     if(sheetOpen) closeSheet();
     window.ToritoTienda.abrirPedido();
   }
   // Pinta el saludo + repetir pedido en el home (si el navegador ya conoce al cliente).
   function renderWelcome(){
     var host=document.getElementById("welcomeHost"); if(!host) return;
-    var lastValid=(LASTORDER&&LASTORDER.items)?LASTORDER.items.filter(function(it){return prodById(it.id);}):[];
-    // Tener CUENTA también cuenta para saludar. Antes el saludo dependía solo del perfil
-    // local, que se escribe al CONCRETAR un pedido: la clienta que se registraba y todavía
-    // no había comprado entraba a un home anónimo, como si no la conociéramos.
+    // El tarjeta NO espera al catálogo: la fecha y el botón salen de lo guardado, así el
+    // home nace con su alto final (sin salto). Si un producto ya no existe, repeatLast avisa.
+    var hasLast=!!(LASTORDER&&LASTORDER.items&&LASTORDER.items.length);
     var conCuenta=!!(SESS&&SESS.at);
-    if(!PROFILE && !lastValid.length && !conCuenta){ host.innerHTML=""; return; }
+    if(!PROFILE && !hasLast && !conCuenta){ host.innerHTML=""; host.className=""; return; }
     var name=firstName((PROFILE&&PROFILE.name)||(SESS&&SESS.nom)||"");
-    var hasLast=lastValid.length>0;
-    // "De nuevo" solo si de verdad hubo una vez anterior. A quien se acaba de registrar se
-    // le dice "Buenas" a secas: saludar con "de nuevo" a alguien que nunca compró suena a
-    // que el sitio no sabe quién es.
     var yaCompro=!!LASTORDER;
+    // Cuenta en otro aparato (sin pedido guardado acá): la tarjeta nace con su alto y se llena al llegar el pedido.
+    var viaCuenta=!hasLast&&conCuenta;
     var h='<div class="welcome">'+
       '<div class="welcome-over"><span class="ln"></span>El Torito · Desde 1970</div>'+
       '<div class="welcome-hi">'+(yaCompro?'Buenas de nuevo':'Buenas')+(name?', '+pesc(name)+'.':'.')+'</div>'+
-      '<div class="welcome-sub">'+(hasLast?'Tu carnicería de siempre. ¿Repetimos lo de la otra vez?':'Tu carnicería de siempre, lista cuando vos.')+'</div>';
-    if(hasLast){
-      h+='<div class="welcome-actions"><button class="btn-repeat" id="btnRepeat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Repetir mi pedido ('+lastValid.length+')</button></div>';
-    }
-    h+='</div>';
-    host.innerHTML=h;
-    var br=document.getElementById("btnRepeat"); if(br)br.onclick=repeatLast;
+      ((hasLast||viaCuenta)?'<div class="ult-home" id="ultHome"><div class="uh-t"><span class="uh-l">Tu último pedido</span>'+
+        '<span class="uh-d" id="uhD">'+(hasLast?pesc(fechaHora(LASTORDER.at).split(" · ")[0]):'&nbsp;')+'</span></div>'+
+        '<button class="uh-b" id="btnRepeat"'+(hasLast?'':' disabled')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Pedir de nuevo</button>'+
+        '<div class="uh-n">Queda en tu carrito y lo podés cambiar.</div></div>'
+       :'<div class="welcome-sub">Tu carnicería de siempre, lista cuando vos.</div>')+
+      '</div>';
+    if(host.dataset.h!==h){ host.innerHTML=h; host.dataset.h=h; }
+    host.className=(hasLast||viaCuenta)?"wh-c":"wh-s";
+    var br=document.getElementById("btnRepeat"); if(br&&hasLast)br.onclick=repeatLast;
+    if(viaCuenta) ultimoDeCuenta();
+  }
+  // Cuenta sin pedido guardado en este aparato: trae SOLO el último pedido de la cuenta
+  // (misma consulta de "Mis pedidos") y reutiliza repetirPedido.
+  var ultCtaPedido=false;
+  function ultimoDeCuenta(){
+    if(ultCtaPedido) return; ultCtaPedido=true;
+    sesionValida().then(function(tok){
+      if(!tok) return;
+      return fetch(SUPA_URL+"/rest/v1/orders?select=folio,status,created_at,items&status=neq.cancelada&order=created_at.desc&limit=1",
+        {headers:{apikey:SUPA_KEY,Authorization:"Bearer "+tok}})
+        .then(function(r){return r.ok?r.json():[];})
+        .then(function(rows){
+          var o=rows&&rows[0], d=document.getElementById("uhD"), b=document.getElementById("btnRepeat");
+          if(!o||!(o.items||[]).length||!d||!b){ var u=document.getElementById("ultHome"); if(u) u.style.visibility="hidden"; return; }
+          REPES[o.folio]=o.items; d.textContent=fechaHora(o.created_at).split(" · ")[0]; b.disabled=false;
+          b.onclick=function(){ if(carritoListo()) repetirPedido(o.folio); else document.addEventListener("torito:listo",function(){ repetirPedido(o.folio); },{once:true}); };
+        });
+    }).catch(function(){ ultCtaPedido=false; });
   }
   // ---- Pantalla: crear cuenta / entrar ----
   function authView(){
@@ -2245,6 +2328,7 @@
   // conocía y la trataba de desconocida al mismo tiempo.
   var sesionVencida=false;
   try{ SESS=JSON.parse(localStorage.getItem("torito_sess_v1")||"null"); }catch(e){ SESS=null; }
+  try{ renderWelcome(); }catch(e){}   // sin esperar al catálogo: el saludo y la tarjeta nacen con su alto final
   function saveSess(o){ SESS=o; try{ o?localStorage.setItem("torito_sess_v1",JSON.stringify(o))
     :localStorage.removeItem("torito_sess_v1"); }catch(e){}
     // El home se pintaba UNA sola vez al arrancar, así que al registrarse el saludo no
@@ -2818,9 +2902,7 @@
     var order={folio:fol,client_name:f.name,phone:f.phone,delivery:ship.mode==="domicilio",zone:"",addr:addrFull,shipping:envio,note:noteFull,status:"cotizar",paid:false,created_at:Date.now(),source:"web",
       items:lines.map(function(l){return{name:l.p.name,cat:l.p.cat,qty:l.qty,unit:l.p.unit,price:l.p.price,total:l.total,corte:l.cut||null,validate:!!l.p.validate,quote:!!l.p.quote,over:!!l.big}}),
       hist:[{at:Date.now(),ev:"Pedido creado desde la tienda web"}]};
-    var enviado=null;
-    track("sent",null,null,{folio:fol,n_items:lines.length});
-    try{ enviado=fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)}).catch(function(){}); }catch(e){}
+    if(enviando) return; enviando=true;   // un solo envío a la vez (doble toque)
 
     // ---- Mensaje de WhatsApp: SOLO la lista de productos. Datos/envío/totales/ubicación/folio van a Comandas (submit-order), NO al cliente. El total con cuenta de pago se le envía después desde Comandas (espera de pago). ----
     var s="Hola El Torito, me gustaría hacer este pedido. Confírmenme disponibilidad y el total, porfa:\n\n";
@@ -2830,39 +2912,102 @@
     });
     // A domicilio sin ubicación: que adjunte su ubicación de WhatsApp, así la carnicería le pone precio al envío sin llamar.
     if(envioConvenir) s+="\nEs a domicilio y no pude compartir mi ubicación desde la página: les mando mi ubicación por aquí (clip → Ubicación).\n";
-    rememberOrder(f,lines,fol); // perfil local: datos + último pedido + folio + favoritos
-    try{ window.ToritoCart.clear(); }catch(e){}
-    showConfirm(fol, "https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s), enviado);
+    // Carrito y datos se limpian SOLO si el servidor confirma (showConfirm → ok). El mismo `order` (mismo folio) se reusa en cada reintento.
+    showConfirm(fol, "https://wa.me/"+WA_PHONE+"?text="+encodeURIComponent(s), order, function(){ rememberOrder(f,lines,fol); try{ window.ToritoCart.clear(); }catch(e){} track("sent",null,null,{folio:fol,n_items:lines.length}); });
+  }
+  var enviando=false;
+  // true solo si submit-order confirma. Timeout 15 s. Un 500 "duplicate key" = el intento anterior sí llegó (id = web_+folio) → cuenta como éxito.
+  function postOrder(order){
+    var c=window.AbortController?new AbortController():null, t;
+    var lim=new Promise(function(r){ t=setTimeout(function(){ if(c)c.abort(); r(false); },15000); });
+    var req=fetch(SUPA_URL+"/functions/v1/submit-order",{method:"POST",keepalive:true,signal:c&&c.signal,headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},body:JSON.stringify(order)})
+      .then(function(r){ return r.ok||r.json().then(function(j){ return /duplicate|unique/i.test(j.detail||""); },function(){return false}); },function(){return false});
+    return Promise.race([req,lim]).then(function(ok){ clearTimeout(t); return ok; });
   }
 
   // Cierre del pedido. Antes el cliente saltaba a WhatsApp sin ningún cierre: si el salto
   // fallaba (el interstitial de api.whatsapp.com) se quedaba sin folio y sin saber si su
   // pedido existía. El botón NO es decorativo: iOS bloquea la navegación que no nace de un
   // toque del usuario, y ese toque es ademas la confirmacion explicita que no teniamos.
-  function showConfirm(fol, waUrl, enviado){
+  function showConfirm(fol, waUrl, order, alOk){
     var ov=document.getElementById("confOv"), body=document.getElementById("confBody");
-    if(!ov||!body){ window.location.href=waUrl; return; }   // sin overlay, nunca atrapar al cliente
+    if(!ov||!body){ enviando=false; window.location.href=waUrl; return; }   // sin overlay, nunca atrapar al cliente
     if(sheetOpen) closeSheet();
-    body.innerHTML='<div class="bullload" aria-hidden="true"><i class="b-gris"></i><div class="bull-fill"><i></i></div></div>'+
-      '<div class="conf-t">Procesando tu pedido</div>'+
-      '<div class="conf-s">Estamos avisándole a la carnicería.</div>';
-    ov.classList.add("on");
-    var minimo=new Promise(function(r){setTimeout(r,1500);});   // Ivan la quiere pausada, que respire
-    var tope  =new Promise(function(r){setTimeout(r,2800);});
-    Promise.all([minimo, Promise.race([enviado||Promise.resolve(), tope])]).then(function(){
-      body.innerHTML='<div class="conf-ok"><svg viewBox="0 0 56 56"><circle class="ok-circ" cx="28" cy="28" r="24" fill="none" stroke="var(--red)" stroke-width="2.4"/><path class="ok-check" d="M18 29.5 25 36.5 39 21" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
+    var WAI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 2 .9 2.1c.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.2.1 1.5.7 1.7.9.3.1.4.2.5.3.1.2.1.7-.1 1.4z"/></svg>';
+    var quieto=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+    function pon(html,fn){   // cambio suave: se apaga, se cambia, se enciende (sin salto)
+      body.style.transition=quieto?"none":"opacity .18s"; body.style.opacity=0;
+      setTimeout(function(){ body.innerHTML=html; body.style.opacity=1; if(fn)fn(); },quieto?0:180);
+    }
+    function intento(primero){
+      enviando=true;
+      var h='<div class="bullload" aria-hidden="true"><i class="b-gris"></i><div class="bull-fill"><i></i></div></div>'+
+        '<div class="conf-t">Procesando tu pedido</div><div class="conf-s">Estamos avisándole a la carnicería.</div>';
+      if(primero){ body.style.opacity=1; body.innerHTML=h; ov.classList.add("on"); } else pon(h);
+      var minimo=new Promise(function(r){setTimeout(r,1500);});   // Ivan la quiere pausada, que respire
+      Promise.all([minimo, postOrder(order)]).then(function(r){ enviando=false; r[1]?ok():falla(); });
+    }
+    function falla(){
+      pon('<div class="cf"><div class="conf-fail" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="28" cy="28" r="24"/><path d="M28 16v14M28 38v.5"/></svg></div>'+
+        '<div class="conf-t">Todavía no nos llegó tu pedido</div>'+
+        '<div class="conf-s">Se cortó la conexión o tardó demasiado. Tu pedido sigue acá, no perdiste nada. Probá de nuevo o mandalo por WhatsApp.</div>'+
+        '<div class="conf-acts"><button class="pay-red" id="confRe">Reintentar</button><button class="pay-alt" id="confWa2">'+WAI+'Mandar por WhatsApp</button></div>'+
+        '<button class="conf-back" id="confBack">Volver al pedido</button></div>',function(){
+        document.getElementById("confRe").onclick=function(){ if(!enviando)intento(false); };
+        document.getElementById("confWa2").onclick=function(){ window.location.href=waUrl; };
+        document.getElementById("confBack").onclick=function(){ ov.classList.remove("on"); };
+        try{document.getElementById("confRe").focus();}catch(e){}
+      });
+    }
+    function ok(){
+      if(alOk)alOk();
+      pon('<div class="conf-ok"><svg viewBox="0 0 56 56"><circle class="ok-circ" cx="28" cy="28" r="24" fill="none" stroke="var(--red)" stroke-width="2.4"/><path class="ok-check" d="M18 29.5 25 36.5 39 21" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
         '<div class="conf-t">¡Gracias por confiar en El Torito!</div>'+
         '<div class="conf-s">Tu pedido ya nos llegó. Abrí WhatsApp para que te confirmemos disponibilidad y el total.</div>'+
         '<div class="conf-folio">Pedido <b>'+pesc(fol)+'</b></div>'+
-        '<div class="conf-acts"><button class="pay-wa" id="confWa"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 2 .9 2.1c.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.2.1 1.5.7 1.7.9.3.1.4.2.5.3.1.2.1.7-.1 1.4z"/></svg>Abrir WhatsApp</button></div>'+
+        '<div class="conf-acts"><button class="pay-wa" id="confWa">'+WAI+'Abrir WhatsApp</button></div>'+
         '<div class="conf-hint">Se abre en la app de WhatsApp con tu pedido escrito.</div>'+
-        '<button class="conf-back" id="confBack">Volver a la tienda</button>';
+        '<button class="conf-back" id="confBack">Volver a la tienda</button>'+guardarAviso(),function(){
       var w=document.getElementById("confWa");
       if(w) w.onclick=function(){ window.location.href=waUrl; };
       var b=document.getElementById("confBack");
       if(b) b.onclick=function(){ ov.classList.remove("on"); };
       if(w) try{w.focus();}catch(e){}
-    });
+      guardarAvisoBind();
+      });
+    }
+    intento(true);
+  }
+
+  // ---- Guardar la tienda en el teléfono: se ofrece UNA vez por aparato, bajo el folio y WhatsApp ----
+  var PWA_K="torito_pwa_v1", pwaEv=null;
+  window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); pwaEv=e; });
+  window.addEventListener("appinstalled",function(){ try{ localStorage.setItem(PWA_K,"1"); }catch(e){} });
+  function guardarAviso(){
+    try{
+      if(localStorage.getItem(PWA_K)) return "";
+      if((window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone) return "";
+      localStorage.setItem(PWA_K,"1");   // se marca al mostrarla: aparece una sola vez, la toque o no
+    }catch(e){ return ""; }   // sin almacenamiento no podemos prometer "una vez": mejor no mostrarla
+    return '<div class="conf-pwa" id="cPwa"><div class="cp-t">Guardá El Torito en tu teléfono para pedir más rápido la próxima vez.</div>'+
+      '<div class="cp-r"><button class="cp-y" id="cpY">Cómo hacerlo</button><button class="cp-n" id="cpN">Ahora no</button></div></div>';
+  }
+  function guardarAvisoBind(){
+    var c=document.getElementById("cPwa"); if(!c) return;
+    var y=document.getElementById("cpY"), n=document.getElementById("cpN");
+    n.onclick=function(){ c.style.display="none"; };
+    y.onclick=function(){
+      if(pwaEv){ try{ pwaEv.prompt(); }catch(e){} pwaEv=null; c.style.display="none"; return; }
+      var ua=navigator.userAgent, ios=/iPhone|iPad|iPod/.test(ua), and=/Android/.test(ua);
+      var dots='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>';
+      var sh='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>';
+      var A='<ol class="cp-s"><li>Tocá el menú '+dots+' del navegador, arriba a la derecha.</li><li>Elegí <b>Agregar a pantalla principal</b>.</li><li>Confirmá con <b>Agregar</b>.</li></ol>';
+      var I='<ol class="cp-s"><li>Tocá <b>Compartir</b> '+sh+', abajo en Safari.</li><li>Elegí <b>Agregar a inicio</b>.</li><li>Tocá <b>Agregar</b>.</li></ol>';
+      var t=ios?I:and?A:('<div class="cp-h">Android</div>'+A+'<div class="cp-h">iPhone</div>'+I);
+      c.innerHTML='<div class="cp-t">Así lo guardás:</div>'+t+'<div class="cp-r"><button class="cp-y" id="cpOk">Listo</button></div>';
+      document.getElementById("cpOk").onclick=function(){ c.style.display="none"; };
+      try{ document.getElementById("cpOk").focus(); }catch(e){}
+    };
   }
 
   // ===== Puente con el catálogo nuevo (js/tienda.js) =====

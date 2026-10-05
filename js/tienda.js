@@ -237,12 +237,16 @@
     if (!q) { secs.classList.remove("buscando"); box.hidden = true; box.innerHTML = ""; return; }
     var label = {}; cat.categories.forEach(function (c) { label[c.id] = c.label; });
     var res = cat.products.filter(function (p) { return norm(p.name + " " + (p.desc || "") + " " + label[p.cat]).indexOf(q) !== -1; });
+    var yaVacio = !!$(".nores", box);
     box.innerHTML = res.length
       ? '<section class="sec" id="resultados" aria-labelledby="resCount"><p class="tag" id="resCount" role="status">' + plural(res.length, "producto", "productos") + ' con «' + esc(raw) + '»</p><div class="grid">' + res.map(card).join("") + '</div></section>'
-      : '<div class="blank" role="status">' + ico("search") + '<p>No encontramos «' + esc(raw) + '». Probá con otra palabra, como res, pollo o chorizo.</p></div>';
+      : '<div class="blank nores" role="status">' + ico("search") + '<p>No encontramos «' + esc(raw) + '». Probá con una de estas:</p><div class="sug">' +
+        cat.categories.slice(0, 4).map(function (c) { return '<button type="button" data-act="sug" data-q="' + esc(c.label) + '">' + esc(c.label) + '</button>'; }).join("") + '</div></div>';
     box.hidden = false;
     secs.classList.add("buscando");
     watchImgs(box);
+    var nb = !res.length && !yaVacio && $(".nores", box), M = window.ToritoMotion;   // recién quedó sin resultados: fundido, no de golpe
+    if (nb && M && M.swap) M.swap(nb);
   }
   var searchT = null, lastInput = null;
   // Celular: #sInput (en la barra de categorías). Escritorio: #dInput (en la cabecera). Manda el último que se usó.
@@ -262,13 +266,19 @@
   // ---------- Barra "Ver mi pedido" y el carrito de la cabecera (04 §3.7) ----------
   function approx() { var f = K.flags(); return f.validate || f.quote; }
   function checkoutAbierto() { var s = document.getElementById("sheet"); return !!(s && s.classList.contains("open")); }
-  var lastCount = 0;
+  var lastCount = 0, barArmada = false;
   function renderBar() {
     var n = K.count(), bar = $("#orderbar"), bc = $("#cartCount"), prev = lastCount;
     lastCount = n;
     if (bc) bc.textContent = n;
     if (!bar) return;
-    bar.hidden = !n || sheetOpen || checkoutAbierto();
+    var estabaOculta = bar.hidden;
+    bar.hidden = !n || !listo || sheetOpen || checkoutAbierto();
+    // La barra sube solo si aparece por una acción (agregar, cerrar la hoja), nunca en la primera pintura
+    // de un carrito guardado: sin-flash 4 oct 2026.
+    if (estabaOculta && !bar.hidden && barArmada) {
+      bar.classList.remove("tm-bar-in"); void bar.offsetWidth; bar.classList.add("tm-bar-in");
+    }
     if (!n || !listo) return;
     var t = K.subtotal(), ax = approx();
     bar.setAttribute("aria-label", "Ver mi pedido: " + plural(n, "producto", "productos") + ", " + (ax ? "aprox. " : "") + money(t));
@@ -307,10 +317,46 @@
       toast("Listo, lo quitamos.");
     });
   }
+  // ---------- Vuelo al contador (kit de detalle (e), 4 oct 2026) ----------
+  // Trabajo: mostrar A DÓNDE fue lo que agregaste. Un punto sale del botón, hace un arco hasta el
+  // contador y ahí el número rueda y el badge late. Convive con lo aprobado el 30 sep (botón → contador,
+  // aviso con Deshacer): no lo reemplaza. Con Reducir movimiento no hay vuelo y queda lo de siempre.
+  var root = document.documentElement, lastTap = null;
+  function cartTarget() { var b = $("#orderbar"); return (b && !b.hidden && $(".count", b)) || $("#cartCount"); }
+  function countEls() { return [$("#cartCount"), $("#orderbar .count")].filter(Boolean); }
+  function canFly(from) { return !!(from && !reducido() && document.body.animate && visible(from) && cartTarget()); }
+  function flyHold(from) { if (!canFly(from)) return null; root.setAttribute("data-fly", ""); return { r: from.getBoundingClientRect(), n: K.count() }; }   // el botón se repinta al sumar: se guarda dónde estaba
+  function flyDone(f) {   // después de K.add: motion.min ya dejó pasar su golpe (se salta con data-fly)
+    Promise.resolve().then(function () { root.removeAttribute("data-fly"); });
+    if (f && K.count() > f.n) flyGo(f.r, f.n);
+  }
+  function flyGo(a, n0) {
+    var to = cartTarget(), M = window.ToritoMotion;
+    if (!to || !a || reducido() || !document.body.animate) return;
+    countEls().forEach(function (c) { if (n0 > 0 || c.id === "cartCount") c.textContent = n0; });   // el número espera al punto
+    var b = to.getBoundingClientRect(), x0 = a.left + a.width / 2, y0 = a.top + a.height / 2,
+      x1 = b.left + b.width / 2, y1 = b.top + b.height / 2, ms = Math.round(Math.max(180, Math.min(260, 140 + Math.hypot(x1 - x0, y1 - y0) * .12))),
+      o = document.createElement("div"), i = document.createElement("i");
+    o.className = "fly"; o.setAttribute("aria-hidden", "true"); o.appendChild(i); document.body.appendChild(o);
+    // X avanza parejo, Y acelera: la trayectoria es un arco, no una recta.
+    o.animate([{ transform: "translateX(" + x0 + "px)" }, { transform: "translateX(" + x1 + "px)" }], { duration: ms, easing: "cubic-bezier(.3,.6,.5,1)", fill: "forwards" });
+    var done = false;
+    function arrive() {
+      if (done) return; done = true; o.remove();
+      var t = cartTarget(), n = K.count();
+      countEls().forEach(function (c) { if (c.textContent != n) { c.textContent = n; if (c === t && M && M.roll) M.roll(c, 1); } });
+      if (t && M && M.pop) M.pop(t);
+    }
+    i.animate([{ transform: "translateY(" + y0 + "px) scale(1)" }, { transform: "translateY(" + y1 + "px) scale(.55)", opacity: .9 }], { duration: ms, easing: "cubic-bezier(.55,0,.9,.4)", fill: "forwards" }).onfinish = arrive;
+    setTimeout(arrive, ms + 400);   // red de seguridad: el número nunca se queda viejo
+  }
+  function footOf(id) { var c = $$('.card[data-pid="' + id + '"]').filter(visible)[0], e = c && ($(".foot button", c) || $(".foot", c)); return e && e.getBoundingClientRect(); }
+
   function addFromCard(id) {
     var p = cat.byId[id];
     if (hasCuts(p)) { openProduct(id); return; }
-    var prev = K.qtyOf(id), r = K.add(id);
+    var prev = K.qtyOf(id), f = flyHold(lastTap), r = K.add(id);
+    flyDone(f);
     if (r.ok) added(r.line, prev, r.line.qty - prev);
   }
 
@@ -445,11 +491,12 @@
       ui("falta-corte", { el: $("#blkCut") });
       return;
     }
-    var l = currentLine();
+    var l = currentLine(), n0 = K.count();
     if (l) {
       var prev = l.qty, nl = K.setQty(l.key, ps.qty);
       if (ps.qty > prev) track("add", p, ps.qty - prev);
       closeSheet(function () {
+        if (K.count() > n0) flyGo(footOf(p.id), n0);
         toast("Agregaste " + esc(qtyText(p, nl.qty)) + " de " + esc(nomP(p)) + (nl.cut ? ", " + esc(nl.cut.toLowerCase()) : "") + ".", function () { K.setQty(nl.key, prev); toast("Listo, lo quitamos."); });
       });
       return;
@@ -458,7 +505,7 @@
     var r = K.add(p.id, ps.qty, { cut: ps.cut });
     if (!r.ok) return;
     if (fix) { K.remove(fix); closeSheet(function () { openOrder(); }); track("add", p, ps.qty); return; }
-    closeSheet(function () { added(r.line, prevQ, r.line.qty - prevQ); });
+    closeSheet(function () { if (K.count() > n0) flyGo(footOf(p.id), n0); added(r.line, prevQ, r.line.qty - prevQ); });
   }
 
   // "Tu pedido" (04 §3.8)
@@ -473,8 +520,8 @@
     var ls = K.lines();
     if (!ls.length) {
       var c = CK(), n = c && c.ultimo ? c.ultimo() : 0;
-      return head + '<div class="empty"><i class="bullmark"></i><b>Tu pedido está vacío.</b><p>Elegí tus cortes y aparecen aquí.</p>' +
-        '<button type="button" class="cta" data-act="goto-cortes">Ver los cortes</button>' +
+      return head + '<div class="empty"><i class="bullmark"></i><b>Tu pedido está vacío.</b><p>Lo primero que elijas va a quedar acá.</p>' +
+        '<button type="button" class="slot" data-act="goto-cortes">' + ico("plus", "s") + 'Elegí tu primer corte</button>' +
         (n ? '<div class="sec-link"><button type="button" class="link" data-act="repetir">Repetir mi último pedido (' + n + ')</button></div>' : "") + '</div>';
     }
     var lines = ls.map(function (l) {
@@ -507,6 +554,8 @@
     var sheet = $("#psheet"), st = sheet.scrollTop;
     sheet.innerHTML = orderHTML();
     sheet.scrollTop = st;
+    var em = $(".empty", sheet), M = window.ToritoMotion;   // se vació con la hoja abierta: aparece con el fundido aprobado, no de golpe
+    if (em && M && M.swap) M.swap(em);
     var f = focusKey && $('[data-act="' + act + '"][data-key="' + focusKey + '"]', sheet);
     if (f && !f.disabled) f.focus({ preventScroll: true });
     else if (act === "rm") ($(".line .rm", sheet) || $("#sheetTitleP", sheet)).focus({ preventScroll: true });
@@ -521,12 +570,14 @@
     var b = e.target.closest && e.target.closest("[data-act]");
     if (!b || b.disabled || !listo) return;
     if (!b.closest("#secciones, #psheet, #toast")) return;
+    lastTap = b;
     var act = b.getAttribute("data-act"), cardEl = b.closest(".card"), id = cardEl && cardEl.getAttribute("data-pid"), key = b.getAttribute("data-key");
     switch (act) {
       case "open": e.preventDefault(); openProduct(id); break;
       case "card-add": addFromCard(id); break;
-      case "card-inc": var li = K.get(id), pq = li ? li.qty : 0, ni = K.inc(id); if (ni && ni.qty > pq) track("add", ni.product, ni.qty - pq); focusCard(id, "card-inc"); break;
+      case "card-inc": var li = K.get(id), pq = li ? li.qty : 0, fl0 = flyHold(b), ni = K.inc(id); flyDone(fl0); if (ni && ni.qty > pq) track("add", ni.product, ni.qty - pq); focusCard(id, "card-inc"); break;
       case "card-dec": K.dec(id); focusCard(id, "card-dec"); break;
+      case "sug": var si = lastInput || $("#sInput"); si.value = b.getAttribute("data-q"); onSearchInput({ target: si }); si.focus({ preventScroll: true }); break;
       case "undo": if (undoFn) undoFn(); break;
       case "close": closeSheet(); break;
       case "cut": ps.cut = b.getAttribute("data-cut"); ps.error = false;
@@ -584,7 +635,7 @@
 
   // ---------- Carga (04 §4.2) ----------
   // Mientras tanto se ve el catálogo en texto (CATALOGO-SEO, lo escribe build-catalogo.py).
-  var slowT = setTimeout(function () { var p = $("#secciones .preload-n"); if (p) p.textContent = "La señal está lenta. Ya casi."; }, 4000);
+  var slowT = setTimeout(function () { var p = $("#secciones .skel-n"); if (p) { p.textContent = "La señal está lenta. Ya casi."; p.hidden = false; } }, 4000);
   function blank(icon, html) {
     $("#secciones").innerHTML = '<div class="blank" role="status">' + ico(icon) + html +
       '<button type="button" class="cta" id="retry">' + ico("refresh", "s") + 'Probar de nuevo</button></div>';
@@ -610,6 +661,7 @@
       watchSections();
       watchPills();
       renderBar();
+      barArmada = true;
       window.addEventListener("resize", function () { medirCabecera(); watchPills(); });
       // Enlace directo a una categoría (#cat-res): se pinta y se salta.
       var h = location.hash && document.getElementById(location.hash.slice(1));

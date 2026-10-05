@@ -7,7 +7,8 @@
 /* 3 · Aviso "Agregaste…" y barra "Ver mi pedido": entran desde abajo al pasar de hidden a visible.
    (Una animación CSS se reinicia sola cada vez que el elemento deja de ser display:none.) */
 .toast { animation: tm-up 240ms var(--tm-ease) both; }
-.orderbar { animation: tm-up 320ms var(--tm-ease) both; }
+/* Solo cuando js/tienda.js pone .tm-bar-in (aparece por una acción); en la primera pintura no se anima. */
+.orderbar.tm-bar-in { animation: tm-up 320ms var(--tm-ease) both; }
 @keyframes tm-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes tm-fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -35,7 +36,7 @@
    OJO: aquí solo se apagan transform y animaciones de este archivo; los cambios de color
    (hover, activo, fondo) NO son movimiento y no se tocan. */
 @media (prefers-reduced-motion: reduce) {
-  .toast, .orderbar { animation: tm-fade 150ms linear both; }
+  .toast, .orderbar.tm-bar-in { animation: tm-fade 150ms linear both; }
   .tm-cut::after { animation: none; }
   .tm-js .tm-pre { opacity: 1; transform: none; }
 }
