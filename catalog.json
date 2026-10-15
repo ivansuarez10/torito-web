@@ -168,6 +168,28 @@
       "desc": "El rey del marmoleo, jugoso en cada bocado."
     },
     {
+      "id": "res-t-bone",
+      "cat": "res",
+      "name": "T-bone",
+      "unit": "libra",
+      "price": 225,
+      "img": "tbone",
+      "active": true,
+      "validate": true,
+      "desc": "Lomo y filete en un solo corte, con hueso."
+    },
+    {
+      "id": "res-tomahawk",
+      "cat": "res",
+      "name": "Tomahawk",
+      "unit": "libra",
+      "price": 225,
+      "img": "tomahawk",
+      "active": true,
+      "validate": true,
+      "desc": "Hueso largo y marmoleo: un corte de gran presencia."
+    },
+    {
       "id": "res-entrana",
       "cat": "res",
       "name": "Entraña",
